@@ -3,7 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Generador de Efectos de Tramado (Modern Bento Edition)</title>
+    
+    <!-- === ETIQUETAS SEO AVANZADAS === -->
+    <title>Dither Lab Pro | Generador de Efectos de Tramado y Pixel Art</title>
+    <meta name="description" content="Dither Lab Pro es una herramienta avanzada para generar efectos de tramado (dithering), pixel art, glitch y arte retro en 1-bit o color. Exporta en PNG HD y SVG vectorial.">
+    <meta name="keywords" content="dithering, generador dither, efecto tramado, pixel art, 8-bit, 1-bit, retro, glitch art, bayer, floyd-steinberg, atkinson, dither a svg, exportar svg, paletas retro, gameboy, CGA, editor de imagen retro">
+    <meta name="author" content="Dither Lab Pro">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Redes Sociales -->
+    <meta property="og:title" content="Dither Lab Pro | Generador de Dithering Avanzado">
+    <meta property="og:description" content="Transforma tus imágenes con efectos de tramado retro, glitch y pixel art directamente en tu navegador.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ditherlabpro.com/">
+    
+    <!-- JSON-LD para Google (Structured Data) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Dither Lab Pro",
+      "url": "https://ditherlabpro.com/",
+      "description": "Aplicación web profesional para procesamiento de imágenes con algoritmos de tramado (dithering), filtros glitch y exportación SVG/PNG.",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    <!-- ================================ -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Tipografía Moderna y Limpia */
@@ -138,6 +170,24 @@
         .pan-cursor { cursor: grab !important; }
         .panning-cursor { cursor: grabbing !important; }
         .compare-cursor { cursor: ew-resize !important; }
+
+        /* Limpieza Absoluta del Slider de Comparación */
+        #compare-slider {
+            opacity: 0; /* Erradica las líneas grises y el input nativo manteniendo su hit-box */
+            cursor: ew-resize;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #compare-slider::-webkit-slider-runnable-track { background: transparent; border: none; }
+        #compare-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 40px; 
+            height: 2000px; /* Expande el área táctil sin mostrar basura visual */
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
 
         #zoom-wrapper { --zoom: 1; touch-action: none; }
         #compare-line {
@@ -649,7 +699,7 @@
                     <div id="canvas-container" class="relative inline-block shadow-2xl ring-1 ring-white/10 rounded-md overflow-hidden" style="display: none; max-width: 100%; max-height: 100%;">
                         
                         <!-- ANCLA DE DIMENSIONES: Esta imagen invisible mantiene el tamaño real y bloquea saltos al escalar -->
-                        <img id="sizing-img" class="block w-auto h-auto max-w-full max-h-[65vh] md:max-h-[85vh] opacity-0 pointer-events-none" src="">
+                        <img id="sizing-img" class="block w-auto h-auto max-w-full max-h-[65vh] md:max-h-[85vh] opacity-0 pointer-events-none" src="" alt="Ancla de dimensionamiento">
 
                         <canvas id="canvas-original" class="absolute inset-0 w-full h-full object-fill pointer-events-none z-0"></canvas>
                         
@@ -796,6 +846,107 @@
 
         </div>
     </footer>
+
+    <!-- === SECCIÓN SEO: BASE DE CONOCIMIENTO (MODERN BENTO) === -->
+    <section id="docs-seo" class="w-full max-w-screen-2xl mx-auto p-3 md:p-6 flex flex-col gap-4 md:gap-6 pb-20">
+        <div class="flex items-center gap-2 md:gap-3 ml-1 md:ml-2 mb-2">
+            <div class="w-1.5 md:w-2 h-5 md:h-6 bg-[var(--accent-primary)] rounded-full"></div>
+            <h2 class="text-xl md:text-3xl font-bold tracking-tight text-white">Base de Conocimiento & Ayuda</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            
+            <!-- Card SEO 1: Qué es el Dithering -->
+            <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
+                <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">¿Qué es el Dithering?</h3>
+                </header>
+                <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
+                    <p>El <strong>dithering</strong> (o tramado) es una técnica gráfica clásica utilizada para simular la profundidad de color y gradientes en imágenes que poseen una paleta de colores muy limitada (como las pantallas retro de 1-bit u 8-bits).</p>
+                    <p>Al aplicar <em>ruido espacial</em> o patrones geométricos precisos, el ojo humano percibe la ilusión de nuevos tonos y sombras. Dither Lab Pro es el generador definitivo para replicar esta estética <em>vintage</em> directamente en tu navegador.</p>
+                </div>
+            </article>
+
+            <!-- Card SEO 2: Algoritmos de Tramado -->
+            <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
+                <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Algoritmos de Difusión</h3>
+                </header>
+                <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
+                    <p>Nuestra herramienta incluye los algoritmos de <strong>difusión de error</strong> más famosos de la historia informática. Cuando un píxel se convierte a un color limitado, el "error" (la diferencia de color) se distribuye a los píxeles vecinos.</p>
+                    <ul class="list-disc pl-4 space-y-1 mt-2 text-white/80">
+                        <li><strong>Floyd-Steinberg:</strong> El estándar de oro. Resultados suaves y orgánicos.</li>
+                        <li><strong>Atkinson:</strong> Creado por Bill Atkinson para Apple. Alto contraste, ideal para estilo Mac antiguo.</li>
+                        <li><strong>Bayer (Tramado Ordenado):</strong> Patrones de cruz matemáticos, el auténtico estilo Gameboy y MS-DOS.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- Card SEO 3: Paletas Retro -->
+            <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
+                <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Paletas Nostálgicas</h3>
+                </header>
+                <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
+                    <p>El color es el alma del pixel art. Hemos integrado librerías históricas exactas para que tu renderizado sea 100% fiel a los monitores CRT y consolas portátiles de los años 80s y 90s.</p>
+                    <p>Encuentra perfiles de color como <strong>Commodore 64 (C64)</strong>, <strong>ZX Spectrum</strong>, <strong>CGA</strong>, la paleta clásica de <strong>Game Boy (GBC)</strong>, e incluso modos modernos como el <em>Cyberpunk</em>, <em>Vaporwave</em> y el célebre <em>DawnBringer (DB16 / DB32)</em>. Además, el botón "Extraer" generará una paleta indexada desde tu propia imagen original.</p>
+                </div>
+            </article>
+
+            <!-- Card SEO 4: Glitch Art y Destrucción -->
+            <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
+                <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Glitch & Distorsión</h3>
+                </header>
+                <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
+                    <p>Más allá de un simple generador de dithering, esta plataforma actúa como un motor de <strong>Glitch Art y Databending</strong> en el navegador.</p>
+                    <p>Usa los controles de "Glitch & Distorsión" para simular fallos de tarjeta gráfica, desincronización de señales de video analógicas (Jitter H-Sync), separación de campos de color (Chroma Bleed) y degradación destructiva (Pixel Sorting). Este nodo procesa la imagen <em>antes</em> de aplicar el tramado, garantizando un crujido estético espectacular.</p>
+                </div>
+            </article>
+
+            <!-- Card SEO 5: Exportación Vectorial SVG -->
+            <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
+                <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Exportar a Vector (SVG)</h3>
+                </header>
+                <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
+                    <p>Una característica exclusiva de Dither Lab Pro es su algoritmo de vectorización sin pérdida. Convierte fotografías tramadas directamente a <strong>archivos SVG escalables al infinito</strong>.</p>
+                    <p>Mediante nuestra optimización <em>Run-Length Encoding (RLE)</em>, el sistema detecta filas de píxeles consecutivos del mismo color y los fusiona en trazados (paths) individuales. Ideal para diseño editorial gráfico, serigrafía, grabado láser, impresión de plotter o plóters de corte.</p>
+                </div>
+            </article>
+
+            <!-- Card SEO 6: Aislamiento (Alpha Purge) -->
+            <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
+                <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Alpha Purge (Canal Transparente)</h3>
+                </header>
+                <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
+                    <p>En el diseño web moderno y el desarrollo de videojuegos indie, a menudo no quieres un fondo negro o blanco bloqueando tu diseño. Aquí entra el <strong>Aislamiento de Tinta (Alpha Purge)</strong>.</p>
+                    <p>Dirígete a nuestro Centro de Exportación, haz clic en el color de fondo (por ejemplo, el negro absoluto) en la paleta indexada y el motor lo eliminará en tiempo real. Exporta tu arte en PNG para obtener transparencia pura de canal alfa en tus diseños retro.</p>
+                </div>
+            </article>
+
+        </div>
+    </section>
+    <!-- === FIN DE SECCIÓN SEO === -->
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
