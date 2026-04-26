@@ -700,7 +700,7 @@
             </div>
 
             <!-- Área de Previsualización (Derecha) -->
-            <div class="w-full h-[45%] md:h-full md:flex-1 bento-card relative overflow-hidden flex flex-col items-center justify-center p-0 bg-black" id="preview-section">
+            <div class="w-full h-[45%] md:h-full md:flex-1 bento-card relative overflow-hidden p-0 bg-black" id="preview-section">
                 <!-- Fondo del preview tipo checkerboard tenue moderno -->
                 <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333), repeating-linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333); background-position: 0 0, 10px 10px; background-size: 20px 20px;"></div>
 
@@ -722,18 +722,19 @@
                     </button>
                 </div>
 
-                <div id="zoom-wrapper" class="w-full h-full flex items-center justify-center transition-transform duration-75 relative z-10">
+                <!-- Zoom Wrapper Absoluto -->
+                <div id="zoom-wrapper" class="absolute inset-0 flex items-center justify-center transition-transform duration-75 z-10 p-2 md:p-4">
                     
-                    <!-- Contenedor Sincronizado: El original define las proporciones, el dither se ajusta a él de forma absoluta -->
-                    <div id="canvas-container" class="relative inline-block shadow-2xl ring-1 ring-white/10 rounded-md overflow-hidden" style="display: none; max-width: 100%; max-height: 100%;">
+                    <!-- Contenedor Sincronizado -->
+                    <div id="canvas-container" class="relative inline-flex items-center justify-center shadow-2xl ring-1 ring-white/10 rounded-md overflow-hidden max-w-full max-h-full" style="display: none;">
                         
-                        <!-- ANCLA DE DIMENSIONES: Esta imagen invisible mantiene el tamaño real y bloquea saltos al escalar -->
-                        <img id="sizing-img" class="block w-auto h-auto max-w-full max-h-[65vh] md:max-h-[85vh] opacity-0 pointer-events-none" src="" alt="Ancla de dimensionamiento">
+                        <!-- ANCLA DE DIMENSIONES: Esta imagen invisible ancla las proporciones sin distorsionar en móvil -->
+                        <img id="sizing-img" class="block w-auto h-auto max-w-full max-h-full opacity-0 pointer-events-none" style="max-height: 100%;" src="" alt="Ancla de dimensionamiento">
 
-                        <canvas id="canvas-original" class="absolute inset-0 w-full h-full object-fill pointer-events-none z-0"></canvas>
+                        <canvas id="canvas-original" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-0"></canvas>
                         
                         <div id="dither-layer" class="absolute inset-0 pointer-events-none z-10" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
-                            <canvas id="canvas" class="absolute inset-0 w-full h-full object-fill pointer-events-none"></canvas>
+                            <canvas id="canvas" class="absolute inset-0 w-full h-full object-contain pointer-events-none"></canvas>
                         </div>
 
                         <!-- Línea Comparadora Controlada via Pointer Events -->
@@ -1742,8 +1743,8 @@
                     
                     const container = document.getElementById('canvas-container');
                     
-                    // Asegurar la alineación: El contenedor y sus hijos heredan propiedades sin colapsar visualmente
-                    container.style.display = 'inline-block';
+                    // Alineación garantizada: el contenedor adquiere las proporciones intrínsecas del original
+                    container.style.display = 'inline-flex';
                     
                     canvas.classList.remove('hidden');
                     canvasOrig.classList.remove('hidden');
