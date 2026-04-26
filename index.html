@@ -1,0 +1,2960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Generador de Efectos de Tramado (Modern Bento Edition)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Tipografía Moderna y Limpia */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        html { scroll-behavior: smooth; }
+
+        /* Modern Theme Variables */
+        :root {
+            --accent-primary: #ff4757; /* Coral/Rojo de la imagen de referencia */
+            --accent-hover: #ff6b81;
+            --bg-main: #1e1e24; /* Fondo base oscuro */
+            --bg-card: #2d2d3a; /* Fondo de las tarjetas Bento */
+            --bg-card-hover: #353545;
+            --bg-input: #1a1a20;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            /* Fondo sutilmente texturizado para mayor profundidad */
+            background-image: radial-gradient(circle at center, rgba(255,255,255,0.02) 0%, transparent 100%);
+        }
+
+        canvas {
+            image-rendering: pixelated;
+        }
+        
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        /* Utilidades Bento Cards */
+        .bento-card {
+            background-color: var(--bg-card);
+            border-radius: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
+        }
+        
+        /* Modern Sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            height: 24px;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px;
+            background: var(--bg-input);
+            border-radius: 9999px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            margin-top: -5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            transition: transform 0.1s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: var(--accent-hover);
+        }
+
+        /* Modern Checkbox */
+        input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 0.375rem;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        input[type="checkbox"]:checked {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* Color delete button adaptativo */
+        .color-del-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            background: var(--bg-main);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            border: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+        .color-del-btn:hover { background: #ef4444; }
+
+        /* Cursores de control */
+        .pan-cursor { cursor: grab !important; }
+        .panning-cursor { cursor: grabbing !important; }
+        .compare-cursor { cursor: ew-resize !important; }
+
+        #zoom-wrapper { --zoom: 1; touch-action: none; }
+        #compare-line {
+            width: calc(3px / var(--zoom, 1));
+            transform: translateX(-50%);
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+        }
+        #compare-line > div { transform: scale(calc(1 / var(--zoom, 1))); }
+
+        /* Select Moderno */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .btn-modern {
+            border-radius: 0.75rem;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+        .btn-modern:active:not(:disabled) { transform: scale(0.98); }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden p-0 selection:bg-[var(--accent-primary)] selection:text-white">
+
+    <!-- Envoltura Bento Box Global -->
+    <div class="h-[100dvh] w-full flex-shrink-0 relative p-2 md:p-6 flex flex-col gap-3 md:gap-6">
+        
+        <!-- Header Bento (Arriba) -->
+        <header class="w-full max-w-screen-2xl mx-auto flex items-center justify-between bento-card px-4 md:px-6 py-3 md:py-4 flex-shrink-0">
+            <div class="flex items-center gap-3 md:gap-4">
+                <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[var(--accent-primary)] flex items-center justify-center shadow-lg shadow-[var(--accent-primary)]/20">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-2xl font-extrabold tracking-tight text-white leading-none">Dither Lab <span class="text-[var(--accent-primary)]">Pro</span></h1>
+                    <p class="text-[10px] md:text-xs text-[var(--text-muted)] font-medium mt-1">Motor de tramado avanzado v6</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 md:gap-3">
+                <button id="random-color-btn" class="p-1.5 md:p-2 rounded-xl bg-[var(--bg-input)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] transition-colors text-white" title="Cambiar Tema">
+                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Wrapper Principal (Paneles) -->
+        <div class="w-full max-w-screen-2xl mx-auto flex flex-col-reverse md:flex-row h-full gap-3 md:gap-6 overflow-hidden min-h-0">
+            
+            <!-- Panel de Controles (Izquierda) -->
+            <div class="w-full md:w-[420px] lg:w-[460px] h-[50%] md:h-full flex flex-col gap-3 md:gap-4 overflow-y-auto custom-scrollbar flex-shrink-0 relative z-10 pb-8 pr-2">
+                
+                <!-- Caja: Subida -->
+                <div class="bento-card p-4 md:p-5 group flex-shrink-0 cursor-pointer hover:border-[var(--accent-primary)]/50 transition-colors" id="drop-zone">
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                    <div class="flex flex-col items-center justify-center text-center gap-2 md:gap-3 py-2 md:py-4">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--bg-input)] group-hover:bg-[var(--accent-primary)] text-[var(--accent-primary)] group-hover:text-white flex items-center justify-center transition-colors">
+                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-xs md:text-sm font-semibold text-white">Haz clic o arrastra una imagen</p>
+                            <p class="text-[10px] md:text-xs text-[var(--text-muted)] mt-1">Soporta PNG, JPG, WebP</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Caja: Acciones Rápidas -->
+                <div class="flex gap-2 md:gap-3 flex-shrink-0">
+                    <input type="file" id="quick-preset-input" accept=".json" class="hidden">
+                    <button id="quick-load-preset" class="flex-1 btn-modern bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-card-hover)] text-[10px] md:text-xs py-2 md:py-3 text-[var(--text-muted)] hover:text-white">
+                        Cargar Preset (.json)
+                    </button>
+                    <button id="reset-all-btn" class="flex-1 btn-modern bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-card-hover)] text-[10px] md:text-xs py-2 md:py-3 text-[var(--text-muted)] hover:text-white flex justify-center items-center gap-1 md:gap-2">
+                        <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Restaurar
+                    </button>
+                </div>
+
+                <div id="controls" class="flex flex-col gap-3 md:gap-4 opacity-50 pointer-events-none transition-opacity duration-300">
+                    
+                    <!-- NODO 1: Físico & Tonal -->
+                    <div class="bento-card p-4 md:p-5">
+                        <div class="flex items-center gap-2 mb-4 md:mb-5">
+                            <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                            <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">1. Físico & Tonal</h2>
+                        </div>
+                        
+                        <div class="space-y-4 md:space-y-5">
+                            <div>
+                                <label class="flex justify-between text-[10px] md:text-xs font-semibold text-[var(--text-muted)] mb-2">
+                                    <span>Escala Interna</span><span id="scale-value" class="text-white bg-[var(--bg-input)] px-2 py-0.5 rounded-md">25%</span>
+                                </label>
+                                <input type="range" id="scale" min="5" max="100" value="25">
+                            </div>
+                            
+                            <div class="bg-[var(--bg-input)] rounded-xl p-2 md:p-3 border border-[var(--border-color)]">
+                                <label class="block text-[10px] md:text-xs font-semibold text-[var(--text-muted)] mb-2 md:mb-3 text-center">Canales Activos</label>
+                                <div class="flex gap-3 md:gap-4 justify-center">
+                                    <label class="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium cursor-pointer hover:text-red-400 transition-colors">
+                                        <input type="checkbox" id="ch-r" checked> R
+                                    </label>
+                                    <label class="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium cursor-pointer hover:text-green-400 transition-colors">
+                                        <input type="checkbox" id="ch-g" checked> G
+                                    </label>
+                                    <label class="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium cursor-pointer hover:text-blue-400 transition-colors">
+                                        <input type="checkbox" id="ch-b" checked> B
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 md:gap-4">
+                                <div>
+                                    <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                        <span>Brillo</span><span id="brightness-value">0</span>
+                                    </label>
+                                    <input type="range" id="brightness" min="-100" max="100" value="0">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                        <span>Contraste</span><span id="contrast-value">0</span>
+                                    </label>
+                                    <input type="range" id="contrast" min="-100" max="100" value="0">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                        <span>Gamma</span><span id="gamma-value">1.00</span>
+                                    </label>
+                                    <input type="range" id="gamma" min="0.1" max="3.0" step="0.01" value="1.0">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                        <span>Saturación</span><span id="saturation-value">100%</span>
+                                    </label>
+                                    <input type="range" id="saturation" min="0" max="200" step="1" value="100">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                        <span>Desenfoque</span><span id="bleed-value">0px</span>
+                                    </label>
+                                    <input type="range" id="bleed" min="0" max="10" step="0.5" value="0">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                        <span>Enfoque</span><span id="sharpen-value">0</span>
+                                    </label>
+                                    <input type="range" id="sharpen" min="0" max="5" step="0.5" value="0">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                    <span>Posterización</span><span id="posterize-value">255</span>
+                                </label>
+                                <input type="range" id="posterize" min="2" max="255" step="1" value="255">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                    <span>Recorte (Clipping)</span><span id="clipping-value">0</span>
+                                </label>
+                                <input type="range" id="clipping" min="0" max="100" step="1" value="0">
+                            </div>
+
+                            <div class="pt-3 md:pt-4 border-t border-[var(--border-color)]">
+                                <div class="flex justify-between items-center mb-2 md:mb-3">
+                                    <label class="text-[10px] md:text-xs font-bold text-[var(--text-muted)] uppercase">Curvas Tonales</label>
+                                    <button id="reset-curve-btn" class="text-[9px] md:text-[10px] font-semibold text-white bg-[var(--bg-input)] px-2.5 md:px-3 py-1 rounded-full hover:bg-[var(--accent-primary)] transition-colors">Restaurar</button>
+                                </div>
+                                <select id="curve-channel" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-lg p-2 md:p-2.5 text-white outline-none focus:border-[var(--accent-primary)] transition-colors mb-3">
+                                    <option value="master">RGB (Maestro)</option>
+                                    <option value="r">Canal Rojo</option>
+                                    <option value="g">Canal Verde</option>
+                                    <option value="b">Canal Azul</option>
+                                </select>
+                                <div class="rounded-xl bg-[var(--bg-input)] cursor-crosshair overflow-hidden border border-[var(--border-color)] relative touch-none shadow-inner">
+                                    <div class="absolute inset-0 pointer-events-none" style="background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 32px 30px;"></div>
+                                    <canvas id="curve-canvas" width="256" height="120" class="w-full h-[80px] md:h-[100px] block relative z-10"></canvas>
+                                </div>
+                            </div>
+                            
+                            <input type="range" id="hlcomp" min="0.1" max="2.0" step="0.01" value="1.0" class="hidden">
+                        </div>
+                    </div>
+
+                    <!-- NODO 2: Motor Dither -->
+                    <div class="bento-card p-4 md:p-5 border-l-4 border-l-[var(--accent-primary)]">
+                        <div class="flex items-center gap-2 mb-4 md:mb-5">
+                            <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">2. Core Dither</h2>
+                        </div>
+                        
+                        <div class="space-y-4 md:space-y-5">
+                            <select id="algorithm" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-xl p-2.5 md:p-3 text-white font-semibold outline-none focus:border-[var(--accent-primary)] transition-colors cursor-pointer shadow-sm">
+                                <optgroup label="Difusión de Error">
+                                    <option value="floydSteinberg">Floyd-Steinberg</option>
+                                    <option value="atkinson" selected>Atkinson</option>
+                                    <option value="jarvis">Jarvis, Judice, Ninke</option>
+                                    <option value="stucki">Stucki</option>
+                                    <option value="burkes">Burkes</option>
+                                    <option value="sierra3">Sierra 3</option>
+                                    <option value="sierra2">Sierra 2</option>
+                                    <option value="sierraLite">Sierra Lite</option>
+                                </optgroup>
+                                <optgroup label="Tramado Ordenado">
+                                    <option value="bayer2">Bayer 2x2</option>
+                                    <option value="bayer4">Bayer 4x4</option>
+                                    <option value="bayer8">Bayer 8x8</option>
+                                    <option value="bayer16">Bayer 16x16</option>
+                                    <option value="cluster4">Punto Agrupado 4x4</option>
+                                    <option value="cluster8">Punto Agrupado 8x8</option>
+                                </optgroup>
+                                <optgroup label="Tramado Geométrico (Halftone)">
+                                    <option value="circles">Círculos</option>
+                                    <option value="diamonds">Rombos</option>
+                                    <option value="squares">Cuadrados</option>
+                                    <option value="triangles">Triángulos</option>
+                                </optgroup>
+                                <optgroup label="Métodos Estocásticos">
+                                    <option value="threshold">Umbral Básico</option>
+                                    <option value="random">Ruido Aleatorio</option>
+                                    <option value="blueNoise">Ruido Azul</option>
+                                    <option value="line">Tramado de Línea</option>
+                                </optgroup>
+                                <optgroup label="Experimentales & Autor">
+                                    <option value="voronoi">Ordered Voronoi</option>
+                                    <option value="bayerProgressive">Bayer Progresivo</option>
+                                    <option value="crossHatch">Cross-Hatch (Grabado)</option>
+                                    <option value="spiralWave">Spiral Wave</option>
+                                    <option value="hilbertPattern">Hilbert Curve Pattern</option>
+                                    <option value="dtm">Diffusion Threshold Mod (DTM)</option>
+                                </optgroup>
+                            </select>
+
+                            <div>
+                                <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                    <span>Amplitud Error / Efecto</span><span id="errstr-lbl" class="text-[var(--accent-primary)] font-bold">100%</span>
+                                </label>
+                                <input type="range" id="errstr" min="0" max="200" value="100">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3 md:gap-4">
+                                <div>
+                                    <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                        <span>Bias</span><span id="bias-value">0</span>
+                                    </label>
+                                    <input type="range" id="bias" min="-128" max="128" value="0">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                        <span>Escala Celda</span><span id="pattern-scale-value">1.0x</span>
+                                    </label>
+                                    <input type="range" id="pattern-scale" min="1" max="20" step="0.5" value="1">
+                                </div>
+                            </div>
+                            
+                            <div class="bg-[var(--bg-input)] rounded-xl p-2 md:p-3 border border-[var(--border-color)]">
+                                <label class="block text-[10px] md:text-xs font-bold text-[var(--text-muted)] uppercase mb-2 md:mb-3">Modificadores (Difusión)</label>
+                                <div class="grid grid-cols-2 gap-3 md:gap-4">
+                                    <div>
+                                        <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                            <span>Rotación</span><span id="algo-rot-value">0°</span>
+                                        </label>
+                                        <input type="range" id="algo-rot" min="0" max="360" value="0">
+                                    </div>
+                                    <div>
+                                        <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                            <span>Sesgo H/V</span><span id="algo-bias-value">0</span>
+                                        </label>
+                                        <input type="range" id="algo-bias" min="-100" max="100" value="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">Patrón de Escaneo</label>
+                                <select id="scan-pattern" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 md:p-2.5 text-xs md:text-sm text-white outline-none focus:border-[var(--accent-primary)] cursor-pointer">
+                                    <option value="standard">Standard</option>
+                                    <option value="zigzag" selected>Zig-Zag Estricto</option>
+                                    <option value="spiral">Spiral</option>
+                                    <option value="hilbert">Hilbert Curve</option>
+                                    <option value="vertical">Vertical</option>
+                                </select>
+                            </div>
+
+                            <!-- Bloque Paleta Bento -->
+                            <div class="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-[var(--border-color)]">
+                                <div class="flex justify-between items-center mb-2 md:mb-3">
+                                    <label class="text-[10px] md:text-xs font-bold text-white uppercase tracking-wide">Gestión de Paleta</label>
+                                    <button id="extract-palette-btn" class="text-[9px] md:text-[10px] font-semibold bg-[var(--accent-primary)] text-white px-2.5 md:px-3 py-1 md:py-1.5 rounded-full hover:bg-[var(--accent-hover)] transition-colors shadow-sm">Extraer de Imagen</button>
+                                </div>
+                                
+                                <select id="palette" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-xl p-2.5 md:p-3 text-white font-semibold outline-none focus:border-[var(--accent-primary)] mb-2 md:mb-3 cursor-pointer shadow-sm">
+                                    <option value="custom">Paleta Personalizada</option>
+                                    <option value="bw" selected>Monocromo Estricto</option>
+                                    <option value="acid">Acid</option>
+                                    <option value="amiga">Amiga OCS</option>
+                                    <option value="apple2">Apple II</option>
+                                    <option value="mac1">Apple Macintosh</option>
+                                    <option value="cyberpunk">Cyberpunk</option>
+                                    <option value="db16">DawnBringer 16</option>
+                                    <option value="db32">DawnBringer 32</option>
+                                    <option value="gameboy">Game Boy</option>
+                                    <option value="gbc">Game Boy Color</option>
+                                    <option value="nord">Nord</option>
+                                    <option value="pico8">PICO-8</option>
+                                    <option value="retrowave">Retrowave</option>
+                                    <option value="synthwave">Synthwave</option>
+                                    <option value="tokyonight">Tokyo Night</option>
+                                    <option value="vaporwave">Vaporwave</option>
+                                    <option value="zxspectrum">ZX Spectrum</option>
+                                </select>
+
+                                <label class="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium cursor-pointer mb-3 w-max hover:text-white transition-colors text-[var(--text-muted)]">
+                                    <input type="checkbox" id="invert-palette"> Invertir Colores
+                                </label>
+                                
+                                <div id="custom-palette-editor" class="bg-[var(--bg-input)] rounded-xl p-2 md:p-3 border border-[var(--border-color)]">
+                                    <div class="flex flex-wrap gap-1.5 md:gap-2 items-center" id="custom-colors-container"></div>
+                                    <p class="text-[9px] md:text-[10px] text-[var(--text-muted)] mt-2 md:mt-3 text-center">Tap para editar. Arrastra para reordenar.</p>
+                                </div>
+                                
+                                <div class="mt-3 md:mt-4">
+                                    <label class="block text-[10px] md:text-xs font-semibold text-[var(--text-muted)] mb-1.5 md:mb-2">Tono y Saturación (Post-Paleta)</label>
+                                    <div id="post-color-selector" class="flex flex-wrap gap-1.5 mb-2 md:mb-3 bg-[var(--bg-input)] p-1.5 md:p-2 rounded-xl border border-[var(--border-color)] min-h-[40px]"></div>
+
+                                    <div class="grid grid-cols-3 gap-2 md:gap-3">
+                                        <div>
+                                            <label class="flex flex-col text-[9px] md:text-[10px] text-[var(--text-muted)] mb-1">
+                                                <span>Hue</span><span id="post-hue-value" class="font-medium text-white">0°</span>
+                                            </label>
+                                            <input type="range" id="post-hue" min="-180" max="180" value="0">
+                                        </div>
+                                        <div>
+                                            <label class="flex flex-col text-[9px] md:text-[10px] text-[var(--text-muted)] mb-1">
+                                                <span>Sat</span><span id="post-sat-value" class="font-medium text-white">0%</span>
+                                            </label>
+                                            <input type="range" id="post-sat" min="-100" max="100" value="0">
+                                        </div>
+                                        <div>
+                                            <label class="flex flex-col text-[9px] md:text-[10px] text-[var(--text-muted)] mb-1">
+                                                <span>Lum</span><span id="post-light-value" class="font-medium text-white">0%</span>
+                                            </label>
+                                            <input type="range" id="post-light" min="-100" max="100" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NODO 3: Glitch -->
+                    <div class="bento-card p-4 md:p-5">
+                        <div class="flex items-center gap-2 mb-4 md:mb-5">
+                            <div class="w-2 h-2 rounded-full bg-purple-400"></div>
+                            <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">3. Glitch & Distorsión</h2>
+                        </div>
+                        <div class="space-y-3 md:space-y-4">
+                            <div>
+                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                    <span>Buffer Underflow</span><span id="glitch-underflow-value">0</span>
+                                </label>
+                                <input type="range" id="glitch-underflow" min="0" max="100" value="0">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 md:gap-4">
+                                <div>
+                                    <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                        <span>Sort (H)</span><span id="glitch-sort-value">0</span>
+                                    </label>
+                                    <input type="range" id="glitch-sort" min="0" max="100" value="0">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                        <span>Sort (V)</span><span id="glitch-sort-v-value">0</span>
+                                    </label>
+                                    <input type="range" id="glitch-sort-v" min="0" max="100" value="0">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                    <span>Jitter H-Sync</span><span id="glitch-hsync-value">0</span>
+                                </label>
+                                <input type="range" id="glitch-hsync" min="0" max="100" value="0">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                    <span>Chroma Bleed</span><span id="glitch-chroma-value">0</span>
+                                </label>
+                                <input type="range" id="glitch-chroma" min="0" max="100" value="0">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                    <span>Pixel Flow Drift</span><span id="glitch-drift-value">0</span>
+                                </label>
+                                <input type="range" id="glitch-drift" min="0" max="100" value="0">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                    <span>Interlaced Delay</span><span id="glitch-interlace-value">0</span>
+                                </label>
+                                <input type="range" id="glitch-interlace" min="0" max="100" value="0">
+                            </div>
+                            <div class="pt-2 md:pt-3 border-t border-[var(--border-color)]">
+                                <label class="block text-[9px] md:text-[10px] font-semibold text-[var(--text-muted)] mb-1.5 md:mb-2 uppercase">Bit-Plane Slicing</label>
+                                <select id="glitch-bitplane" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-[10px] md:text-xs text-white outline-none">
+                                    <option value="none">Desactivado</option>
+                                    <option value="remove-lsb">Destruir LSB</option>
+                                    <option value="remove-msb">Destruir MSB</option>
+                                    <option value="swap-palette">Luma Palette Swap</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NODO 4: Post-Procesado -->
+                    <div class="bento-card p-4 md:p-5">
+                        <div class="flex justify-between items-center mb-4 md:mb-5">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                                <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">4. Post-FX</h2>
+                            </div>
+                            <label class="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-semibold cursor-pointer">
+                                Activar <input type="checkbox" id="enable-post-fx">
+                            </label>
+                        </div>
+                        <div id="post-fx-controls" class="space-y-3 md:space-y-4 opacity-40 pointer-events-none transition-opacity duration-300">
+                            <div>
+                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                    <span>Film Grain</span><span id="post-grain-value">0</span>
+                                </label>
+                                <input type="range" id="post-grain" min="0" max="100" value="0">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                    <span>Vignette Color</span><span id="post-vignette-value">0</span>
+                                </label>
+                                <input type="range" id="post-vignette" min="0" max="100" value="0">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                    <span>Optical Bloom</span><span id="post-bloom-value">0</span>
+                                </label>
+                                <input type="range" id="post-bloom" min="0" max="100" value="0">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                    <span>Lens Dispersion</span><span id="post-dispersion-value">0</span>
+                                </label>
+                                <input type="range" id="post-dispersion" min="0" max="200" value="0">
+                            </div>
+                            <div class="pt-2 md:pt-3 border-t border-[var(--border-color)] grid grid-cols-2 gap-2 md:gap-3">
+                                <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
+                                    <input type="checkbox" id="post-grain-alpha"> Grain Alpha
+                                </label>
+                                <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
+                                    <input type="checkbox" id="post-halftone-gain"> Dot Gain
+                                </label>
+                                <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
+                                    <input type="checkbox" id="post-mono-tint"> Mono Tint
+                                </label>
+                                <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
+                                    <input type="checkbox" id="post-clarity"> Local Contrast
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA EXPORTAR -->
+                    <a href="#export-center" class="bento-card p-3 md:p-4 flex flex-col items-center justify-center bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] transition-colors group text-white">
+                        <span class="text-sm md:text-base font-bold tracking-wide group-hover:-translate-y-1 transition-transform flex items-center gap-2">
+                            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                            Opciones de Exportación
+                        </span>
+                        <span class="text-[9px] md:text-[10px] font-medium opacity-90 mt-1">Salida HD, SVG, Alpha Purge & JSON</span>
+                    </a>
+
+                </div>
+            </div>
+
+            <!-- Área de Previsualización (Derecha) -->
+            <div class="w-full h-[45%] md:h-full md:flex-1 bento-card relative overflow-hidden flex flex-col items-center justify-center p-0 bg-black" id="preview-section">
+                <!-- Fondo del preview tipo checkerboard tenue moderno -->
+                <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333), repeating-linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333); background-position: 0 0, 10px 10px; background-size: 20px 20px;"></div>
+
+                <!-- Panel Flotante de Controles Compacto -->
+                <div class="absolute bottom-3 right-3 md:bottom-5 md:right-5 flex bg-[var(--bg-input)]/90 border border-[var(--border-color)] rounded-lg shadow-lg z-30 p-1 md:p-1.5 gap-1 md:gap-1.5 text-[var(--text-muted)] backdrop-blur-md">
+                    <button id="toggle-compare" class="p-1.5 md:p-2 rounded-md bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity" title="Comparar Original">
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v18m6-18v18M4 3h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z"></path></svg>
+                    </button>
+                    <div class="w-[1px] bg-[var(--border-color)] my-1 mx-0.5"></div>
+                    <button id="toggle-pan" class="p-1.5 md:p-2 rounded-md hover:bg-[var(--bg-card)] hover:text-white transition-colors" title="Activar/Desactivar Paneo Libre">
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17a5 5 0 01-5-5V8a2 2 0 014 0v4h2V5a2 2 0 014 0v7h2V7a2 2 0 014 0v5a7 7 0 01-7 7z"></path></svg>
+                    </button>
+                    <button id="zoom-out" class="p-1.5 md:p-2 rounded-md hover:bg-[var(--bg-card)] hover:text-white transition-colors" title="Alejar">
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg>
+                    </button>
+                    <button id="zoom-reset" class="px-2 md:px-3 rounded-md text-[10px] md:text-xs font-bold hover:bg-[var(--bg-card)] hover:text-white transition-colors flex items-center" title="Restablecer">100%</button>
+                    <button id="zoom-in" class="p-1.5 md:p-2 rounded-md hover:bg-[var(--bg-card)] hover:text-white transition-colors" title="Acercar">
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                    </button>
+                </div>
+
+                <div id="zoom-wrapper" class="w-full h-full flex items-center justify-center transition-transform duration-75 relative z-10">
+                    
+                    <!-- Contenedor Sincronizado: El original define las proporciones, el dither se ajusta a él de forma absoluta -->
+                    <div id="canvas-container" class="relative inline-block shadow-2xl ring-1 ring-white/10 rounded-md overflow-hidden" style="display: none; max-width: 100%; max-height: 100%;">
+                        
+                        <!-- ANCLA DE DIMENSIONES: Esta imagen invisible mantiene el tamaño real y bloquea saltos al escalar -->
+                        <img id="sizing-img" class="block w-auto h-auto max-w-full max-h-[65vh] md:max-h-[85vh] opacity-0 pointer-events-none" src="">
+
+                        <canvas id="canvas-original" class="absolute inset-0 w-full h-full object-fill pointer-events-none z-0"></canvas>
+                        
+                        <div id="dither-layer" class="absolute inset-0 pointer-events-none z-10" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+                            <canvas id="canvas" class="absolute inset-0 w-full h-full object-fill pointer-events-none"></canvas>
+                        </div>
+
+                        <!-- Línea Comparadora Controlada via Pointer Events -->
+                        <div id="compare-line" class="absolute top-0 bottom-0 z-10 flex items-center justify-center pointer-events-none" style="left: 50%;">
+                            <div class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center shadow-[0_0_15px_rgba(255,71,87,0.8)] pointer-events-none">
+                                <svg class="w-3 h-3 md:w-4 md:h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 9l-3 3m0 0l3 3m-3-3h14M16 15l3-3m0 0l-3-3m3 3H4"></path></svg>
+                            </div>
+                        </div>
+                        
+                        <canvas id="buffer" class="hidden"></canvas>
+                    </div>
+                </div>
+
+                <div id="placeholder-text" class="text-center text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 md:gap-3 bg-[var(--bg-card)]/90 backdrop-blur p-4 md:p-6 rounded-2xl border border-[var(--border-color)] z-20 pointer-events-none shadow-xl scale-90 md:scale-100 transition-all">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <p class="font-bold text-[10px] md:text-sm uppercase tracking-wide">Lienzo Vacío</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CENTRO DE EXPORTACIÓN (Footer Bento) -->
+    <footer id="export-center" class="w-full max-w-screen-2xl mx-auto p-3 md:p-6 flex flex-col gap-4 md:gap-6 mb-8 md:mb-12">
+        
+        <div class="flex items-center gap-2 md:gap-3 ml-1 md:ml-2">
+            <div class="w-1.5 md:w-2 h-5 md:h-6 bg-[var(--accent-primary)] rounded-full"></div>
+            <h2 class="text-xl md:text-3xl font-bold tracking-tight text-white">Centro de Exportación</h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            
+            <!-- Panel Izquierdo: Acciones de Salida -->
+            <div class="bento-card flex flex-col">
+                <div class="p-4 md:p-5 border-b border-[var(--border-color)] bg-[var(--bg-input)]/50">
+                    <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Salida de Imagen & Vector
+                    </h3>
+                </div>
+                <div class="p-4 md:p-5 flex-grow flex flex-col justify-between">
+                    <div>
+                        <label class="block text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-2 md:mb-3">Multiplicador de Escala (Píxel Perfecto)</label>
+                        <div class="grid grid-cols-3 gap-2 md:gap-3 mb-3 md:mb-4" id="scale-selector">
+                            <button class="scale-btn active rounded-xl bg-[var(--accent-primary)] text-white py-2 md:py-3 text-sm md:text-base font-bold transition-all" data-scale="1">1x</button>
+                            <button class="scale-btn rounded-xl bg-[var(--bg-input)] text-white hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] py-2 md:py-3 text-sm md:text-base font-bold transition-all" data-scale="2">2x</button>
+                            <button class="scale-btn rounded-xl bg-[var(--bg-input)] text-white hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] py-2 md:py-3 text-sm md:text-base font-bold transition-all" data-scale="4">4x</button>
+                        </div>
+                        <p class="text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-4 md:mb-6 bg-[var(--bg-input)] px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg border border-[var(--border-color)] inline-flex items-center gap-1.5 md:gap-2">
+                            <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Peso raster: <span id="est-size" class="text-white font-bold">--</span>
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col gap-3 mt-auto">
+                        <button id="final-export-btn" class="w-full btn-modern bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-white py-3 md:py-4 text-sm md:text-base shadow-lg shadow-[var(--accent-primary)]/20 flex items-center justify-center gap-2">
+                            Exportar PNG
+                        </button>
+                        
+                        <div class="flex gap-3">
+                            <button id="export-svg-btn" class="flex-1 btn-modern bg-[var(--bg-card-hover)] hover:bg-white hover:text-black border border-[var(--border-color)] text-white py-3 text-[11px] md:text-sm transition-all duration-300 flex items-center justify-center gap-1.5">
+                                <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                                Vector (SVG)
+                            </button>
+                            <button id="copy-clipboard-btn" class="flex-1 btn-modern bg-[var(--bg-input)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] text-white py-3 text-[11px] md:text-sm">
+                                Copiar Portapapeles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Derecho: Aislamiento de Tinta (Alpha Purge) -->
+            <div class="bento-card flex flex-col relative">
+                <div class="p-4 md:p-5 border-b border-[var(--border-color)] bg-[var(--bg-input)]/50 flex justify-between items-center z-10">
+                    <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        Aislamiento (Alpha Purge)
+                    </h3>
+                    <button id="restore-isolation-btn" class="text-[10px] md:text-xs font-semibold text-[var(--text-muted)] hover:text-white px-2 md:px-3 py-1 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] transition-colors">Limpiar</button>
+                </div>
+                <div class="p-4 md:p-5 flex-grow flex flex-col relative z-0" id="isolation-panel-content">
+                    <p class="text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-3 md:mb-4">Clic en el color de la paleta resultante para volverlo <span class="text-white font-bold">transparente</span> en la exportación.</p>
+                    <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 min-h-[120px] md:min-h-[150px]">
+                        <div id="isolation-squares-container" class="grid grid-cols-5 sm:grid-cols-6 gap-1.5 md:gap-2">
+                            <!-- Cuadritos generados dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                <div id="isolation-disabled-notice" class="absolute inset-0 bg-[var(--bg-main)]/90 z-20 flex items-center justify-center hidden backdrop-blur-sm p-4 md:p-6">
+                    <p class="text-white text-xs md:text-sm font-medium text-center bg-[var(--bg-card)] p-3 md:p-4 rounded-xl border border-red-500/50 shadow-lg">
+                        <span class="text-red-400 block mb-1">Aislamiento/SVG Desactivado</span>
+                        Apaga los efectos de Post-Procesado (FX) para interactuar.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Panel Inferior Izq: Paleta CSS -->
+            <div class="bento-card flex flex-col">
+                <div class="p-4 md:p-5 border-b border-[var(--border-color)] bg-[var(--bg-input)]/50">
+                    <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                        Inspección de Paleta Final
+                    </h3>
+                </div>
+                <div class="p-4 md:p-5 flex-grow">
+                    <p class="text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-3 md:mb-4">Clic para copiar el valor HEX al portapapeles.</p>
+                    <div class="overflow-y-auto custom-scrollbar pr-2 max-h-[140px] md:max-h-[160px]">
+                        <div id="palette-squares-container" class="grid grid-cols-4 sm:grid-cols-5 gap-1.5 md:gap-2">
+                            <!-- Cuadritos generados dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Inferior Der: Terminal de Presets JSON -->
+            <div class="bento-card flex flex-col bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-input)]">
+                <div class="p-4 md:p-5 border-b border-[var(--border-color)]">
+                    <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                        Terminal de Presets
+                    </h3>
+                </div>
+                <div class="p-4 md:p-6 flex flex-col justify-center flex-grow gap-3 md:gap-4">
+                    <p class="text-[10px] md:text-xs text-[var(--text-muted)] font-medium">Guarda tu configuración (Algoritmos, Curvas, Paletas, Glitch) en un archivo JSON local.</p>
+                    
+                    <button id="export-preset-btn" class="w-full btn-modern border border-[var(--border-color)] bg-[var(--bg-card-hover)] hover:bg-white hover:text-black text-white py-2.5 md:py-3 text-xs md:text-sm transition-colors flex items-center justify-center gap-2">
+                        Descargar Preset Maestro
+                    </button>
+                    
+                    <input type="file" id="import-preset-input" accept=".json" class="hidden">
+                    <button id="import-preset-btn" class="w-full btn-modern border border-[var(--border-color)] bg-[var(--bg-input)] hover:bg-[var(--accent-primary)] text-white py-2.5 md:py-3 text-xs md:text-sm transition-colors flex items-center justify-center gap-2">
+                        Cargar Preset
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- REFERENCIAS DOM ---
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            
+            const canvasOrig = document.getElementById('canvas-original');
+            const oCtx = canvasOrig.getContext('2d', { willReadFrequently: true });
+            
+            const buffer = document.getElementById('buffer');
+            const bCtx = buffer.getContext('2d', { willReadFrequently: true });
+            
+            const placeholderText = document.getElementById('placeholder-text');
+            const controls = document.getElementById('controls');
+            const curveCanvas = document.getElementById('curve-canvas');
+            const curveCtx = curveCanvas.getContext('2d');
+
+            const ditherLayer = document.getElementById('dither-layer');
+            const compareLine = document.getElementById('compare-line');
+            const zoomWrapper = document.getElementById('zoom-wrapper');
+            const previewSection = document.getElementById('preview-section');
+            const toggleCompareBtn = document.getElementById('toggle-compare');
+            const togglePanBtn = document.getElementById('toggle-pan');
+
+            const randomColorBtn = document.getElementById('random-color-btn');
+            const extractPaletteBtn = document.getElementById('extract-palette-btn');
+
+            if (randomColorBtn) {
+                randomColorBtn.addEventListener('click', () => {
+                    const themeColors = ['#ff4757', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+                    const shuffled = themeColors.sort(() => 0.5 - Math.random());
+                    document.documentElement.style.setProperty('--accent-primary', shuffled[0]);
+                    document.documentElement.style.setProperty('--accent-hover', shuffled[0] + 'dd'); 
+                });
+            }
+
+            // --- ESTADOS GLOBALES ---
+            let originalImage = new Image();
+            let isRendering = false;
+            let currentZoom = 1;
+            let panX = 0, panY = 0;
+            let isDragging = false;
+            let isComparingDrag = false;
+            let isPanMode = false;
+            let dragStartX = 0, dragStartY = 0;
+            let isCompareMode = true;
+            let comparePercent = 50;
+            let currentExportScale = 1; 
+            
+            // ESTADO: Aislamiento de Tinta
+            let isolatedColors = new Set();
+            
+            // ESTADO: Modificadores HSL Post-Paleta Individuales
+            let selectedPostColorHex = null;
+            let postModifications = {};
+
+            // --- PALETAS EXACTAS ---
+            const palettesBase = {
+                acid: ['#000000', '#ff00ff', '#00ffff', '#ccff00'],
+                amiga: ['#aaaaaa', '#000000', '#ffffff', '#6688bb', '#f58022', '#1144aa', '#fa3300', '#00ccef'],
+                apple2: ['#000000', '#8a213e', '#453588', '#cf4ce7', '#0e5d48', '#808080', '#1c9ef0', '#95a1f6', '#526605', '#c87910', '#eaa6bd', '#11c419', '#bdf155', '#7dcda4', '#ffffff'],
+                mac1: ['#000000', '#ffffff'],
+                artdeco: ['#2e2925', '#d2a452', '#e5d8cd', '#805b38', '#5a6b5d'],
+                atarist: ['#000000', '#ff0000', '#00ff00', '#ffff00', '#0000ff', '#ff00ff', '#00ffff', '#ffffff', '#555555', '#aa0000', '#00aa00', '#aaaa00', '#0000aa', '#aa00aa', '#00aaaa', '#aaaaaa'],
+                bauhaus: ['#1a1a1a', '#e22c2a', '#f7d438', '#185a9d', '#e8e6e1'],
+                c64subset: ['#000000', '#777777', '#cccccc', '#ffffff'],
+                cga: ['#000000', '#55ffff', '#ff55ff', '#ffffff'],
+                c64: ['#000000', '#ffffff', '#880000', '#aaffee', '#cc44cc', '#00cc55', '#0000aa', '#eeee77', '#dd8855', '#664400', '#ff7777', '#333333', '#777777', '#aaff66', '#0088ff', '#bbbbbb'],
+                cyberpunk: ['#000000', '#ff003c', '#00f0ff', '#fcee0a'],
+                db16: ['#140c1c', '#442434', '#30346d', '#4e4a4e', '#854c30', '#346524', '#d04648', '#757161', '#597dce', '#d27d2c', '#8595a1', '#6daa2c', '#d2aa99', '#6dc2ca', '#dad45e', '#deeed6'],
+                db32: ['#000000', '#222034', '#45283c', '#663931', '#8f563b', '#df7126', '#d9a066', '#eec39a', '#fbf236', '#99e550', '#6abe30', '#37946e', '#4b692f', '#524b24', '#323c39', '#3f3f74', '#306082', '#5b6ee1', '#639bff', '#5fcde4', '#cbdbfc', '#ffffff', '#9badb7', '#847e87', '#696a6a', '#595652', '#76428a', '#ac3232', '#d95763', '#d77bba', '#8f974a', '#8a6f30'],
+                deepsea: ['#000010', '#001a33', '#004080', '#0080ff', '#00ffff'],
+                ega: ['#000000', '#0000aa', '#00aa00', '#00aaaa', '#aa0000', '#aa00aa', '#aa5500', '#aaaaaa', '#555555', '#5555ff', '#55ff55', '#55ffff', '#ff5555', '#ff55ff', '#ffff55', '#ffffff'],
+                fireash: ['#111111', '#551111', '#aa3311', '#ff6600', '#ffcc00', '#ffffff'],
+                galactic: ['#0b0c10', '#1f2833', '#c5c6c7', '#66fcf1', '#45a29e'],
+                gameboy: ['#0f380f', '#306230', '#8bac0f', '#9bbc0f'],
+                gbc: ['#ffffff', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#000000'],
+                gray4: ['#000000', '#555555', '#aaaaaa', '#ffffff'],
+                gray8: ['#000000', '#242424', '#494949', '#6d6d6d', '#929292', '#b6b6b6', '#dbdbdb', '#ffffff'],
+                gruvbox: ['#282828', '#cc241d', '#98971a', '#d79921', '#458588', '#b16286', '#689d6a', '#a89984', '#ebdbb2'],
+                highcontrast: ['#000000', '#ffff00', '#00ffff', '#ff00ff', '#ffffff'],
+                impressionist: ['#89a8b1', '#e3c4a6', '#c58d7c', '#6c7c64', '#444c55'],
+                material: ['#f44336', '#e91e63', '#9c27b0', '#3f51b5', '#2196f3', '#00bcd4', '#009688', '#4caf50', '#ffeb3b', '#ff9800'],
+                bw: ['#000000', '#ffffff'], 
+                monokai: ['#272822', '#f92672', '#a6e22e', '#f4bf75', '#66d9ef', '#ae81ff'],
+                msx: ['#000000', '#25c525', '#3aea3a', '#5454ff', '#7171ff', '#b74242', '#3cf4f4', '#ea5f5f', '#f47171', '#c5c525', '#eaea3a', '#258c25', '#c554b7', '#cccccc', '#ffffff'],
+                neon: ['#000000', '#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'],
+                nds: ['#ffffff', '#c0c0c0', '#808080', '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00'],
+                noir: ['#000000', '#1a1a1a', '#4d4d4d', '#999999', '#e6e6e6', '#ffffff'],
+                nord: ['#2e3440', '#3b4252', '#434c5e', '#4c566a', '#88c0d0', '#81a1c1', '#5e81ac', '#bf616a', '#d08770', '#ebcb8b', '#a3be8c', '#b48ead'],
+                pastel: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'],
+                pico8: ['#000000', '#1d2b53', '#7e2553', '#008751', '#ab5236', '#5f574f', '#c2c3c7', '#fff1e8', '#ff004d', '#ffa300', '#ffec27', '#00e436', '#29adff', '#83769c', '#ff77a8', '#ffccaa'],
+                retrowave: ['#000000', '#0f0f1b', '#ff0055', '#00eeff', '#ffee00'],
+                sepia: ['#2b1a0a', '#4a3219', '#7a5a36', '#a6825c', '#d4bba0', '#fcf2e3'],
+                solarpunk: ['#2d4030', '#567d46', '#88b04b', '#e0d8b0', '#f4a460'],
+                solarized: ['#002b36', '#073642', '#586e75', '#657b83', '#839496', '#93a1a1', '#eee8d5', '#fdf6e3', '#b58900', '#cb4b16', '#dc322f', '#d33682', '#6c71c4', '#268bd2', '#2aa198', '#859900'],
+                synthwave: ['#000000', '#241734', '#2e2157', '#fd3777', '#f706cf', '#fd1d53', '#f9c80e', '#ff4365'],
+                tokyonight: ['#1a1b26', '#24283b', '#c0caf5', '#f7768e', '#9ece6a', '#e0af68', '#7aa2f7', '#bb9af7', '#7dcfff'],
+                vaporwave: ['#000000', '#ff71ce', '#01cdfe', '#05ffa1', '#b967ff', '#fffb96'],
+                websafe: ['#000000', '#333333', '#666666', '#999999', '#cccccc', '#ffffff', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'],
+                zxspectrum: ['#000000', '#0000d7', '#d70000', '#d700d7', '#00d700', '#00d7d7', '#d7d700', '#d7d7d7', '#0000ff', '#ff0000', '#ff00ff', '#00ff00', '#00ffff', '#ffff00', '#ffffff'],
+                custom: [] 
+            };
+
+            let customColorsArray = [...palettesBase['bw']];
+            
+            function getNormalizedHex(c) {
+                let hex = Array.isArray(c) ? '#' + c.map(x => x.toString(16).padStart(2, '0')).join('') : c;
+                return hex.toLowerCase();
+            }
+
+            function getBaseActivePalette() {
+                const isCustom = document.getElementById('palette').value === 'custom';
+                return isCustom ? customColorsArray : palettesBase[document.getElementById('palette').value];
+            }
+
+            // --- UI: RENDER PALETA CUSTOM ---
+            function renderCustomColors() {
+                const container = document.getElementById('custom-colors-container');
+                container.innerHTML = '';
+                
+                customColorsArray.forEach((color, index) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'relative w-7 h-7 md:w-8 md:h-8 rounded-full border border-[var(--border-color)] cursor-move flex items-center justify-center shadow-md transition-transform hover:scale-110';
+                    wrapper.draggable = true;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'color';
+                    input.value = color;
+                    input.className = 'absolute inset-0 w-full h-full opacity-0 cursor-pointer';
+                    input.addEventListener('input', (e) => {
+                        customColorsArray[index] = e.target.value;
+                        wrapper.style.backgroundColor = e.target.value;
+                        document.getElementById('palette').value = 'custom';
+                        scheduleProcess();
+                    });
+                    
+                    wrapper.style.backgroundColor = color;
+                    wrapper.appendChild(input);
+                    
+                    if (customColorsArray.length > 2) {
+                        const delBtn = document.createElement('div');
+                        delBtn.innerHTML = '&times;';
+                        delBtn.className = 'color-del-btn scale-75 md:scale-100';
+                        delBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            customColorsArray.splice(index, 1);
+                            document.getElementById('palette').value = 'custom';
+                            renderCustomColors();
+                            scheduleProcess();
+                        };
+                        wrapper.appendChild(delBtn);
+                    }
+                    
+                    wrapper.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', index);
+                        wrapper.classList.add('opacity-50');
+                    });
+                    wrapper.addEventListener('dragend', () => wrapper.classList.remove('opacity-50'));
+                    wrapper.addEventListener('dragover', (e) => e.preventDefault());
+                    wrapper.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                        const toIndex = index;
+                        if (fromIndex !== toIndex && !isNaN(fromIndex)) {
+                            const [movedItem] = customColorsArray.splice(fromIndex, 1);
+                            customColorsArray.splice(toIndex, 0, movedItem);
+                            document.getElementById('palette').value = 'custom';
+                            renderCustomColors();
+                            scheduleProcess();
+                        }
+                    });
+
+                    container.appendChild(wrapper);
+                });
+
+                const addBtn = document.createElement('button');
+                addBtn.className = 'w-7 h-7 md:w-8 md:h-8 rounded-full border border-dashed border-[var(--text-muted)] bg-transparent flex items-center justify-center text-[var(--text-muted)] font-bold text-lg hover:bg-[var(--bg-card)] hover:text-white transition-colors';
+                addBtn.innerHTML = '+';
+                addBtn.title = 'Añadir color';
+                addBtn.onclick = () => {
+                    if(customColorsArray.length < 32) {
+                        customColorsArray.push('#888888');
+                        document.getElementById('palette').value = 'custom';
+                        renderCustomColors();
+                        scheduleProcess();
+                    }
+                };
+                container.appendChild(addBtn);
+
+                const resetBtn = document.createElement('button');
+                resetBtn.className = 'w-7 h-7 md:w-8 md:h-8 rounded-full border border-[var(--border-color)] bg-[var(--bg-input)] flex items-center justify-center text-[var(--text-muted)] font-bold text-sm hover:bg-[var(--bg-card)] hover:text-white transition-colors ml-1';
+                resetBtn.innerHTML = '&#8635;';
+                resetBtn.title = 'Restablecer colores';
+                resetBtn.onclick = () => {
+                    const selectedPalette = document.getElementById('palette').value;
+                    if(selectedPalette !== 'custom') {
+                        customColorsArray = [...palettesBase[selectedPalette]];
+                    } else {
+                        customColorsArray = [...palettesBase['bw']];
+                    }
+                    renderCustomColors();
+                    scheduleProcess();
+                };
+                container.appendChild(resetBtn);
+
+                renderPostColorSelector();
+                updatePostSlidersFromState();
+            }
+            renderCustomColors();
+
+            // --- HSL y PROCESAMIENTO POST-PALETA ---
+            function rgbToHsl(r, g, b) {
+                r /= 255; g /= 255; b /= 255;
+                let max = Math.max(r, g, b), min = Math.min(r, g, b);
+                let h, s, l = (max + min) / 2;
+                if(max === min){
+                    h = s = 0; 
+                } else {
+                    let d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch(max){
+                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / d + 2; break;
+                        case b: h = (r - g) / d + 4; break;
+                    }
+                    h /= 6;
+                }
+                return [h, s, l];
+            }
+
+            function hslToRgb(h, s, l) {
+                let r, g, b;
+                if(s === 0){
+                    r = g = b = l; 
+                } else {
+                    let hue2rgb = function hue2rgb(p, q, t){
+                        if(t < 0) t += 1;
+                        if(t > 1) t -= 1;
+                        if(t < 1/6) return p + (q - p) * 6 * t;
+                        if(t < 1/2) return q;
+                        if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                        return p;
+                    }
+                    let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                    let p = 2 * l - q;
+                    r = hue2rgb(p, q, h + 1/3);
+                    g = hue2rgb(p, q, h);
+                    b = hue2rgb(p, q, h - 1/3);
+                }
+                return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+            }
+
+            function applyPostHSL(rgb, hOffset, sOffset, lOffset) {
+                let hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+                let h = hsl[0] + (hOffset / 360);
+                if (h < 0) h += 1;
+                if (h > 1) h -= 1;
+                let s = hsl[1] + (sOffset / 100);
+                s = Math.max(0, Math.min(1, s));
+                let l = hsl[2] + (lOffset / 100);
+                l = Math.max(0, Math.min(1, l));
+                return hslToRgb(h, s, l);
+            }
+
+            function renderPostColorSelector() {
+                const container = document.getElementById('post-color-selector');
+                if (!container) return;
+                container.innerHTML = '';
+                
+                const basePalette = getBaseActivePalette().map(getNormalizedHex);
+                
+                if (!selectedPostColorHex || !basePalette.includes(selectedPostColorHex)) {
+                    selectedPostColorHex = basePalette[0];
+                }
+
+                basePalette.forEach((hex) => {
+                    const btn = document.createElement('button');
+                    const isSelected = hex === selectedPostColorHex;
+                    btn.className = `w-5 h-5 md:w-6 md:h-6 rounded-full border-2 transition-all cursor-pointer shadow-sm ${isSelected ? 'border-white scale-125 z-10' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-110'}`;
+                    
+                    let displayRgb = hexToRgb(hex);
+                    if (document.getElementById('invert-palette').checked) {
+                        displayRgb = [255 - displayRgb[0], 255 - displayRgb[1], 255 - displayRgb[2]];
+                    }
+                    const mods = postModifications[hex];
+                    if (mods && (mods.h !== 0 || mods.s !== 0 || mods.l !== 0)) {
+                        displayRgb = applyPostHSL(displayRgb, mods.h, mods.s, mods.l);
+                    }
+                    
+                    btn.style.backgroundColor = `rgb(${displayRgb[0]}, ${displayRgb[1]}, ${displayRgb[2]})`;
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        selectedPostColorHex = hex;
+                        renderPostColorSelector();
+                        updatePostSlidersFromState();
+                    };
+                    container.appendChild(btn);
+                });
+            }
+
+            function updatePostSlidersFromState() {
+                const mods = postModifications[selectedPostColorHex] || {h: 0, s: 0, l: 0};
+                const hueEl = document.getElementById('post-hue');
+                const satEl = document.getElementById('post-sat');
+                const lightEl = document.getElementById('post-light');
+                
+                if(hueEl) { hueEl.value = mods.h; document.getElementById('post-hue-value').textContent = mods.h + '°'; }
+                if(satEl) { satEl.value = mods.s; document.getElementById('post-sat-value').textContent = mods.s + '%'; }
+                if(lightEl) { lightEl.value = mods.l; document.getElementById('post-light-value').textContent = mods.l + '%'; }
+            }
+
+            function getFinalActivePalette() {
+                const basePalette = getBaseActivePalette();
+                const invertPalette = document.getElementById('invert-palette').checked;
+                return basePalette.map(c => {
+                    const hex = getNormalizedHex(c);
+                    let rgb = hexToRgb(hex);
+                    if (invertPalette) {
+                        rgb = [255 - rgb[0], 255 - rgb[1], 255 - rgb[2]];
+                    }
+                    return rgb;
+                });
+            }
+            
+            function getRenderPalette(mappedPalette) {
+                const basePalette = getBaseActivePalette();
+                return mappedPalette.map((rgb, index) => {
+                    const hex = getNormalizedHex(basePalette[index]);
+                    let finalRgb = [...rgb];
+                    const mods = postModifications[hex];
+                    if (mods && (mods.h !== 0 || mods.s !== 0 || mods.l !== 0)) {
+                        finalRgb = applyPostHSL(finalRgb, mods.h, mods.s, mods.l);
+                    }
+                    return finalRgb;
+                });
+            }
+
+            function getPostProcessedPalette() {
+                const activePalette = getFinalActivePalette();
+                const renderPalette = getRenderPalette(activePalette);
+                
+                let doMonoTint = document.getElementById('post-mono-tint').checked;
+                let doClarity = document.getElementById('post-clarity').checked;
+
+                return renderPalette.map(rgb => {
+                    let r = rgb[0], g = rgb[1], b = rgb[2];
+                    
+                    if (doClarity) {
+                        let avg = (r+g+b)/3;
+                        if (avg > 128) { r = Math.min(255, r*1.2); g = Math.min(255, g*1.2); b = Math.min(255, b*1.2); }
+                        else { r *= 0.8; g *= 0.8; b *= 0.8; }
+                    }
+                    
+                    if (doMonoTint) {
+                        let colorDark = renderPalette[0];
+                        let colorLight = renderPalette[renderPalette.length-1] || [255,255,255];
+                        let mix = Math.max(0, Math.min(1, (0.299*r + 0.587*g + 0.114*b) / 255));
+                        r = colorDark[0] * (1-mix) + colorLight[0] * mix;
+                        g = colorDark[1] * (1-mix) + colorLight[1] * mix;
+                        b = colorDark[2] * (1-mix) + colorLight[2] * mix;
+                    }
+                    
+                    return [
+                        Math.max(0, Math.min(255, Math.round(r))),
+                        Math.max(0, Math.min(255, Math.round(g))),
+                        Math.max(0, Math.min(255, Math.round(b)))
+                    ];
+                });
+            }
+
+            // --- UI: ZOOM Y COMPARADOR Y PANEO ---
+            
+            function updateCursors() {
+                previewSection.classList.remove('pan-cursor', 'panning-cursor', 'compare-cursor');
+                if (!originalImage.src) return;
+                
+                if (isPanMode) {
+                    if (isDragging) previewSection.classList.add('panning-cursor');
+                    else previewSection.classList.add('pan-cursor');
+                } else if (isCompareMode) {
+                    previewSection.classList.add('compare-cursor');
+                }
+            }
+
+            function updateCompare(clientX) {
+                const container = document.getElementById('canvas-container');
+                const rect = container.getBoundingClientRect();
+                let x = clientX - rect.left;
+                comparePercent = (x / rect.width) * 100;
+                comparePercent = Math.max(0, Math.min(100, comparePercent));
+                
+                ditherLayer.style.clipPath = `polygon(0 0, ${comparePercent}% 0, ${comparePercent}% 100%, 0 100%)`;
+                compareLine.style.left = `${comparePercent}%`;
+            }
+            
+            togglePanBtn.addEventListener('click', () => {
+                isPanMode = !isPanMode;
+                if (isPanMode) {
+                    togglePanBtn.classList.add('bg-[var(--accent-primary)]', 'text-white');
+                    togglePanBtn.classList.remove('hover:bg-[var(--bg-card)]');
+                } else {
+                    togglePanBtn.classList.remove('bg-[var(--accent-primary)]', 'text-white');
+                    togglePanBtn.classList.add('hover:bg-[var(--bg-card)]');
+                    isDragging = false;
+                }
+                updateCursors();
+            });
+
+            toggleCompareBtn.addEventListener('click', () => {
+                isCompareMode = !isCompareMode;
+                if (isCompareMode) {
+                    toggleCompareBtn.classList.add('bg-[var(--accent-primary)]', 'text-white');
+                    toggleCompareBtn.classList.remove('bg-transparent', 'text-[var(--text-muted)]');
+                    if (originalImage.src) {
+                        compareLine.classList.remove('hidden');
+                        ditherLayer.style.clipPath = `polygon(0 0, ${comparePercent}% 0, ${comparePercent}% 100%, 0 100%)`;
+                    }
+                } else {
+                    toggleCompareBtn.classList.remove('bg-[var(--accent-primary)]', 'text-white');
+                    toggleCompareBtn.classList.add('bg-transparent', 'text-[var(--text-muted)]');
+                    compareLine.classList.add('hidden');
+                    ditherLayer.style.clipPath = `polygon(0 0, 100% 0, 100% 100%, 0 100%)`;
+                }
+                updateCursors();
+            });
+
+            function applyZoomTransform() {
+                zoomWrapper.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+                zoomWrapper.style.setProperty('--zoom', currentZoom);
+                document.getElementById('zoom-reset').textContent = Math.round(currentZoom * 100) + '%';
+            }
+
+            document.getElementById('zoom-in').addEventListener('click', () => { currentZoom = Math.min(currentZoom * 1.3, 10); applyZoomTransform(); });
+            document.getElementById('zoom-out').addEventListener('click', () => { currentZoom = Math.max(currentZoom / 1.3, 0.1); applyZoomTransform(); });
+            document.getElementById('zoom-reset').addEventListener('click', () => { currentZoom = 1; panX = 0; panY = 0; applyZoomTransform(); });
+
+            previewSection.addEventListener('wheel', (e) => {
+                if(!originalImage.src) return;
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                currentZoom = Math.max(0.1, Math.min(currentZoom * delta, 10));
+                applyZoomTransform();
+            }, { passive: false });
+
+            function startPan(clientX, clientY) {
+                if(!originalImage.src || !isPanMode) return;
+                isDragging = true;
+                updateCursors();
+                dragStartX = clientX - panX;
+                dragStartY = clientY - panY;
+            }
+
+            function movePan(clientX, clientY) {
+                if(!isDragging || !isPanMode) return;
+                panX = clientX - dragStartX;
+                panY = clientY - dragStartY;
+                applyZoomTransform();
+            }
+
+            function endPan() {
+                if(isDragging) {
+                    isDragging = false;
+                    updateCursors();
+                }
+            }
+
+            previewSection.addEventListener('mousedown', (e) => {
+                if(e.target.closest('button')) return; // Ignorar si hace clic en un botón
+                
+                if(isCompareMode && !isPanMode && originalImage.src) {
+                    isComparingDrag = true;
+                    updateCompare(e.clientX);
+                } else if(isPanMode && originalImage.src) {
+                    startPan(e.clientX, e.clientY);
+                }
+            });
+            
+            window.addEventListener('mousemove', (e) => {
+                if(isComparingDrag) {
+                    updateCompare(e.clientX);
+                } else if(isDragging) {
+                    movePan(e.clientX, e.clientY);
+                }
+            });
+            
+            window.addEventListener('mouseup', () => {
+                if (isComparingDrag) isComparingDrag = false;
+                endPan();
+            });
+
+            previewSection.addEventListener('touchstart', (e) => {
+                if(e.target.closest('button')) return; // Fundamental para que funcionen los botones en móvil
+                
+                if (e.touches.length === 1) {
+                    if (isCompareMode && !isPanMode && originalImage.src) {
+                        if (e.cancelable) e.preventDefault(); 
+                        isComparingDrag = true;
+                        updateCompare(e.touches[0].clientX);
+                    } else if (isPanMode && originalImage.src) {
+                        if (e.cancelable) e.preventDefault(); 
+                        startPan(e.touches[0].clientX, e.touches[0].clientY);
+                    }
+                } else if(e.touches.length >= 2 && originalImage.src) {
+                    if (e.cancelable) e.preventDefault(); 
+                    let cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    let cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                    let wasPanMode = isPanMode;
+                    isPanMode = true; 
+                    startPan(cx, cy);
+                    isPanMode = wasPanMode;
+                }
+            }, { passive: false });
+            
+            previewSection.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isComparingDrag) {
+                    if (e.cancelable) e.preventDefault();
+                    updateCompare(e.touches[0].clientX);
+                } else if (e.touches.length === 1 && isDragging && isPanMode) {
+                    if (e.cancelable) e.preventDefault();
+                    movePan(e.touches[0].clientX, e.touches[0].clientY);
+                } else if(e.touches.length >= 2 && isDragging) {
+                    if (e.cancelable) e.preventDefault();
+                    let cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    let cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                    let wasPanMode = isPanMode;
+                    isPanMode = true; 
+                    movePan(cx, cy);
+                    isPanMode = wasPanMode;
+                }
+            }, { passive: false });
+            
+            window.addEventListener('touchend', () => {
+                if (isComparingDrag) isComparingDrag = false;
+                endPan();
+            });
+
+            // --- MATRICES ---
+            function generateNormalizedBayer(n) {
+                if (n === 1) return [[0]];
+                let prev = generateNormalizedBayer(n / 2);
+                let base = prev.map(row => row.map(v => (v + 0.5) * ((n/2)*(n/2))));
+                let size = base.length;
+                let matrix = Array(n).fill().map(() => Array(n).fill(0));
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        let v = base[y][x] * 4;
+                        matrix[y][x] = v;
+                        matrix[y][x + size] = v + 2;
+                        matrix[y + size][x] = v + 3;
+                        matrix[y + size][x + size] = v + 1;
+                    }
+                }
+                let max = n * n;
+                return matrix.map(row => row.map(v => (v + 0.5) / max - 0.5));
+            }
+
+            const matricesOrdenadas = {
+                bayer2: generateNormalizedBayer(2),
+                bayer4: generateNormalizedBayer(4),
+                bayer8: generateNormalizedBayer(8),
+                bayer16: generateNormalizedBayer(16),
+                cluster4: [[12, 5, 6, 13], [4, 0, 1, 7], [11, 3, 2, 8], [15, 10, 9, 14]].map(r => r.map(v => (v + 0.5) / 16 - 0.5)),
+                cluster8: [
+                    [24, 10, 12, 26, 35, 47, 49, 37], [8, 0, 2, 14, 45, 59, 61, 51],
+                    [22, 6, 4, 16, 31, 55, 57, 41], [30, 20, 18, 28, 33, 43, 53, 39],
+                    [34, 46, 48, 36, 25, 11, 13, 27], [44, 58, 60, 50, 9, 1, 3, 15],
+                    [32, 54, 56, 40, 23, 7, 5, 17], [42, 52, 41, 38, 29, 21, 19, 25]
+                ].map(r => r.map(v => (v + 0.5) / 64 - 0.5))
+            };
+
+            const matricesDifusion = {
+                floydSteinberg: { m: [[1,0,7], [-1,1,3], [0,1,5], [1,1,1]], d: 16 },
+                jarvis: { m: [[1,0,7], [2,0,5], [-2,1,3], [-1,1,5], [0,1,7], [1,1,5], [2,1,3], [-2,2,1], [-1,2,3], [0,2,5], [1,2,3], [2,2,1]], d: 48 },
+                stucki: { m: [[1,0,8], [2,0,4], [-2,1,2], [-1,1,4], [0,1,8], [1,1,4], [2,1,2], [-2,2,1], [-1,2,2], [0,2,4], [1,2,2], [2,2,1]], d: 42 },
+                burkes: { m: [[1,0,8], [2,0,4], [-2,1,2], [-1,1,4], [0,1,8], [1,1,4], [2,1,2]], d: 32 },
+                sierra3: { m: [[1,0,5], [2,0,3], [-2,1,2], [-1,1,4], [0,1,5], [1,1,4], [2,1,2], [-1,2,2], [0,2,3], [1,2,2]], d: 32 },
+                sierra2: { m: [[1,0,4], [2,0,3], [-2,1,1], [-1,1,2], [0,1,3], [1,1,2], [2,1,1]], d: 16 },
+                sierraLite: { m: [[1,0,2], [-1,1,1], [0,1,1]], d: 4 },
+                atkinson: { m: [[1,0,1], [2,0,1], [-1,1,1], [0,1,1], [1,1,1], [0,2,1]], d: 8 }
+            };
+
+            // Curvas RGB
+            let curves = {
+                master: [{x:0, y:0}, {x:255, y:255}],
+                r: [{x:0, y:0}, {x:255, y:255}],
+                g: [{x:0, y:0}, {x:255, y:255}],
+                b: [{x:0, y:0}, {x:255, y:255}]
+            };
+            let activeCurveChannel = 'master';
+            let draggingPointCurve = null;
+
+            function hexToRgb(hex) {
+                if (Array.isArray(hex)) return hex;
+                const bigint = parseInt(hex.slice(1), 16);
+                return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+            }
+            
+            function findClosestPaletteColor(r, g, b, paletteArray) {
+                let minDst = Infinity;
+                let closest = paletteArray[0];
+                for (let i = 0; i < paletteArray.length; i++) {
+                    let p = paletteArray[i];
+                    let rmean = (r + p[0]) / 2;
+                    let dr = r - p[0];
+                    let dg = g - p[1];
+                    let db = b - p[2];
+                    let dst = (((512 + rmean) * dr * dr) >> 8) + 4 * dg * dg + (((767 - rmean) * db * db) >> 8);
+                    
+                    if (dst < minDst) { minDst = dst; closest = p; }
+                }
+                return closest;
+            }
+
+            // --- CURVAS (Touch y Mouse) ---
+            function drawCurve() {
+                curveCtx.clearRect(0, 0, 256, 120);
+                curveCtx.strokeStyle = 'rgba(255,255,255,0.05)'; // Grid subtle line
+                curveCtx.lineWidth = 1;
+                for(let i=1; i<4; i++) {
+                    curveCtx.beginPath(); curveCtx.moveTo(i*64, 0); curveCtx.lineTo(i*64, 120); curveCtx.stroke();
+                    curveCtx.beginPath(); curveCtx.moveTo(0, i*30); curveCtx.lineTo(256, i*30); curveCtx.stroke();
+                }
+                const pts = curves[activeCurveChannel];
+                curveCtx.beginPath();
+                curveCtx.moveTo(pts[0].x, 120 - (pts[0].y/255)*120);
+                for(let i=0; i<256; i++) curveCtx.lineTo(i, 120 - (getCurveY(pts, i)/255)*120);
+                
+                let strokeColor = activeCurveChannel === 'master' ? '#f1f5f9' : activeCurveChannel === 'r' ? '#ef4444' : activeCurveChannel === 'g' ? '#10b981' : '#3b82f6';
+                curveCtx.strokeStyle = strokeColor;
+                curveCtx.lineWidth = 2; curveCtx.stroke();
+                curveCtx.fillStyle = strokeColor;
+                pts.forEach(p => {
+                    curveCtx.beginPath(); 
+                    curveCtx.arc(p.x, 120 - (p.y/255)*120, 5, 0, Math.PI * 2);
+                    curveCtx.fill(); 
+                    curveCtx.strokeStyle = 'rgba(0,0,0,0.5)'; 
+                    curveCtx.lineWidth = 2; 
+                    curveCtx.stroke();
+                });
+            }
+
+            function getCurveY(pts, x) {
+                if(x <= pts[0].x) return pts[0].y;
+                if(x >= pts[pts.length-1].x) return pts[pts.length-1].y;
+                for(let i=0; i<pts.length-1; i++) {
+                    if(x >= pts[i].x && x <= pts[i+1].x) {
+                        let p0 = pts[i]; let p1 = pts[i+1];
+                        let t = (x - p0.x) / (p1.x - p0.x);
+                        let y = p0.y + (p1.y - p0.y) * (1 - Math.cos(t * Math.PI)) / 2;
+                        return Math.max(0, Math.min(255, y));
+                    }
+                }
+                return x;
+            }
+
+            function getLUT(channel) {
+                let lut = new Uint8Array(256);
+                let pts = curves[channel];
+                for(let i=0; i<256; i++) lut[i] = getCurveY(pts, i);
+                return lut;
+            }
+
+            document.getElementById('curve-channel').addEventListener('change', (e) => { activeCurveChannel = e.target.value; drawCurve(); });
+            
+            document.getElementById('reset-curve-btn').addEventListener('click', () => {
+                curves[activeCurveChannel] = [{x:0, y:0}, {x:255, y:255}];
+                drawCurve();
+                scheduleProcess();
+            });
+
+            function startCurveInteraction(clientX, clientY) {
+                const r = curveCanvas.getBoundingClientRect();
+                let x = (clientX - r.left) * (curveCanvas.width / r.width);
+                let y = 255 - ((clientY - r.top) * (curveCanvas.height / r.height) * (255/120));
+                const pts = curves[activeCurveChannel];
+                let found = pts.find(p => Math.abs(p.x - x) < 25 && Math.abs(p.y - y) < 25);
+                if(found) draggingPointCurve = found;
+                else {
+                    let newPt = {x: Math.max(0, Math.min(255, x)), y: Math.max(0, Math.min(255, y))};
+                    pts.push(newPt); pts.sort((a,b) => a.x - b.x); draggingPointCurve = newPt;
+                }
+                drawCurve();
+                scheduleProcess();
+            }
+
+            function moveCurveInteraction(clientX, clientY) {
+                if(!draggingPointCurve) return;
+                const r = curveCanvas.getBoundingClientRect();
+                let x = (clientX - r.left) * (curveCanvas.width / r.width);
+                let y = 255 - ((clientY - r.top) * (curveCanvas.height / r.height) * (255/120));
+                const pts = curves[activeCurveChannel];
+                const idx = pts.indexOf(draggingPointCurve);
+                if(idx === 0) x = 0; else if(idx === pts.length-1) x = 255; 
+                else x = Math.max(pts[idx-1].x + 1, Math.min(pts[idx+1].x - 1, x));
+                draggingPointCurve.x = x; draggingPointCurve.y = Math.max(0, Math.min(255, y));
+                drawCurve();
+                scheduleProcess();
+            }
+
+            curveCanvas.addEventListener('mousedown', (e) => startCurveInteraction(e.clientX, e.clientY));
+            curveCanvas.addEventListener('mousemove', (e) => moveCurveInteraction(e.clientX, e.clientY));
+            window.addEventListener('mouseup', () => draggingPointCurve = null);
+            curveCanvas.addEventListener('dblclick', (e) => {
+                const r = curveCanvas.getBoundingClientRect();
+                let x = (e.clientX - r.left) * (curveCanvas.width / r.width);
+                let y = 255 - ((e.clientY - r.top) * (curveCanvas.height / r.height) * (255/120));
+                const pts = curves[activeCurveChannel];
+                let idx = pts.findIndex(p => Math.abs(p.x - x) < 15 && Math.abs(p.y - y) < 15);
+                if(idx > 0 && idx < pts.length-1) { pts.splice(idx, 1); drawCurve(); scheduleProcess(); }
+            });
+
+            curveCanvas.addEventListener('touchstart', (e) => {
+                if (e.cancelable) e.preventDefault();
+                startCurveInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: false });
+            curveCanvas.addEventListener('touchmove', (e) => {
+                if(!draggingPointCurve) return;
+                if (e.cancelable) e.preventDefault();
+                moveCurveInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: false });
+
+            drawCurve();
+
+            // --- GESTIÓN DE ENTRADAS ---
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => { 
+                e.preventDefault(); 
+                dropZone.classList.add('border-[var(--accent-primary)]'); 
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-[var(--accent-primary)]'); 
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault(); 
+                dropZone.classList.remove('border-[var(--accent-primary)]');
+                if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) handleFile(e.target.files[0]);
+            });
+
+            function handleFile(file) {
+                if (!file.type.startsWith('image/')) {
+                    const prevText = placeholderText.innerHTML;
+                    placeholderText.innerHTML = '<span class="text-red-500 font-bold">Error: Solo Imágenes</span>';
+                    setTimeout(() => placeholderText.innerHTML = prevText, 2000);
+                    return;
+                }
+                
+                const url = URL.createObjectURL(file);
+                originalImage.src = url;
+                document.getElementById('sizing-img').src = url;
+                
+                originalImage.onload = () => {
+                    placeholderText.classList.add('hidden');
+                    
+                    const container = document.getElementById('canvas-container');
+                    
+                    // Asegurar la alineación: El contenedor y sus hijos heredan propiedades sin colapsar visualmente
+                    container.style.display = 'inline-block';
+                    
+                    canvas.classList.remove('hidden');
+                    canvasOrig.classList.remove('hidden');
+                    ditherLayer.classList.remove('hidden');
+                    
+                    if (isCompareMode) {
+                        compareLine.classList.remove('hidden');
+                        ditherLayer.style.clipPath = `polygon(0 0, ${comparePercent}% 0, ${comparePercent}% 100%, 0 100%)`;
+                        compareLine.style.left = `${comparePercent}%`;
+                    }
+                    
+                    updateCursors();
+                    controls.classList.remove('opacity-50', 'pointer-events-none');
+                    scheduleProcess();
+                };
+            }
+
+            // --- UI BINDINGS ---
+            document.getElementById('palette').addEventListener('change', (e) => {
+                if(e.target.value !== 'custom') {
+                    customColorsArray = [...palettesBase[e.target.value]];
+                    renderCustomColors();
+                }
+                isolatedColors.clear(); 
+                renderPostColorSelector();
+                scheduleProcess();
+            });
+
+            document.getElementById('invert-palette').addEventListener('change', (e) => {
+                isolatedColors.clear(); 
+                renderPostColorSelector();
+            });
+
+            const simpleInputs = [
+                'algorithm', 'scale', 'bias', 'gamma', 'hlcomp', 'contrast', 'brightness', 
+                'pattern-scale', 'bleed', 'invert-palette', 'scan-pattern', 'errstr', 
+                'ch-r', 'ch-g', 'ch-b', 'sharpen', 'saturation', 'posterize', 'clipping',
+                'glitch-underflow', 'glitch-sort', 'glitch-sort-v', 'glitch-hsync', 'glitch-chroma', 'glitch-drift', 'glitch-interlace', 'glitch-bitplane',
+                'enable-post-fx', 'post-grain', 'post-vignette', 'post-bloom', 'post-dispersion',
+                'post-grain-alpha', 'post-halftone-gain', 'post-mono-tint', 'post-clarity',
+                'algo-rot', 'algo-bias'
+            ];
+            
+            simpleInputs.forEach(id => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                const ev = (el.type === 'range' || el.type === 'number') ? 'input' : 'change';
+                el.addEventListener(ev, (e) => {
+                    if(el.type === 'range') {
+                        let text = e.target.value;
+                        if(id === 'scale' || id === 'errstr' || id === 'saturation') text += '%';
+                        if(id === 'pattern-scale') text += 'x';
+                        if(id === 'bleed') text += 'px';
+                        if(id === 'algo-rot') text += '°';
+                        if(document.getElementById(`${id}-value`)) document.getElementById(`${id}-value`).textContent = text;
+                        if(id === 'errstr') document.getElementById('errstr-lbl').textContent = text;
+                    }
+                    scheduleProcess();
+                });
+            });
+
+            ['post-hue', 'post-sat', 'post-light'].forEach(id => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                el.addEventListener('input', (e) => {
+                    let text = e.target.value;
+                    const val = parseInt(e.target.value);
+                    if(id === 'post-hue') text += '°';
+                    else text += '%';
+                    document.getElementById(`${id}-value`).textContent = text;
+                    
+                    if (!postModifications[selectedPostColorHex]) {
+                        postModifications[selectedPostColorHex] = {h:0, s:0, l:0};
+                    }
+                    if (id === 'post-hue') postModifications[selectedPostColorHex].h = val;
+                    if (id === 'post-sat') postModifications[selectedPostColorHex].s = val;
+                    if (id === 'post-light') postModifications[selectedPostColorHex].l = val;
+
+                    renderPostColorSelector();
+                    scheduleProcess();
+                });
+            });
+
+            // GESTIÓN DEL INTERRUPTOR DE FX Y EXPORTACIÓN SVG
+            const postFxCheck = document.getElementById('enable-post-fx');
+            const postFxControls = document.getElementById('post-fx-controls');
+            const isolationContainer = document.getElementById('isolation-panel-content');
+            const isolationNotice = document.getElementById('isolation-disabled-notice');
+            const svgBtn = document.getElementById('export-svg-btn');
+
+            postFxCheck.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    postFxControls.classList.remove('opacity-40', 'pointer-events-none');
+                    isolationContainer.classList.add('opacity-40', 'pointer-events-none');
+                    isolationNotice.classList.remove('hidden');
+                    
+                    svgBtn.disabled = true;
+                    svgBtn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
+                } else {
+                    postFxControls.classList.add('opacity-40', 'pointer-events-none');
+                    isolationContainer.classList.remove('opacity-40', 'pointer-events-none');
+                    isolationNotice.classList.add('hidden');
+                    
+                    svgBtn.disabled = false;
+                    svgBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale');
+                }
+            });
+
+            // --- BOTÓN RESTAURAR ---
+            document.getElementById('reset-all-btn').addEventListener('click', () => {
+                const resetVal = (id, val, suffix='') => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        if (el.type === 'checkbox') el.checked = val;
+                        else el.value = val;
+                        const valEl = document.getElementById(id+'-value');
+                        if (valEl) valEl.textContent = val + suffix;
+                    }
+                };
+
+                resetVal('scale', 25, '%');
+                resetVal('ch-r', true); resetVal('ch-g', true); resetVal('ch-b', true);
+                resetVal('brightness', 0); resetVal('contrast', 0); resetVal('gamma', 1.0);
+                resetVal('bleed', 0, 'px'); resetVal('sharpen', 0);
+                resetVal('saturation', 100, '%'); resetVal('posterize', 255); resetVal('clipping', 0);
+                
+                resetVal('glitch-underflow', 0); resetVal('glitch-sort', 0); resetVal('glitch-sort-v', 0); resetVal('glitch-hsync', 0);
+                resetVal('glitch-chroma', 0); resetVal('glitch-drift', 0); resetVal('glitch-interlace', 0);
+                resetVal('glitch-bitplane', 'none');
+
+                resetVal('enable-post-fx', false);
+                resetVal('post-grain', 0); resetVal('post-vignette', 0);
+                resetVal('post-bloom', 0);
+                resetVal('post-dispersion', 0);
+                resetVal('post-grain-alpha', false); resetVal('post-halftone-gain', false); 
+                resetVal('post-mono-tint', false); resetVal('post-clarity', false);
+
+                postFxCheck.dispatchEvent(new Event('change'));
+                
+                resetVal('algo-rot', 0, '°'); resetVal('algo-bias', 0);
+
+                postModifications = {};
+                selectedPostColorHex = null;
+
+                curves = {
+                    master: [{x:0, y:0}, {x:255, y:255}], r: [{x:0, y:0}, {x:255, y:255}],
+                    g: [{x:0, y:0}, {x:255, y:255}], b: [{x:0, y:0}, {x:255, y:255}]
+                };
+                activeCurveChannel = 'master';
+                document.getElementById('curve-channel').value = 'master';
+                drawCurve();
+
+                resetVal('algorithm', 'atkinson');
+                resetVal('errstr', 100); document.getElementById('errstr-lbl').textContent = '100%';
+                resetVal('bias', 0); resetVal('pattern-scale', 1, 'x');
+                resetVal('scan-pattern', 'zigzag');
+                resetVal('invert-palette', false);
+                resetVal('palette', 'bw');
+                customColorsArray = [...palettesBase['bw']];
+                
+                isolatedColors.clear(); 
+                
+                renderCustomColors();
+                scheduleProcess();
+            });
+
+            // --- LÓGICA DE EXTRACCIÓN DE PALETA ---
+            extractPaletteBtn.addEventListener('click', () => {
+                if (!originalImage.src) {
+                    const originalText = extractPaletteBtn.textContent;
+                    extractPaletteBtn.textContent = 'ERROR';
+                    extractPaletteBtn.classList.add('bg-red-500', 'text-white');
+                    setTimeout(() => {
+                        extractPaletteBtn.textContent = originalText;
+                        extractPaletteBtn.classList.remove('bg-red-500', 'text-white');
+                    }, 2000);
+                    return;
+                }
+
+                const maxDim = 200;
+                const ratio = Math.min(maxDim / originalImage.width, maxDim / originalImage.height, 1);
+                const ew = Math.floor(originalImage.width * ratio) || 1;
+                const eh = Math.floor(originalImage.height * ratio) || 1;
+                
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = ew;
+                tempCanvas.height = eh;
+                const tCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+                tCtx.drawImage(originalImage, 0, 0, ew, eh);
+                
+                const imgData = tCtx.getImageData(0, 0, ew, eh).data;
+                const colorCounts = {};
+                const quantizeFactor = 8; 
+
+                for (let i = 0; i < imgData.length; i += 4) {
+                    if (imgData[i+3] < 128) continue; 
+                    
+                    let r = Math.round(imgData[i] / quantizeFactor) * quantizeFactor;
+                    let g = Math.round(imgData[i+1] / quantizeFactor) * quantizeFactor;
+                    let b = Math.round(imgData[i+2] / quantizeFactor) * quantizeFactor;
+                    
+                    r = Math.min(255, Math.max(0, r));
+                    g = Math.min(255, Math.max(0, g));
+                    b = Math.min(255, Math.max(0, b));
+                    
+                    const hex = '#' + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
+                    colorCounts[hex] = (colorCounts[hex] || 0) + 1;
+                }
+                
+                const sortedColors = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
+                const newPalette = [];
+                const minDistanceSq = 3500; 
+                
+                for (let i = 0; i < sortedColors.length; i++) {
+                    const hex = sortedColors[i][0];
+                    const rgb = hexToRgb(hex);
+                    
+                    let isDistinct = true;
+                    for (const existingHex of newPalette) {
+                        const eRgb = hexToRgb(existingHex);
+                        const distSq = Math.pow(rgb[0] - eRgb[0], 2) + Math.pow(rgb[1] - eRgb[1], 2) + Math.pow(rgb[2] - eRgb[2], 2);
+                        
+                        if (distSq < minDistanceSq) {
+                            isDistinct = false;
+                            break; 
+                        }
+                    }
+                    
+                    if (isDistinct) {
+                        newPalette.push(hex);
+                        if (newPalette.length >= 16) break;
+                    }
+                }
+                
+                customColorsArray = newPalette;
+                if (customColorsArray.length === 0) customColorsArray = ['#000000', '#ffffff']; 
+
+                isolatedColors.clear(); 
+                document.getElementById('palette').value = 'custom';
+                
+                postModifications = {};
+                selectedPostColorHex = null;
+
+                renderCustomColors();
+                scheduleProcess();
+                
+                const originalText = extractPaletteBtn.textContent;
+                extractPaletteBtn.textContent = '¡EXTRAÍDO!';
+                extractPaletteBtn.classList.add('bg-emerald-500', 'text-white');
+                setTimeout(() => {
+                    extractPaletteBtn.textContent = originalText;
+                    extractPaletteBtn.classList.remove('bg-emerald-500', 'text-white');
+                }, 2000);
+            });
+
+            // --- RENDERIZADO PRINCIPAL ---
+            function scheduleProcess() {
+                if(!isRendering) {
+                    isRendering = true;
+                    requestAnimationFrame(() => { 
+                        processMedia(); 
+                        isRendering = false; 
+                    });
+                }
+            }
+
+            function applyBoxBlur(data, width, height, radius) {
+                if(radius <= 0) return data;
+                const tempData = new Uint8ClampedArray(data);
+                const side = Math.round(radius);
+                const divisor = ((side*2)+1) * ((side*2)+1);
+                
+                for(let y=side; y<height-side; y++){
+                    for(let x=side; x<width-side; x++){
+                        let r=0, g=0, b=0;
+                        for(let cy=-side; cy<=side; cy++){
+                            for(let cx=-side; cx<=side; cx++){
+                                let i = ((y+cy)*width + (x+cx)) * 4;
+                                r+=tempData[i]; g+=tempData[i+1]; b+=tempData[i+2];
+                            }
+                        }
+                        let i = (y*width + x)*4;
+                        data[i] = r/divisor; data[i+1] = g/divisor; data[i+2] = b/divisor;
+                    }
+                }
+                return data;
+            }
+
+            function applySharpen(data, width, height, amount) {
+                if (amount <= 0) return data;
+                const tempData = new Uint8ClampedArray(data);
+                const w4 = width * 4;
+                const center = 1 + 4 * amount;
+                const edge = -amount;
+
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        let idx = (y * width + x) * 4;
+                        for(let c = 0; c < 3; c++) {
+                            let val = edge * tempData[idx - w4 + c] + edge * tempData[idx - 4 + c] + center * tempData[idx + c] + edge * tempData[idx + 4 + c] + edge * tempData[idx + w4 + c];         
+                            data[idx + c] = Math.max(0, Math.min(255, val));
+                        }
+                    }
+                }
+                return data;
+            }
+
+            // --- MOTOR DE GLITCH (Pre-Proceso) ---
+            function applyGlitchEffects(data, w, h) {
+                const w4 = w * 4;
+                const tmp = new Uint8ClampedArray(data);
+
+                const bitplane = document.getElementById('glitch-bitplane').value;
+                if (bitplane === 'remove-lsb') {
+                    for (let i = 0; i < data.length; i+=4) { data[i] &= 0xF0; data[i+1] &= 0xF0; data[i+2] &= 0xF0; }
+                } else if (bitplane === 'remove-msb') {
+                    for (let i = 0; i < data.length; i+=4) { data[i] &= 0x0F; data[i+1] &= 0x0F; data[i+2] &= 0x0F; }
+                } else if (bitplane === 'swap-palette') {
+                    for (let i = 0; i < data.length; i+=4) {
+                        let luma = 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
+                        if (luma > 128) { data[i] = 255-data[i]; data[i+1] = 255-data[i+1]; data[i+2] = 255-data[i+2]; }
+                    }
+                }
+
+                let underflow = parseFloat(document.getElementById('glitch-underflow').value) / 100;
+                if (underflow > 0) {
+                    let segments = Math.floor(underflow * 50);
+                    for(let s=0; s<segments; s++) {
+                        let y = Math.floor(Math.random() * h);
+                        let height = Math.floor(Math.random() * 20) + 1;
+                        let shift = Math.floor((Math.random()-0.5) * w * underflow);
+                        for(let r=0; r<height && y+r<h; r++) {
+                            for(let x=0; x<w; x++) {
+                                let sx = x + shift;
+                                if(sx >= 0 && sx < w) {
+                                    let di = ((y+r)*w + x)*4;
+                                    let si = ((y+r)*w + sx)*4;
+                                    data[di] = tmp[si]; data[di+1] = tmp[si+1]; data[di+2] = tmp[si+2];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                let sorting = parseFloat(document.getElementById('glitch-sort').value) / 100;
+                if (sorting > 0) {
+                    for(let y=0; y<h; y++) {
+                        if(Math.random() > sorting) continue;
+                        let row = [];
+                        for(let x=0; x<w; x++) {
+                            let i = (y*w + x)*4;
+                            row.push({r:data[i], g:data[i+1], b:data[i+2], l: 0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]});
+                        }
+                        let sortLen = Math.floor(w * sorting);
+                        let startX = Math.floor(Math.random() * (w - sortLen));
+                        let sub = row.slice(startX, startX + sortLen).sort((a,b) => a.l - b.l);
+                        for(let x=0; x<sortLen; x++) {
+                            let i = (y*w + startX + x)*4;
+                            data[i] = sub[x].r; data[i+1] = sub[x].g; data[i+2] = sub[x].b;
+                        }
+                    }
+                }
+
+                let sortingV = parseFloat(document.getElementById('glitch-sort-v').value) / 100;
+                if (sortingV > 0) {
+                    for(let x=0; x<w; x++) {
+                        if(Math.random() > sortingV) continue;
+                        let col = [];
+                        for(let y=0; y<h; y++) {
+                            let i = (y*w + x)*4;
+                            col.push({r:data[i], g:data[i+1], b:data[i+2], l: 0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]});
+                        }
+                        let sortLen = Math.floor(h * sortingV);
+                        let startY = Math.floor(Math.random() * (h - sortLen));
+                        let sub = col.slice(startY, startY + sortLen).sort((a,b) => a.l - b.l);
+                        for(let y=0; y<sortLen; y++) {
+                            let i = ((startY + y)*w + x)*4;
+                            data[i] = sub[y].r; data[i+1] = sub[y].g; data[i+2] = sub[y].b;
+                        }
+                    }
+                }
+
+                let hsync = parseFloat(document.getElementById('glitch-hsync').value) / 100;
+                if (hsync > 0) {
+                    for (let y = 0; y < h; y++) {
+                        if (Math.random() < hsync * 0.3) {
+                            let shift = Math.floor((Math.random() - 0.5) * w * hsync * 0.5);
+                            let tRow = new Uint8ClampedArray(w4);
+                            for (let x = 0; x < w; x++) {
+                                let sx = x + shift;
+                                let di = x * 4;
+                                if (sx >= 0 && sx < w) {
+                                    let si = (y * w + sx) * 4;
+                                    tRow[di] = data[si]; tRow[di+1] = data[si+1]; tRow[di+2] = data[si+2]; tRow[di+3] = data[si+3];
+                                }
+                            }
+                            for (let x = 0; x < w; x++) {
+                                let idx = (y * w + x) * 4;
+                                data[idx] = tRow[x*4]; data[idx+1] = tRow[x*4+1]; data[idx+2] = tRow[x*4+2];
+                            }
+                        }
+                    }
+                }
+
+                let chroma = parseFloat(document.getElementById('glitch-chroma').value) / 100;
+                if (chroma > 0) {
+                    let rShift = Math.floor(chroma * 20);
+                    let bShift = -Math.floor(chroma * 15);
+                    const tData = new Uint8ClampedArray(data);
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            let i = (y * w + x) * 4;
+                            let rx = Math.max(0, Math.min(w-1, x + rShift));
+                            let bx = Math.max(0, Math.min(w-1, x + bShift));
+                            data[i] = tData[(y * w + rx) * 4];
+                            data[i+2] = tData[(y * w + bx) * 4 + 2];
+                        }
+                    }
+                }
+
+                let drift = parseFloat(document.getElementById('glitch-drift').value) / 100;
+                if (drift > 0) {
+                    const tData = new Uint8ClampedArray(data);
+                    let time = Date.now() * 0.001;
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            let dx = Math.sin(y * 0.05 + time) * drift * 20;
+                            let dy = Math.cos(x * 0.05 + time) * drift * 20;
+                            let sx = Math.max(0, Math.min(w-1, Math.floor(x + dx)));
+                            let sy = Math.max(0, Math.min(h-1, Math.floor(y + dy)));
+                            let i = (y * w + x) * 4;
+                            let si = (sy * w + sx) * 4;
+                            data[i] = tData[si]; data[i+1] = tData[si+1]; data[i+2] = tData[si+2];
+                        }
+                    }
+                }
+
+                let interlace = parseFloat(document.getElementById('glitch-interlace').value) / 100;
+                if (interlace > 0) {
+                    const tData = new Uint8ClampedArray(data);
+                    let shift = Math.floor(interlace * 30);
+                    for (let y = 1; y < h; y+=2) { 
+                        for (let x = 0; x < w; x++) {
+                            let sx = Math.max(0, Math.min(w-1, x + shift));
+                            let i = (y * w + x) * 4;
+                            let si = (y * w + sx) * 4;
+                            data[i] = tData[si]; data[i+1] = tData[si+1]; data[i+2] = tData[si+2];
+                        }
+                    }
+                }
+            }
+
+            // --- MOTOR DE POST-PROCESO ---
+            function applyPostEffects(data, w, h) {
+                const tmp = new Uint8ClampedArray(data);
+                
+                let filmGrain = parseFloat(document.getElementById('post-grain').value) / 100;
+                let vignette = parseFloat(document.getElementById('post-vignette').value) / 100;
+                let bloom = parseFloat(document.getElementById('post-bloom').value) / 100;
+                let dispersion = parseFloat(document.getElementById('post-dispersion').value) / 100;
+
+                let doGrainAlpha = document.getElementById('post-grain-alpha').checked;
+                let doDotGain = document.getElementById('post-halftone-gain').checked;
+                let doMonoTint = document.getElementById('post-mono-tint').checked;
+                let doClarity = document.getElementById('post-clarity').checked;
+
+                let bloomData = null;
+                if (bloom > 0) {
+                    bloomData = applyBoxBlur(new Uint8ClampedArray(data), w, h, bloom * 10);
+                }
+
+                let bleedData = null;
+                if (doDotGain) {
+                    bleedData = new Uint8ClampedArray(data);
+                    for(let y=1; y<h-1; y++) {
+                        for(let x=1; x<w-1; x++) {
+                            let i = (y*w + x)*4;
+                            if (tmp[i+3] === 0) continue; 
+                            let luma = 0.299*tmp[i] + 0.587*tmp[i+1] + 0.114*tmp[i+2];
+                            if (luma < 128) {
+                                let target = i + (Math.random()>0.5 ? 4 : w*4) * (Math.random()>0.5 ? 1 : -1);
+                                bleedData[target] = bleedData[i];
+                                bleedData[target+1] = bleedData[i+1];
+                                bleedData[target+2] = bleedData[i+2];
+                            }
+                        }
+                    }
+                    tmp.set(bleedData);
+                }
+
+                const centerX = w / 2;
+                const centerY = h / 2;
+                const maxDist = Math.sqrt(centerX*centerX + centerY*centerY);
+
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        let i = (y * w + x) * 4;
+                        
+                        if (data[i+3] === 0) continue; 
+
+                        let r = doDotGain ? tmp[i] : data[i];
+                        let g = doDotGain ? tmp[i+1] : data[i+1];
+                        let b = doDotGain ? tmp[i+2] : data[i+2];
+                        let luma = 0.299*r + 0.587*g + 0.114*b;
+
+                        if (doClarity) {
+                            let avg = (r+g+b)/3;
+                            if (avg > 128) { r = Math.min(255, r*1.2); g = Math.min(255, g*1.2); b = Math.min(255, b*1.2); }
+                            else { r *= 0.8; g *= 0.8; b *= 0.8; }
+                        }
+
+                        if (bloom > 0) {
+                            let br = bloomData[i], bg = bloomData[i+1], bb = bloomData[i+2];
+                            r = 255 - ((255 - r) * (255 - br * bloom) / 255);
+                            g = 255 - ((255 - g) * (255 - bg * bloom) / 255);
+                            b = 255 - ((255 - b) * (255 - bb * bloom) / 255);
+                        }
+
+                        if (dispersion > 0) {
+                            let dx = Math.floor(dispersion * 10 * ((x - centerX)/centerX));
+                            let ri = (y * w + Math.min(w-1, Math.max(0, x + dx))) * 4;
+                            let bi = (y * w + Math.min(w-1, Math.max(0, x - dx))) * 4;
+                            r = r*0.5 + tmp[ri]*0.5;
+                            b = b*0.5 + tmp[bi+2]*0.5;
+                        }
+
+                        if (vignette > 0) {
+                            let dist = Math.sqrt((x-centerX)*(x-centerX) + (y-centerY)*(y-centerY));
+                            let vF = Math.pow(dist / maxDist, 2) * vignette;
+                            r = r * (1 - vF) + (vF * 40); 
+                            g = g * (1 - vF) + (vF * 10);
+                            b = b * (1 - vF) + (vF * 30);
+                        }
+
+                        if (filmGrain > 0) {
+                            let gF = filmGrain * (1 - luma/255) * 100;
+                            let grain = (Math.random() - 0.5) * gF;
+                            r = Math.max(0, Math.min(255, r + grain));
+                            g = Math.max(0, Math.min(255, g + grain));
+                            b = Math.max(0, Math.min(255, b + grain));
+                            
+                            if (doGrainAlpha) {
+                                data[i+3] = Math.max(0, Math.min(255, data[i+3] - Math.abs(grain)));
+                            }
+                        }
+
+                        if (doMonoTint) {
+                            let mTint = getRenderPalette(getFinalActivePalette());
+                            let colorDark = mTint[0];
+                            let colorLight = mTint[mTint.length-1] || [255,255,255];
+                            let mix = Math.max(0, Math.min(1, (0.299*r + 0.587*g + 0.114*b) / 255));
+                            r = colorDark[0] * (1-mix) + colorLight[0] * mix;
+                            g = colorDark[1] * (1-mix) + colorLight[1] * mix;
+                            b = colorDark[2] * (1-mix) + colorLight[2] * mix;
+                        }
+
+                        data[i] = r; data[i+1] = g; data[i+2] = b;
+                    }
+                }
+            }
+
+            function processMedia() {
+                if (!originalImage.src) return;
+
+                const scale = parseFloat(document.getElementById('scale').value) / 100;
+                const w = Math.max(1, Math.floor(originalImage.width * scale));
+                const h = Math.max(1, Math.floor(originalImage.height * scale));
+                
+                if (canvas.width !== w || canvas.height !== h) {
+                    canvas.width = w; canvas.height = h;
+                    canvasOrig.width = w; canvasOrig.height = h;
+                    buffer.width = w; buffer.height = h;
+                }
+
+                oCtx.drawImage(originalImage, 0, 0, w, h);
+                bCtx.drawImage(originalImage, 0, 0, w, h);
+                let imageData = bCtx.getImageData(0, 0, w, h);
+                
+                const bleed = parseFloat(document.getElementById('bleed').value);
+                const sharpen = parseFloat(document.getElementById('sharpen').value);
+
+                if(bleed > 0) {
+                    imageData.data.set(applyBoxBlur(imageData.data, w, h, bleed));
+                } else if (sharpen > 0) {
+                    imageData.data.set(applySharpen(imageData.data, w, h, sharpen));
+                }
+
+                // 1. FASE DE GLITCH PRE-DITHER
+                applyGlitchEffects(imageData.data, w, h);
+
+                // 2. FASE MOTOR DITHER
+                runDitherEngine(imageData, w, h);
+
+                const postFxEnabled = document.getElementById('enable-post-fx').checked;
+                const d = imageData.data;
+                
+                // 3. FASE POST-PROCESADO
+                if (postFxEnabled) {
+                    applyPostEffects(imageData.data, w, h);
+                }
+
+                // 4. APLICAR AISLAMIENTO DE TINTA SOLO SI FX ESTÁ APAGADO
+                if (!postFxEnabled && isolatedColors.size > 0) {
+                    for (let i = 0; i < d.length; i += 4) {
+                        if (d[i+3] === 0) continue;
+                        const hex = '#' + (1 << 24 | d[i] << 16 | d[i+1] << 8 | d[i+2]).toString(16).slice(1).toLowerCase();
+                        if (isolatedColors.has(hex)) {
+                            d[i+3] = 0; 
+                        }
+                    }
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+
+                setTimeout(() => {
+                    updatePaletteSquares();
+                    updateIsolationSquares();
+                    updateEstimatedSize();
+                }, 50);
+            }
+
+            function getScanPath(w, h, pattern) {
+                const path = new Int32Array(w * h * 3);
+                let idx = 0;
+                
+                if (pattern === 'standard') {
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            path[idx++] = x; path[idx++] = y; path[idx++] = 1;
+                        }
+                    }
+                } else if (pattern === 'zigzag') {
+                    for (let y = 0; y < h; y++) {
+                        let rtl = (y % 2 !== 0);
+                        for (let x0 = 0; x0 < w; x0++) {
+                            path[idx++] = rtl ? w - 1 - x0 : x0;
+                            path[idx++] = y;
+                            path[idx++] = rtl ? -1 : 1;
+                        }
+                    }
+                } else if (pattern === 'vertical') {
+                    for (let x = 0; x < w; x++) {
+                        for (let y = 0; y < h; y++) {
+                            path[idx++] = x; path[idx++] = y; path[idx++] = 1;
+                        }
+                    }
+                } else if (pattern === 'spiral') {
+                    let x = Math.floor(w / 2), y = Math.floor(h / 2);
+                    let dx = 1, dy = 0, segmentLength = 1, segmentPassed = 0;
+                    let processed = 0, total = w * h;
+                    
+                    while (processed < total) {
+                        if (x >= 0 && x < w && y >= 0 && y < h) {
+                            path[idx++] = x; path[idx++] = y; path[idx++] = dx === -1 ? -1 : 1;
+                            processed++;
+                        }
+                        x += dx; y += dy;
+                        segmentPassed++;
+                        if (segmentPassed === segmentLength) {
+                            segmentPassed = 0;
+                            let t = dx; dx = -dy; dy = t;
+                            if (dy === 0) segmentLength++;
+                        }
+                    }
+                } else if (pattern === 'hilbert') {
+                    let maxDim = Math.max(w, h);
+                    let n = 1;
+                    while (n < maxDim) n *= 2;
+                    let processed = 0, total = w * h;
+                    
+                    function rot(n, x, y, rx, ry) {
+                        if (ry === 0) {
+                            if (rx === 1) { x = n - 1 - x; y = n - 1 - y; }
+                            return {x: y, y: x};
+                        }
+                        return {x: x, y: y};
+                    }
+                    
+                    for (let d = 0; d < n * n; d++) {
+                        if (processed >= total) break;
+                        let t = d, px = 0, py = 0;
+                        for (let s = 1; s < n; s *= 2) {
+                            let rx = 1 & (t / 2);
+                            let ry = 1 & (t ^ rx);
+                            let pt = rot(s, px, py, rx, ry);
+                            px = pt.x + s * rx;
+                            py = pt.y + s * ry;
+                            t = Math.floor(t / 4);
+                        }
+                        if (px < w && py < h) {
+                            path[idx++] = px; path[idx++] = py; path[idx++] = 1;
+                            processed++;
+                        }
+                    }
+                }
+                return path;
+            }
+
+            function runDitherEngine(imageData, w, h) {
+                const data = imageData.data;
+                const len = data.length;
+                
+                const algo = document.getElementById('algorithm').value;
+                const brightness = parseInt(document.getElementById('brightness').value);
+                const contrast = parseInt(document.getElementById('contrast').value);
+                const gamma = parseFloat(document.getElementById('gamma').value);
+                const hlcomp = parseFloat(document.getElementById('hlcomp').value) || 1.0;
+
+                const chR = document.getElementById('ch-r').checked;
+                const chG = document.getElementById('ch-g').checked;
+                const chB = document.getElementById('ch-b').checked;
+
+                const bias = parseInt(document.getElementById('bias').value);
+                const errStrength = parseInt(document.getElementById('errstr').value) / 100;
+                const patScale = parseFloat(document.getElementById('pattern-scale').value);
+                const scanPattern = document.getElementById('scan-pattern').value;
+
+                const saturation = parseInt(document.getElementById('saturation').value) / 100;
+                const posterize = parseInt(document.getElementById('posterize').value);
+                const clipping = parseInt(document.getElementById('clipping').value);
+                
+                const rotDeg = parseInt(document.getElementById('algo-rot').value);
+                const errBias = parseInt(document.getElementById('algo-bias').value) / 100; 
+
+                const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+                
+                let activePalette = getFinalActivePalette();
+                let renderPalette = getRenderPalette(activePalette);
+
+                let lutM = getLUT('master'), lutR = getLUT('r'), lutG = getLUT('g'), lutB = getLUT('b');
+
+                const f32 = new Float32Array(w * h * 3);
+
+                for (let i = 0, fi = 0; i < len; i += 4, fi += 3) {
+                    let r = chR ? data[i] : 0;
+                    let g = chG ? data[i+1] : 0;
+                    let b = chB ? data[i+2] : 0;
+
+                    r = lutR[lutM[r]]; g = lutG[lutM[g]]; b = lutB[lutM[b]];
+
+                    r = contrastFactor * (r - 128) + 128 + brightness;
+                    g = contrastFactor * (g - 128) + 128 + brightness;
+                    b = contrastFactor * (b - 128) + 128 + brightness;
+
+                    if(gamma !== 1.0 || hlcomp !== 1.0) {
+                        let rn = Math.max(0, Math.min(1, r/255));
+                        let gn = Math.max(0, Math.min(1, g/255));
+                        let bn = Math.max(0, Math.min(1, b/255));
+                        
+                        if(gamma !== 1.0) { rn = Math.pow(rn, 1/gamma); gn = Math.pow(gn, 1/gamma); bn = Math.pow(bn, 1/gamma); }
+                        if(hlcomp !== 1.0) { rn = Math.pow(rn, hlcomp); gn = Math.pow(gn, hlcomp); bn = Math.pow(bn, hlcomp); }
+                        r = rn * 255; g = gn * 255; b = bn * 255;
+                    }
+
+                    if (saturation !== 1.0) {
+                        let L = 0.299 * r + 0.587 * g + 0.114 * b;
+                        r = L + (r - L) * saturation;
+                        g = L + (g - L) * saturation;
+                        b = L + (b - L) * saturation;
+                        r = Math.max(0, Math.min(255, r));
+                        g = Math.max(0, Math.min(255, g));
+                        b = Math.max(0, Math.min(255, b));
+                    }
+
+                    if (posterize < 255) {
+                        let step = 255 / (posterize - 1);
+                        r = Math.round(r / step) * step;
+                        g = Math.round(g / step) * step;
+                        b = Math.round(b / step) * step;
+                    }
+
+                    if (clipping > 0) {
+                        if (r < clipping) r = 0; else if (r > 255 - clipping) r = 255;
+                        if (g < clipping) g = 0; else if (g > 255 - clipping) g = 255;
+                        if (b < clipping) b = 0; else if (b > 255 - clipping) b = 255;
+                    }
+
+                    f32[fi] = r + bias;
+                    f32[fi+1] = g + bias;
+                    f32[fi+2] = b + bias;
+                }
+
+                const estocasticGroup = ['threshold', 'random', 'blueNoise', 'line', 'circles', 'diamonds', 'squares', 'triangles', 'voronoi', 'crossHatch', 'spiralWave', 'hilbertPattern', 'dtm'];
+                
+                if (estocasticGroup.includes(algo)) {
+                    let spread = errStrength * 128;
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            let idx = (y * w + x) * 4;
+                            
+                            if (data[idx+3] < 128) {
+                                data[idx] = 0; data[idx+1] = 0; data[idx+2] = 0; data[idx+3] = 0;
+                                continue;
+                            }
+
+                            let fi = (y * w + x) * 3;
+                            let nx = x / patScale; let ny = y / patScale;
+                            let t = 0;
+
+                            if (algo === 'random') t = Math.random() - 0.5;
+                            else if (algo === 'line') t = (Math.sin(nx * 1.5 + ny * 0.5) + 1) / 2 - 0.5;
+                            else if (algo === 'blueNoise') { let ign = 52.9829189 * ((0.06711056 * x + 0.00583715 * y) % 1); t = (ign - Math.floor(ign)) - 0.5; }
+                            else if (algo === 'circles') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) / 2;
+                            else if (algo === 'diamonds') t = (Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI)) / 4;
+                            else if (algo === 'squares') t = Math.max(Math.abs(Math.sin(nx * Math.PI)), Math.abs(Math.sin(ny * Math.PI))) - 0.5;
+                            else if (algo === 'triangles') { let sq3 = Math.sqrt(3); t = (Math.sin((nx + ny / sq3) * Math.PI) + Math.sin((nx - ny / sq3) * Math.PI) + Math.sin((ny * 2 / sq3) * Math.PI)) / 6; }
+                            else if (algo === 'crossHatch') {
+                                let luma = (0.299*f32[fi] + 0.587*f32[fi+1] + 0.114*f32[fi+2]) / 255;
+                                let ang1 = Math.sin(nx + ny); let ang2 = Math.sin(nx - ny);
+                                t = luma > 0.5 ? ang1*0.5 : (ang1+ang2)*0.25;
+                            }
+                            else if (algo === 'spiralWave') {
+                                let cx = nx - w/(2*patScale); let cy = ny - h/(2*patScale);
+                                let dist = Math.sqrt(cx*cx + cy*cy);
+                                let ang = Math.atan2(cy, cx);
+                                t = Math.sin(dist * 2.0 + ang * 8.0) * 0.5;
+                            }
+                            else if (algo === 'voronoi') {
+                                let xi = Math.floor(nx); let yi = Math.floor(ny);
+                                let xf = nx - xi; let yf = ny - yi;
+                                let minDist = 1.0;
+                                for(let j=-1; j<=1; j++) {
+                                    for(let i=-1; i<=1; i++) {
+                                        let ptX = (Math.sin((xi+i)*12.9898 + (yi+j)*78.233) * 43758.5453) % 1;
+                                        let ptY = (Math.cos((xi+i)*12.9898 + (yi+j)*78.233) * 43758.5453) % 1;
+                                        let dx = i + Math.abs(ptX) - xf;
+                                        let dy = j + Math.abs(ptY) - yf;
+                                        let d = Math.sqrt(dx*dx + dy*dy);
+                                        if (d < minDist) minDist = d;
+                                    }
+                                }
+                                t = minDist - 0.5;
+                            }
+                            else if (algo === 'hilbertPattern') {
+                                let hX = Math.floor(nx) ^ Math.floor(ny);
+                                t = ((hX * 0.61803398875) % 1) - 0.5;
+                            }
+                            else if (algo === 'dtm') {
+                                let mod = Math.sin(nx*0.05) * Math.cos(ny*0.05);
+                                t = (Math.random() - 0.5) * mod;
+                            }
+
+                            let r = f32[fi] + t * spread;
+                            let g = f32[fi+1] + t * spread;
+                            let b = f32[fi+2] + t * spread;
+
+                            let match = findClosestPaletteColor(r, g, b, activePalette);
+                            let matchIndex = activePalette.indexOf(match);
+                            let renderColor = renderPalette[matchIndex];
+                            
+                            data[idx] = renderColor[0]; data[idx+1] = renderColor[1]; data[idx+2] = renderColor[2]; data[idx+3] = 255;
+                        }
+                    }
+                }
+                else if (matricesOrdenadas[algo] || algo === 'bayerProgressive') {
+                    let matrix = matricesOrdenadas[algo] || matricesOrdenadas['bayer8'];
+                    let size = matrix.length;
+                    let spread = errStrength * 128; 
+
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            let idx = (y * w + x) * 4;
+                            
+                            if (data[idx+3] < 128) {
+                                data[idx] = 0; data[idx+1] = 0; data[idx+2] = 0; data[idx+3] = 0;
+                                continue;
+                            }
+
+                            let fi = (y * w + x) * 3;
+                            let tScale = patScale;
+                            
+                            if (algo === 'bayerProgressive') {
+                                let luma = (0.299*f32[fi] + 0.587*f32[fi+1] + 0.114*f32[fi+2]) / 255;
+                                tScale = patScale * (1 + luma * 2.0); 
+                            }
+
+                            let tpx = Math.floor(x / tScale) % size;
+                            let tpy = Math.floor(y / tScale) % size;
+                            let t = matrix[tpy][tpx]; 
+                            
+                            let r = f32[fi] + t * spread;
+                            let g = f32[fi+1] + t * spread;
+                            let b = f32[fi+2] + t * spread;
+                            
+                            let match = findClosestPaletteColor(r, g, b, activePalette);
+                            let matchIndex = activePalette.indexOf(match);
+                            let renderColor = renderPalette[matchIndex];
+
+                            data[idx] = renderColor[0]; data[idx+1] = renderColor[1]; data[idx+2] = renderColor[2]; data[idx+3] = 255;
+                        }
+                    }
+                }
+                else if (matricesDifusion[algo]) {
+                    const matrixDef = matricesDifusion[algo];
+                    const path = getScanPath(w, h, scanPattern);
+                    const pathLen = w * h * 3;
+                    
+                    const rad = rotDeg * (Math.PI / 180);
+                    const cosR = Math.cos(rad);
+                    const sinR = Math.sin(rad);
+
+                    for (let p = 0; p < pathLen; p += 3) {
+                        let x = path[p]; let y = path[p+1]; let dir = path[p+2];
+                        let rtl = (dir === -1);
+                        let idx = (y * w + x) * 4; 
+                        
+                        if (data[idx+3] < 128) {
+                            data[idx] = 0; data[idx+1] = 0; data[idx+2] = 0; data[idx+3] = 0;
+                            continue;
+                        }
+
+                        let fi = (y * w + x) * 3;
+                        let oldR = f32[fi]; let oldG = f32[fi+1]; let oldB = f32[fi+2];
+                        
+                        let match = findClosestPaletteColor(oldR, oldG, oldB, activePalette);
+                        let matchIndex = activePalette.indexOf(match);
+                        let renderColor = renderPalette[matchIndex];
+
+                        data[idx] = renderColor[0]; data[idx+1] = renderColor[1]; data[idx+2] = renderColor[2]; data[idx+3] = 255;
+                        
+                        let errR = (oldR - match[0]) * errStrength;
+                        let errG = (oldG - match[1]) * errStrength;
+                        let errB = (oldB - match[2]) * errStrength;
+                        
+                        if (errR === 0 && errG === 0 && errB === 0) continue;
+
+                        for (let m of matrixDef.m) {
+                            let mx = rtl ? -m[0] : m[0];
+                            let my = m[1];
+                            
+                            let rotX = Math.round(mx * cosR - my * sinR);
+                            let rotY = Math.round(mx * sinR + my * cosR);
+
+                            let nx = x + rotX;
+                            let ny = y + rotY;
+                            
+                            if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                                let nIdx = (ny * w + nx) * 4;
+                                if (data[nIdx+3] < 128) continue;
+
+                                let nFi = (ny * w + nx) * 3;
+                                
+                                let biasFactor = 1.0;
+                                if (errBias !== 0) {
+                                    let isHoriz = Math.abs(rotX) > Math.abs(rotY);
+                                    if (isHoriz) biasFactor -= errBias; 
+                                    else biasFactor += errBias;         
+                                    biasFactor = Math.max(0.1, biasFactor);
+                                }
+
+                                let weight = (m[2] / matrixDef.d) * biasFactor;
+                                f32[nFi] += errR * weight;
+                                f32[nFi+1] += errG * weight;
+                                f32[nFi+2] += errB * weight;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // --- LÓGICA DEL CENTRO DE EXPORTACIÓN ---
+            
+            document.querySelectorAll('.scale-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.scale-btn').forEach(b => {
+                        b.classList.remove('bg-[var(--accent-primary)]', 'active');
+                        b.classList.add('bg-[var(--bg-input)]');
+                    });
+                    e.target.classList.remove('bg-[var(--bg-input)]');
+                    e.target.classList.add('bg-[var(--accent-primary)]', 'active');
+                    currentExportScale = parseInt(e.target.dataset.scale);
+                    updateEstimatedSize();
+                });
+            });
+
+            function generateExportCanvas() {
+                const expCanvas = document.createElement('canvas');
+                expCanvas.width = canvas.width * currentExportScale;
+                expCanvas.height = canvas.height * currentExportScale;
+                const eCtx = expCanvas.getContext('2d');
+                
+                eCtx.imageSmoothingEnabled = false;
+                eCtx.drawImage(canvas, 0, 0, expCanvas.width, expCanvas.height);
+                
+                return expCanvas;
+            }
+
+            function updateEstimatedSize() {
+                if (!originalImage.src) {
+                    document.getElementById('est-size').textContent = "--";
+                    return;
+                }
+                const expCanvas = generateExportCanvas();
+                expCanvas.toBlob((blob) => {
+                    if(blob) {
+                        const kb = (blob.size / 1024).toFixed(2);
+                        let display = kb + ' KB';
+                        if (blob.size > 1024 * 1024) display = (blob.size / (1024*1024)).toFixed(2) + ' MB';
+                        document.getElementById('est-size').textContent = display;
+                    }
+                }, 'image/png');
+            }
+
+            function updatePaletteSquares() {
+                const finalPalette = getPostProcessedPalette();
+                const paletteToRender = finalPalette.map(rgb => '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('').toLowerCase());
+
+                const container = document.getElementById('palette-squares-container');
+                container.innerHTML = ''; 
+                const fragment = document.createDocumentFragment();
+
+                paletteToRender.forEach((visualHex) => {
+                    const squareWrapper = document.createElement('div');
+                    squareWrapper.className = 'flex flex-col items-center group cursor-pointer';
+                    squareWrapper.title = visualHex;
+                    
+                    const square = document.createElement('div');
+                    square.className = 'w-full aspect-square rounded-xl shadow-md border border-[var(--border-color)] group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-200 flex items-center justify-center relative overflow-hidden';
+                    square.style.backgroundColor = visualHex;
+                    
+                    const copyFeedback = document.createElement('div');
+                    copyFeedback.className = 'absolute inset-0 bg-white/20 backdrop-blur-sm text-white font-bold text-[10px] sm:text-xs flex items-center justify-center opacity-0 transition-opacity duration-200 pointer-events-none text-center leading-none p-1';
+                    copyFeedback.textContent = 'COPIADO';
+                    
+                    square.appendChild(copyFeedback);
+                    
+                    squareWrapper.addEventListener('click', () => {
+                        navigator.clipboard.writeText(visualHex).then(() => {
+                            copyFeedback.classList.remove('opacity-0');
+                            setTimeout(() => copyFeedback.classList.add('opacity-0'), 1000);
+                        });
+                    });
+                    
+                    squareWrapper.appendChild(square);
+                    
+                    const hexLabel = document.createElement('span');
+                    hexLabel.className = 'text-[9px] md:text-[10px] font-semibold uppercase mt-2 text-[var(--text-muted)] group-hover:text-white transition-colors';
+                    hexLabel.textContent = visualHex;
+                    squareWrapper.appendChild(hexLabel);
+                    
+                    fragment.appendChild(squareWrapper);
+                });
+                container.appendChild(fragment);
+            }
+
+            function updateIsolationSquares() {
+                const finalPalette = getPostProcessedPalette();
+                const paletteToRender = finalPalette.map(rgb => '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('').toLowerCase());
+                
+                const container = document.getElementById('isolation-squares-container');
+                container.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+                
+                paletteToRender.forEach((visualHex) => {
+                    const squareWrapper = document.createElement('div');
+                    squareWrapper.className = 'flex flex-col items-center group cursor-pointer relative';
+                    squareWrapper.title = visualHex;
+                    
+                    const squareContainer = document.createElement('div');
+                    squareContainer.className = 'relative w-full aspect-square';
+
+                    const square = document.createElement('div');
+                    square.className = 'w-full h-full rounded-xl border border-[var(--border-color)] shadow-sm transition-all duration-200 flex items-center justify-center overflow-hidden';
+                    square.style.backgroundColor = visualHex;
+                    
+                    const cross = document.createElement('div');
+                    cross.className = 'absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-200';
+                    cross.innerHTML = '<svg class="w-3/4 h-3/4 text-red-500 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>';
+                    
+                    let isIsolated = isolatedColors.has(visualHex);
+
+                    if (isIsolated) {
+                        square.classList.add('opacity-20');
+                        cross.classList.remove('opacity-0');
+                    } else {
+                        square.classList.remove('opacity-20');
+                        cross.classList.add('opacity-0');
+                    }
+
+                    squareContainer.appendChild(square);
+                    squareContainer.appendChild(cross);
+                    
+                    squareWrapper.addEventListener('click', () => {
+                        if (isolatedColors.has(visualHex)) {
+                            isolatedColors.delete(visualHex);
+                        } else {
+                            isolatedColors.add(visualHex);
+                        }
+                        scheduleProcess();
+                    });
+                    
+                    squareWrapper.appendChild(squareContainer);
+                    fragment.appendChild(squareWrapper);
+                });
+                container.appendChild(fragment);
+            }
+
+            document.getElementById('restore-isolation-btn').addEventListener('click', () => {
+                isolatedColors.clear();
+                scheduleProcess();
+            });
+
+            // TERMINAL PRESETS (Lógica Import/Export)
+            const getPresetData = () => {
+                return {
+                    scale: document.getElementById('scale').value,
+                    chR: document.getElementById('ch-r').checked,
+                    chG: document.getElementById('ch-g').checked,
+                    chB: document.getElementById('ch-b').checked,
+                    brightness: document.getElementById('brightness').value,
+                    contrast: document.getElementById('contrast').value,
+                    gamma: document.getElementById('gamma').value,
+                    bleed: document.getElementById('bleed').value,
+                    sharpen: document.getElementById('sharpen').value,
+                    saturation: document.getElementById('saturation').value,
+                    posterize: document.getElementById('posterize').value,
+                    clipping: document.getElementById('clipping').value,
+                    algorithm: document.getElementById('algorithm').value,
+                    errstr: document.getElementById('errstr').value,
+                    bias: document.getElementById('bias').value,
+                    patternScale: document.getElementById('pattern-scale').value,
+                    scanPattern: document.getElementById('scan-pattern').value,
+                    invertPalette: document.getElementById('invert-palette').checked,
+                    palette: document.getElementById('palette').value,
+                    
+                    // Glitch
+                    glitchUnderflow: document.getElementById('glitch-underflow').value,
+                    glitchSort: document.getElementById('glitch-sort').value,
+                    glitchSortV: document.getElementById('glitch-sort-v').value,
+                    glitchHsync: document.getElementById('glitch-hsync').value,
+                    glitchChroma: document.getElementById('glitch-chroma').value,
+                    glitchDrift: document.getElementById('glitch-drift').value,
+                    glitchInterlace: document.getElementById('glitch-interlace').value,
+                    glitchBitplane: document.getElementById('glitch-bitplane').value,
+
+                    // Post
+                    enablePostFx: document.getElementById('enable-post-fx').checked,
+                    postGrain: document.getElementById('post-grain').value,
+                    postVignette: document.getElementById('post-vignette').value,
+                    postBloom: document.getElementById('post-bloom').value,
+                    postDispersion: document.getElementById('post-dispersion').value,
+                    
+                    postGrainAlpha: document.getElementById('post-grain-alpha').checked,
+                    postHalftoneGain: document.getElementById('post-halftone-gain').checked,
+                    postMonoTint: document.getElementById('post-mono-tint').checked,
+                    postClarity: document.getElementById('post-clarity').checked,
+
+                    // Kernels
+                    algoRot: document.getElementById('algo-rot').value,
+                    algoBias: document.getElementById('algo-bias').value,
+
+                    selectedPostColorHex: selectedPostColorHex,
+                    postModifications: postModifications,
+
+                    curves: curves,
+                    activeCurveChannel: activeCurveChannel,
+                    customColorsArray: customColorsArray,
+                    isolatedColors: Array.from(isolatedColors)
+                };
+            };
+
+            const applyPresetData = (data) => {
+                if (!data) return;
+                
+                const setVal = (id, val) => { const el = document.getElementById(id); if(el && val !== undefined) el.value = val; };
+                const setChk = (id, val) => { const el = document.getElementById(id); if(el && val !== undefined) el.checked = val; };
+                const setLbl = (id, val, suffix='') => { const el = document.getElementById(id+'-value'); if(el && val !== undefined) el.textContent = val+suffix; };
+                
+                setVal('scale', data.scale); setLbl('scale', data.scale, '%');
+                setChk('ch-r', data.chR); setChk('ch-g', data.chG); setChk('ch-b', data.chB);
+                setVal('brightness', data.brightness); setLbl('brightness', data.brightness);
+                setVal('contrast', data.contrast); setLbl('contrast', data.contrast);
+                setVal('gamma', data.gamma); setLbl('gamma', Number(data.gamma).toFixed(2));
+                setVal('bleed', data.bleed); setLbl('bleed', data.bleed, 'px');
+                setVal('sharpen', data.sharpen); setLbl('sharpen', data.sharpen);
+                setVal('saturation', data.saturation); setLbl('saturation', data.saturation, '%');
+                setVal('posterize', data.posterize); setLbl('posterize', data.posterize);
+                setVal('clipping', data.clipping); setLbl('clipping', data.clipping);
+                
+                setVal('algorithm', data.algorithm);
+                setVal('errstr', data.errstr); 
+                const errLbl = document.getElementById('errstr-lbl');
+                if(errLbl && data.errstr !== undefined) errLbl.textContent = data.errstr + '%';
+                
+                setVal('bias', data.bias); setLbl('bias', data.bias);
+                setVal('pattern-scale', data.patternScale); setLbl('pattern-scale', data.patternScale, 'x');
+                setVal('scan-pattern', data.scanPattern);
+                setChk('invert-palette', data.invertPalette);
+                setVal('palette', data.palette);
+
+                // Nuevos Glitch
+                setVal('glitch-underflow', data.glitchUnderflow); setLbl('glitch-underflow', data.glitchUnderflow);
+                setVal('glitch-sort', data.glitchSort); setLbl('glitch-sort', data.glitchSort);
+                setVal('glitch-sort-v', data.glitchSortV); setLbl('glitch-sort-v', data.glitchSortV);
+                setVal('glitch-hsync', data.glitchHsync); setLbl('glitch-hsync', data.glitchHsync);
+                setVal('glitch-chroma', data.glitchChroma); setLbl('glitch-chroma', data.glitchChroma);
+                setVal('glitch-drift', data.glitchDrift); setLbl('glitch-drift', data.glitchDrift);
+                setVal('glitch-interlace', data.glitchInterlace); setLbl('glitch-interlace', data.glitchInterlace);
+                setVal('glitch-bitplane', data.glitchBitplane);
+
+                // Nuevos Post
+                setChk('enable-post-fx', data.enablePostFx);
+                postFxCheck.dispatchEvent(new Event('change'));
+
+                setVal('post-grain', data.postGrain); setLbl('post-grain', data.postGrain);
+                setVal('post-vignette', data.postVignette); setLbl('post-vignette', data.postVignette);
+                setVal('post-bloom', data.postBloom); setLbl('post-bloom', data.postBloom);
+                setVal('post-dispersion', data.postDispersion); setLbl('post-dispersion', data.postDispersion);
+                
+                setChk('post-grain-alpha', data.postGrainAlpha);
+                setChk('post-halftone-gain', data.postHalftoneGain);
+                setChk('post-mono-tint', data.postMonoTint);
+                setChk('post-clarity', data.postClarity);
+
+                // Kernels
+                setVal('algo-rot', data.algoRot); setLbl('algo-rot', data.algoRot, '°');
+                setVal('algo-bias', data.algoBias); setLbl('algo-bias', data.algoBias);
+
+                if(data.postModifications) postModifications = data.postModifications;
+                if(data.selectedPostColorHex) selectedPostColorHex = data.selectedPostColorHex;
+
+                if(data.curves) curves = data.curves;
+                if(data.activeCurveChannel) {
+                    activeCurveChannel = data.activeCurveChannel;
+                    const ccEl = document.getElementById('curve-channel');
+                    if(ccEl) ccEl.value = activeCurveChannel;
+                }
+                if(data.customColorsArray) customColorsArray = data.customColorsArray;
+                if(data.isolatedColors) isolatedColors = new Set(data.isolatedColors);
+
+                drawCurve();
+                if(data.palette === 'custom') renderCustomColors(); else renderPostColorSelector();
+                scheduleProcess();
+            };
+
+            document.getElementById('export-preset-btn').addEventListener('click', () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getPresetData(), null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "dither_pro_preset_" + Date.now() + ".json");
+                document.body.appendChild(downloadAnchorNode); 
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+            });
+
+            const handlePresetImport = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const preset = JSON.parse(event.target.result);
+                        applyPresetData(preset);
+                        
+                        const triggers = ['import-preset-btn', 'quick-load-preset'];
+                        triggers.forEach(id => {
+                            const btn = document.getElementById(id);
+                            if(btn) {
+                                const ogText = btn.textContent;
+                                btn.textContent = '¡PRESET CARGADO EXITOSAMENTE!';
+                                btn.classList.add('bg-emerald-500', 'text-white', 'border-transparent');
+                                setTimeout(() => {
+                                    btn.textContent = ogText;
+                                    btn.classList.remove('bg-emerald-500', 'text-white', 'border-transparent');
+                                }, 2500);
+                            }
+                        });
+
+                    } catch(err) {
+                        alert('Error Crítico: El JSON del Preset es inválido o está corrupto.');
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = ''; 
+            };
+
+            document.getElementById('import-preset-input').addEventListener('change', handlePresetImport);
+            document.getElementById('import-preset-btn').addEventListener('click', () => document.getElementById('import-preset-input').click());
+            
+            document.getElementById('quick-preset-input').addEventListener('change', handlePresetImport);
+            document.getElementById('quick-load-preset').addEventListener('click', () => document.getElementById('quick-preset-input').click());
+
+
+            document.getElementById('final-export-btn').addEventListener('click', () => {
+                if (!originalImage.src) return;
+                const expCanvas = generateExportCanvas();
+                const link = document.createElement('a');
+                link.download = `dither-hq-${currentExportScale}x-${Date.now()}.png`;
+                link.href = expCanvas.toDataURL('image/png');
+                link.click();
+            });
+
+            document.getElementById('copy-clipboard-btn').addEventListener('click', async (e) => {
+                if (!originalImage.src) return;
+                const expCanvas = generateExportCanvas();
+                expCanvas.toBlob(async (blob) => {
+                    try {
+                        await navigator.clipboard.write([
+                            new ClipboardItem({ 'image/png': blob })
+                        ]);
+                        const btn = e.target;
+                        const prevText = btn.textContent;
+                        btn.textContent = '¡COPIADO AL PORTAPAPELES!';
+                        btn.classList.add('bg-emerald-500', 'text-white', 'border-transparent');
+                        setTimeout(() => { 
+                            btn.textContent = prevText; 
+                            btn.classList.remove('bg-emerald-500', 'text-white', 'border-transparent');
+                        }, 2500);
+                    } catch (err) {
+                        const btn = e.target;
+                        const prevText = btn.textContent;
+                        btn.textContent = 'Error. Tu navegador no soporta el API';
+                        btn.classList.add('text-red-500');
+                        setTimeout(() => { 
+                            btn.textContent = prevText;
+                            btn.classList.remove('text-red-500');
+                        }, 3000);
+                    }
+                }, 'image/png');
+            });
+            
+            // --- EXPORTACIÓN A SVG (Optimizada con RLE y Paths) ---
+            document.getElementById('export-svg-btn').addEventListener('click', (e) => {
+                if (!originalImage.src || postFxCheck.checked) return;
+                
+                const btn = e.target;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<svg class="animate-spin w-4 h-4 md:w-5 md:h-5 mr-1" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> Procesando...`;
+                
+                setTimeout(() => {
+                    const w = canvas.width;
+                    const h = canvas.height;
+                    const imgData = ctx.getImageData(0, 0, w, h).data;
+                    const paths = {};
+                    
+                    let currentHex = null;
+                    let startX = 0;
+                    
+                    // Algoritmo RLE Horizontal para generar trayectorias
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            let idx = (y * w + x) * 4;
+                            let a = imgData[idx + 3];
+                            
+                            // Ignorar píxeles transparentes
+                            if (a < 128) {
+                                if (currentHex !== null) {
+                                    if (!paths[currentHex]) paths[currentHex] = [];
+                                    paths[currentHex].push(`M${startX} ${y}h${x - startX}v1h-${x - startX}Z`);
+                                    currentHex = null;
+                                }
+                                continue;
+                            }
+                            
+                            let hex = '#' + ((1 << 24) + (imgData[idx] << 16) + (imgData[idx + 1] << 8) + imgData[idx + 2]).toString(16).slice(1);
+                            
+                            if (hex !== currentHex) {
+                                if (currentHex !== null) {
+                                    if (!paths[currentHex]) paths[currentHex] = [];
+                                    paths[currentHex].push(`M${startX} ${y}h${x - startX}v1h-${x - startX}Z`);
+                                }
+                                currentHex = hex;
+                                startX = x;
+                            }
+                        }
+                        if (currentHex !== null) {
+                            if (!paths[currentHex]) paths[currentHex] = [];
+                            paths[currentHex].push(`M${startX} ${y}h${w - startX}v1h-${w - startX}Z`);
+                            currentHex = null;
+                        }
+                    }
+                    
+                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" shape-rendering="crispEdges">`;
+                    for (let hex in paths) {
+                        svg += `<path fill="${hex}" d="${paths[hex].join('')}"/>`;
+                    }
+                    svg += `</svg>`;
+                    
+                    const blob = new Blob([svg], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `dither-vector-${Date.now()}.svg`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    
+                    btn.innerHTML = originalHtml;
+                }, 50); 
+            });
+
+            // Iniciar UI vacía
+            updatePaletteSquares();
+            updateIsolationSquares();
+        });
+    </script>
+</body>
+</html>
