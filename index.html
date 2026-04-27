@@ -6,14 +6,19 @@
     
     <!-- === ETIQUETAS SEO AVANZADAS === -->
     <title>Dither Lab Pro | Generador de Efectos de Tramado y Pixel Art</title>
-    <meta name="description" content="Dither Lab Pro es una herramienta avanzada para generar efectos de tramado (dithering), pixel art, glitch y arte retro en 1-bit o color. Exporta en PNG HD y SVG vectorial.">
-    <meta name="keywords" content="dithering, generador dither, efecto tramado, pixel art, 8-bit, 1-bit, retro, glitch art, bayer, floyd-steinberg, atkinson, dither a svg, exportar svg, paletas retro, gameboy, CGA, editor de imagen retro">
+    <meta name="description" content="Dither Lab Pro es la herramienta profesional y gratuita para generar efectos de tramado (dithering), pixel art, glitch y arte retro en 1-bit o color. Exporta en PNG de alta resolución y SVG vectorial sin necesidad de instalación.">
+    <meta name="keywords" content="dithering, generador dither, efecto tramado, pixel art, 8-bit, 1-bit, retro, glitch art, bayer, floyd-steinberg, atkinson, dither a svg, exportar svg, paletas retro, gameboy, CGA, editor de imagen retro, vaporwave, cyberpunk, dither tool online, dithering software, convert to 8-bit, pixelate image">
     <meta name="author" content="Dither Lab Pro">
     <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#1e1e24">
     
+    <!-- Favicon Inline (SVG) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23ff4757'/%3E%3Cpath stroke='%23ffffff' fill='none' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23ff4757'/%3E%3Cpath stroke='%23ffffff' fill='none' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z'/%3E%3C/svg%3E">
+
     <!-- Open Graph / Redes Sociales -->
     <meta property="og:title" content="Dither Lab Pro | Generador de Dithering Avanzado">
-    <meta property="og:description" content="Transforma tus imágenes con efectos de tramado retro, glitch y pixel art directamente en tu navegador.">
+    <meta property="og:description" content="Transforma fotografías en arte retro, aplica efectos de glitch y usa perfiles de color nostálgicos directamente desde tu navegador. Exporta a PNG y SVG.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ditherlabpro.com/">
     
@@ -24,14 +29,21 @@
       "@type": "WebApplication",
       "name": "Dither Lab Pro",
       "url": "https://ditherlabpro.com/",
-      "description": "Aplicación web profesional para procesamiento de imágenes con algoritmos de tramado (dithering), filtros glitch y exportación SVG/PNG.",
-      "applicationCategory": "MultimediaApplication",
-      "operatingSystem": "Web",
+      "description": "Aplicación web profesional para procesamiento de imágenes con algoritmos de tramado (dithering), filtros glitch y exportación SVG/PNG en alta calidad.",
+      "applicationCategory": "MultimediaApplication, DesignApplication",
+      "operatingSystem": "Web Browser",
       "offers": {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "USD"
-      }
+      },
+      "featureList": [
+        "Generador de Dithering en tiempo real",
+        "Exportación a SVG Vectorial",
+        "Simulador de Glitch y CRT",
+        "Más de 40 paletas retro exactas",
+        "Aislamiento Alpha (Transparencia)"
+      ]
     }
     </script>
     <!-- ================================ -->
@@ -173,7 +185,7 @@
 
         /* Limpieza Absoluta del Slider de Comparación */
         #compare-slider {
-            opacity: 0; /* Erradica las líneas grises y el input nativo manteniendo su hit-box */
+            opacity: 0;
             cursor: ew-resize;
             margin: 0;
             padding: 0;
@@ -183,7 +195,7 @@
         #compare-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 40px; 
-            height: 2000px; /* Expande el área táctil sin mostrar basura visual */
+            height: 2000px;
             background: transparent;
             border: none;
             box-shadow: none;
@@ -214,9 +226,38 @@
             font-weight: 600;
         }
         .btn-modern:active:not(:disabled) { transform: scale(0.98); }
+
+        /* Animaciones para Toasts */
+        .toast {
+            animation: slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .toast.hide {
+            animation: fadeOutRight 0.3s ease-in forwards;
+        }
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeOutRight {
+            from { transform: translateX(0) scale(1); opacity: 1; }
+            to { transform: translateX(100%) scale(0.9); opacity: 0; }
+        }
+
+        /* Transiciones Colapsables */
+        .collapsible-body {
+            transition: all 0.3s ease-in-out;
+            transform-origin: top;
+        }
+        
     </style>
 </head>
-<body class="min-h-screen overflow-x-hidden p-0 selection:bg-[var(--accent-primary)] selection:text-white">
+<body class="min-h-screen overflow-x-hidden p-0 selection:bg-[var(--accent-primary)] selection:text-white relative">
+
+    <!-- BARRA DE PROGRESO GLOBAL -->
+    <div id="top-progress" class="fixed top-0 left-0 h-1 bg-[var(--accent-primary)] w-0 z-50 transition-all duration-[50ms] ease-linear shadow-[0_0_10px_var(--accent-primary)]"></div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- Envoltura Bento Box Global -->
     <div class="h-[100dvh] w-full flex-shrink-0 relative p-2 md:p-6 flex flex-col gap-3 md:gap-6">
@@ -275,13 +316,16 @@
                 <div id="controls" class="flex flex-col gap-3 md:gap-4 opacity-50 pointer-events-none transition-opacity duration-300">
                     
                     <!-- NODO 1: Físico & Tonal -->
-                    <div class="bento-card p-4 md:p-5">
-                        <div class="flex items-center gap-2 mb-4 md:mb-5">
-                            <div class="w-2 h-2 rounded-full bg-blue-400"></div>
-                            <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">1. Físico & Tonal</h2>
+                    <div class="bento-card">
+                        <div class="p-4 md:p-5 flex justify-between items-center cursor-pointer collapsible-header select-none transition-colors hover:bg-[var(--bg-card-hover)]">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                                <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">1. Físico & Tonal</h2>
+                            </div>
+                            <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform duration-300 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                         
-                        <div class="space-y-4 md:space-y-5">
+                        <div class="px-4 md:px-5 pb-4 md:pb-5 collapsible-body space-y-4 md:space-y-5">
                             <div>
                                 <label class="flex justify-between text-[10px] md:text-xs font-semibold text-[var(--text-muted)] mb-2">
                                     <span>Escala Interna</span><span id="scale-value" class="text-white bg-[var(--bg-input)] px-2 py-0.5 rounded-md">25%</span>
@@ -378,12 +422,15 @@
                     </div>
 
                     <!-- NODO 2: Motor Dither -->
-                    <div class="bento-card p-4 md:p-5 border-l-4 border-l-[var(--accent-primary)]">
-                        <div class="flex items-center gap-2 mb-4 md:mb-5">
-                            <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">2. Core Dither</h2>
+                    <div class="bento-card border-l-4 border-l-[var(--accent-primary)]">
+                        <div class="p-4 md:p-5 flex justify-between items-center cursor-pointer collapsible-header select-none transition-colors hover:bg-[var(--bg-card-hover)]">
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">2. Core Dither</h2>
+                            </div>
+                            <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform duration-300 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                         
-                        <div class="space-y-4 md:space-y-5">
+                        <div class="px-4 md:px-5 pb-4 md:pb-5 collapsible-body space-y-4 md:space-y-5">
                             <select id="algorithm" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-xl p-2.5 md:p-3 text-white font-semibold outline-none focus:border-[var(--accent-primary)] transition-colors cursor-pointer shadow-sm">
                                 <optgroup label="Difusión de Error">
                                     <option value="floydSteinberg">Floyd-Steinberg</option>
@@ -572,12 +619,15 @@
                     </div>
 
                     <!-- NODO 3: Glitch -->
-                    <div class="bento-card p-4 md:p-5">
-                        <div class="flex items-center gap-2 mb-4 md:mb-5">
-                            <div class="w-2 h-2 rounded-full bg-purple-400"></div>
-                            <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">3. Glitch & Distorsión</h2>
+                    <div class="bento-card">
+                        <div class="p-4 md:p-5 flex justify-between items-center cursor-pointer collapsible-header select-none transition-colors hover:bg-[var(--bg-card-hover)]">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-purple-400"></div>
+                                <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">3. Glitch & Distorsión</h2>
+                            </div>
+                            <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform duration-300 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
-                        <div class="space-y-3 md:space-y-4">
+                        <div class="px-4 md:px-5 pb-4 md:pb-5 collapsible-body space-y-3 md:space-y-4">
                             <div>
                                 <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
                                     <span>Buffer Underflow</span><span id="glitch-underflow-value">0</span>
@@ -635,54 +685,59 @@
                     </div>
 
                     <!-- NODO 4: Post-Procesado -->
-                    <div class="bento-card p-4 md:p-5">
-                        <div class="flex justify-between items-center mb-4 md:mb-5">
+                    <div class="bento-card">
+                        <div class="p-4 md:p-5 flex justify-between items-center cursor-pointer collapsible-header select-none transition-colors hover:bg-[var(--bg-card-hover)]">
                             <div class="flex items-center gap-2">
                                 <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
                                 <h2 class="text-xs md:text-sm font-bold text-white tracking-wide uppercase">4. Post-FX</h2>
                             </div>
-                            <label class="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-semibold cursor-pointer">
-                                Activar <input type="checkbox" id="enable-post-fx">
-                            </label>
+                            <div class="flex items-center gap-4">
+                                <label class="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-semibold cursor-pointer" onclick="event.stopPropagation()">
+                                    Activar <input type="checkbox" id="enable-post-fx">
+                                </label>
+                                <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform duration-300 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
                         </div>
-                        <div id="post-fx-controls" class="space-y-3 md:space-y-4 opacity-40 pointer-events-none transition-opacity duration-300">
-                            <div>
-                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
-                                    <span>Film Grain</span><span id="post-grain-value">0</span>
-                                </label>
-                                <input type="range" id="post-grain" min="0" max="100" value="0">
-                            </div>
-                            <div>
-                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
-                                    <span>Vignette Color</span><span id="post-vignette-value">0</span>
-                                </label>
-                                <input type="range" id="post-vignette" min="0" max="100" value="0">
-                            </div>
-                            <div>
-                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
-                                    <span>Optical Bloom</span><span id="post-bloom-value">0</span>
-                                </label>
-                                <input type="range" id="post-bloom" min="0" max="100" value="0">
-                            </div>
-                            <div>
-                                <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
-                                    <span>Lens Dispersion</span><span id="post-dispersion-value">0</span>
-                                </label>
-                                <input type="range" id="post-dispersion" min="0" max="200" value="0">
-                            </div>
-                            <div class="pt-2 md:pt-3 border-t border-[var(--border-color)] grid grid-cols-2 gap-2 md:gap-3">
-                                <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
-                                    <input type="checkbox" id="post-grain-alpha"> Grain Alpha
-                                </label>
-                                <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
-                                    <input type="checkbox" id="post-halftone-gain"> Dot Gain
-                                </label>
-                                <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
-                                    <input type="checkbox" id="post-mono-tint"> Mono Tint
-                                </label>
-                                <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
-                                    <input type="checkbox" id="post-clarity"> Local Contrast
-                                </label>
+                        <div class="px-4 md:px-5 pb-4 md:pb-5 collapsible-body space-y-3 md:space-y-4">
+                            <div id="post-fx-controls" class="space-y-3 md:space-y-4 opacity-40 pointer-events-none transition-opacity duration-300">
+                                <div>
+                                    <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                        <span>Film Grain</span><span id="post-grain-value">0</span>
+                                    </label>
+                                    <input type="range" id="post-grain" min="0" max="100" value="0">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                        <span>Vignette Color</span><span id="post-vignette-value">0</span>
+                                    </label>
+                                    <input type="range" id="post-vignette" min="0" max="100" value="0">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                        <span>Optical Bloom</span><span id="post-bloom-value">0</span>
+                                    </label>
+                                    <input type="range" id="post-bloom" min="0" max="100" value="0">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-[var(--text-muted)] mb-1">
+                                        <span>Lens Dispersion</span><span id="post-dispersion-value">0</span>
+                                    </label>
+                                    <input type="range" id="post-dispersion" min="0" max="200" value="0">
+                                </div>
+                                <div class="pt-2 md:pt-3 border-t border-[var(--border-color)] grid grid-cols-2 gap-2 md:gap-3">
+                                    <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
+                                        <input type="checkbox" id="post-grain-alpha"> Grain Alpha
+                                    </label>
+                                    <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
+                                        <input type="checkbox" id="post-halftone-gain"> Dot Gain
+                                    </label>
+                                    <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
+                                        <input type="checkbox" id="post-mono-tint"> Mono Tint
+                                    </label>
+                                    <label class="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-medium text-white cursor-pointer">
+                                        <input type="checkbox" id="post-clarity"> Local Contrast
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -703,6 +758,12 @@
             <div class="w-full h-[45%] md:h-full md:flex-1 bento-card relative overflow-hidden p-0 bg-black" id="preview-section">
                 <!-- Fondo del preview tipo checkerboard tenue moderno -->
                 <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333), repeating-linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333); background-position: 0 0, 10px 10px; background-size: 20px 20px;"></div>
+
+                <!-- OVERLAY DE PROCESAMIENTO -->
+                <div id="processing-overlay" class="absolute inset-0 bg-[var(--bg-main)]/50 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-200 hidden">
+                    <div class="w-8 h-8 md:w-10 md:h-10 border-4 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <span class="text-white text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase drop-shadow-md">Procesando</span>
+                </div>
 
                 <!-- Panel Flotante de Controles Compacto -->
                 <div class="absolute bottom-3 right-3 md:bottom-5 md:right-5 flex bg-[var(--bg-input)]/90 border border-[var(--border-color)] rounded-lg shadow-lg z-30 p-1 md:p-1.5 gap-1 md:gap-1.5 text-[var(--text-muted)] backdrop-blur-md">
@@ -836,11 +897,15 @@
 
             <!-- Panel Inferior Izq: Paleta CSS -->
             <div class="bento-card flex flex-col">
-                <div class="p-4 md:p-5 border-b border-[var(--border-color)] bg-[var(--bg-input)]/50">
+                <div class="p-4 md:p-5 border-b border-[var(--border-color)] bg-[var(--bg-input)]/50 flex justify-between items-center">
                     <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
                         <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
                         Inspección de Paleta Final
                     </h3>
+                    <button id="copy-css-btn" class="text-[9px] md:text-[10px] font-semibold bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:text-white text-[var(--text-muted)] px-2 md:px-3 py-1 rounded-lg transition-colors flex items-center gap-1.5" title="Copiar Variables CSS">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        Variables CSS
+                    </button>
                 </div>
                 <div class="p-4 md:p-5 flex-grow">
                     <p class="text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-3 md:mb-4">Clic para copiar el valor HEX al portapapeles.</p>
@@ -969,7 +1034,7 @@
                     <h3 class="text-white font-bold text-lg">Alpha Purge (Canal Transparente)</h3>
                 </header>
                 <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
-                    <p>En el diseño web moderno y el desarrollo de videojuegos indie, a menudo no quieres un fondo negro o blanco bloqueando tu diseño. Aquí entra el <strong>Aislamiento de Tinta (Alpha Purge)</strong>.</p>
+                    <p>En el diseño web moderno y el desarrollo de videojuegos indie, a menudo es preferible no tener un fondo bloqueando tu diseño. Aquí entra el <strong>Aislamiento de Tinta (Alpha Purge)</strong>.</p>
                     <p>Dirígete a nuestro Centro de Exportación, haz clic en el color de fondo (por ejemplo, el negro absoluto) en la paleta indexada y el motor lo eliminará en tiempo real. Exporta tu arte en PNG para obtener transparencia pura de canal alfa en tus diseños retro.</p>
                 </div>
             </article>
@@ -980,6 +1045,37 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- UI: SISTEMA DE TOAST NOTIFICATIONS ---
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-emerald-500/90' : type === 'error' ? 'bg-red-500/90' : 'bg-blue-500/90';
+                
+                const iconSuccess = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                const iconError = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                
+                toast.className = `toast ${bgColor} text-white px-4 py-3 rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] backdrop-blur-md flex items-center gap-3 border border-white/20 text-sm font-bold pointer-events-auto min-w-[250px]`;
+                toast.innerHTML = `${type === 'success' ? iconSuccess : iconError} <span>${message}</span>`;
+                
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.add('hide');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // --- UI: SECCIONES COLAPSABLES ---
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const body = header.nextElementSibling;
+                    const chevron = header.querySelector('.chevron');
+                    body.classList.toggle('hidden');
+                    chevron.classList.toggle('rotate-180');
+                });
+            });
+
             // --- REFERENCIAS DOM ---
             const dropZone = document.getElementById('drop-zone');
             const fileInput = document.getElementById('file-input');
@@ -1452,7 +1548,7 @@
             }
 
             previewSection.addEventListener('mousedown', (e) => {
-                if(e.target.closest('button')) return; // Ignorar si hace clic en un botón
+                if(e.target.closest('button')) return; 
                 
                 if(isCompareMode && !isPanMode && originalImage.src) {
                     isComparingDrag = true;
@@ -1476,7 +1572,7 @@
             });
 
             previewSection.addEventListener('touchstart', (e) => {
-                if(e.target.closest('button')) return; // Fundamental para que funcionen los botones en móvil
+                if(e.target.closest('button')) return; 
                 
                 if (e.touches.length === 1) {
                     if (isCompareMode && !isPanMode && originalImage.src) {
@@ -1601,7 +1697,7 @@
             // --- CURVAS (Touch y Mouse) ---
             function drawCurve() {
                 curveCtx.clearRect(0, 0, 256, 120);
-                curveCtx.strokeStyle = 'rgba(255,255,255,0.05)'; // Grid subtle line
+                curveCtx.strokeStyle = 'rgba(255,255,255,0.05)'; 
                 curveCtx.lineWidth = 1;
                 for(let i=1; i<4; i++) {
                     curveCtx.beginPath(); curveCtx.moveTo(i*64, 0); curveCtx.lineTo(i*64, 120); curveCtx.stroke();
@@ -1728,9 +1824,7 @@
 
             function handleFile(file) {
                 if (!file.type.startsWith('image/')) {
-                    const prevText = placeholderText.innerHTML;
-                    placeholderText.innerHTML = '<span class="text-red-500 font-bold">Error: Solo Imágenes</span>';
-                    setTimeout(() => placeholderText.innerHTML = prevText, 2000);
+                    showToast('Error: El archivo debe ser una imagen', 'error');
                     return;
                 }
                 
@@ -1743,7 +1837,6 @@
                     
                     const container = document.getElementById('canvas-container');
                     
-                    // Alineación garantizada: el contenedor adquiere las proporciones intrínsecas del original
                     container.style.display = 'inline-flex';
                     
                     canvas.classList.remove('hidden');
@@ -1828,7 +1921,6 @@
                 });
             });
 
-            // GESTIÓN DEL INTERRUPTOR DE FX Y EXPORTACIÓN SVG
             const postFxCheck = document.getElementById('enable-post-fx');
             const postFxControls = document.getElementById('post-fx-controls');
             const isolationContainer = document.getElementById('isolation-panel-content');
@@ -1909,18 +2001,14 @@
                 
                 renderCustomColors();
                 scheduleProcess();
+                
+                showToast('Ajustes restaurados a los valores por defecto', 'success');
             });
 
             // --- LÓGICA DE EXTRACCIÓN DE PALETA ---
             extractPaletteBtn.addEventListener('click', () => {
                 if (!originalImage.src) {
-                    const originalText = extractPaletteBtn.textContent;
-                    extractPaletteBtn.textContent = 'ERROR';
-                    extractPaletteBtn.classList.add('bg-red-500', 'text-white');
-                    setTimeout(() => {
-                        extractPaletteBtn.textContent = originalText;
-                        extractPaletteBtn.classList.remove('bg-red-500', 'text-white');
-                    }, 2000);
+                    showToast('Carga una imagen primero para extraer la paleta', 'error');
                     return;
                 }
 
@@ -1991,22 +2079,41 @@
                 renderCustomColors();
                 scheduleProcess();
                 
-                const originalText = extractPaletteBtn.textContent;
-                extractPaletteBtn.textContent = '¡EXTRAÍDO!';
-                extractPaletteBtn.classList.add('bg-emerald-500', 'text-white');
-                setTimeout(() => {
-                    extractPaletteBtn.textContent = originalText;
-                    extractPaletteBtn.classList.remove('bg-emerald-500', 'text-white');
-                }, 2000);
+                showToast('Paleta extraída correctamente', 'success');
             });
 
-            // --- RENDERIZADO PRINCIPAL ---
+            // --- RENDERIZADO PRINCIPAL (CON BARRA DE PROGRESO) ---
             function scheduleProcess() {
                 if(!isRendering) {
                     isRendering = true;
+                    
+                    const overlay = document.getElementById('processing-overlay');
+                    const prog = document.getElementById('top-progress');
+                    
+                    if(originalImage.src) {
+                        overlay.classList.remove('hidden');
+                        void overlay.offsetWidth; // Force reflow para animar opacidad
+                        overlay.classList.remove('opacity-0');
+                        prog.style.width = '30%';
+                    }
+
                     requestAnimationFrame(() => { 
-                        processMedia(); 
-                        isRendering = false; 
+                        setTimeout(() => {
+                            if(originalImage.src) prog.style.width = '70%';
+                            
+                            processMedia(); 
+                            
+                            if(originalImage.src) {
+                                prog.style.width = '100%';
+                                overlay.classList.add('opacity-0');
+                                setTimeout(() => {
+                                    overlay.classList.add('hidden');
+                                    prog.style.width = '0%';
+                                }, 250);
+                            }
+                            
+                            isRendering = false; 
+                        }, 15);
                     });
                 }
             }
@@ -2765,16 +2872,9 @@
                     square.className = 'w-full aspect-square rounded-xl shadow-md border border-[var(--border-color)] group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-200 flex items-center justify-center relative overflow-hidden';
                     square.style.backgroundColor = visualHex;
                     
-                    const copyFeedback = document.createElement('div');
-                    copyFeedback.className = 'absolute inset-0 bg-white/20 backdrop-blur-sm text-white font-bold text-[10px] sm:text-xs flex items-center justify-center opacity-0 transition-opacity duration-200 pointer-events-none text-center leading-none p-1';
-                    copyFeedback.textContent = 'COPIADO';
-                    
-                    square.appendChild(copyFeedback);
-                    
                     squareWrapper.addEventListener('click', () => {
                         navigator.clipboard.writeText(visualHex).then(() => {
-                            copyFeedback.classList.remove('opacity-0');
-                            setTimeout(() => copyFeedback.classList.add('opacity-0'), 1000);
+                            showToast(`Color ${visualHex.toUpperCase()} copiado`, 'success');
                         });
                     });
                     
@@ -2789,6 +2889,26 @@
                 });
                 container.appendChild(fragment);
             }
+
+            // GESTIÓN DEL BOTÓN COPIAR CSS VARIABLES
+            document.getElementById('copy-css-btn').addEventListener('click', () => {
+                const finalPalette = getPostProcessedPalette();
+                if(finalPalette.length === 0) return;
+                
+                const paletteToRender = finalPalette.map(rgb => '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('').toLowerCase());
+                
+                let cssString = ':root {\n';
+                paletteToRender.forEach((hex, i) => {
+                    cssString += `  --dither-color-${i + 1}: ${hex};\n`;
+                });
+                cssString += '}';
+                
+                navigator.clipboard.writeText(cssString).then(() => {
+                    showToast('Variables CSS copiadas al portapapeles', 'success');
+                }).catch(() => {
+                    showToast('Error al copiar CSS', 'error');
+                });
+            });
 
             function updateIsolationSquares() {
                 const finalPalette = getPostProcessedPalette();
@@ -2845,6 +2965,7 @@
             document.getElementById('restore-isolation-btn').addEventListener('click', () => {
                 isolatedColors.clear();
                 scheduleProcess();
+                showToast('Aislamiento de tinta limpiado');
             });
 
             // TERMINAL PRESETS (Lógica Import/Export)
@@ -2988,6 +3109,7 @@
                 document.body.appendChild(downloadAnchorNode); 
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
+                showToast('Preset descargado exitosamente');
             });
 
             const handlePresetImport = (e) => {
@@ -2998,23 +3120,9 @@
                     try {
                         const preset = JSON.parse(event.target.result);
                         applyPresetData(preset);
-                        
-                        const triggers = ['import-preset-btn', 'quick-load-preset'];
-                        triggers.forEach(id => {
-                            const btn = document.getElementById(id);
-                            if(btn) {
-                                const ogText = btn.textContent;
-                                btn.textContent = '¡PRESET CARGADO EXITOSAMENTE!';
-                                btn.classList.add('bg-emerald-500', 'text-white', 'border-transparent');
-                                setTimeout(() => {
-                                    btn.textContent = ogText;
-                                    btn.classList.remove('bg-emerald-500', 'text-white', 'border-transparent');
-                                }, 2500);
-                            }
-                        });
-
+                        showToast('Preset cargado exitosamente', 'success');
                     } catch(err) {
-                        alert('Error Crítico: El JSON del Preset es inválido o está corrupto.');
+                        showToast('Error Crítico: El JSON del Preset es inválido o está corrupto.', 'error');
                     }
                 };
                 reader.readAsText(file);
@@ -3029,39 +3137,32 @@
 
 
             document.getElementById('final-export-btn').addEventListener('click', () => {
-                if (!originalImage.src) return;
+                if (!originalImage.src) {
+                    showToast('Carga una imagen para poder exportar', 'error');
+                    return;
+                }
                 const expCanvas = generateExportCanvas();
                 const link = document.createElement('a');
                 link.download = `dither-hq-${currentExportScale}x-${Date.now()}.png`;
                 link.href = expCanvas.toDataURL('image/png');
                 link.click();
+                showToast('Imagen PNG exportada correctamente');
             });
 
             document.getElementById('copy-clipboard-btn').addEventListener('click', async (e) => {
-                if (!originalImage.src) return;
+                if (!originalImage.src) {
+                    showToast('Carga una imagen para poder copiar', 'error');
+                    return;
+                }
                 const expCanvas = generateExportCanvas();
                 expCanvas.toBlob(async (blob) => {
                     try {
                         await navigator.clipboard.write([
                             new ClipboardItem({ 'image/png': blob })
                         ]);
-                        const btn = e.target;
-                        const prevText = btn.textContent;
-                        btn.textContent = '¡COPIADO AL PORTAPAPELES!';
-                        btn.classList.add('bg-emerald-500', 'text-white', 'border-transparent');
-                        setTimeout(() => { 
-                            btn.textContent = prevText; 
-                            btn.classList.remove('bg-emerald-500', 'text-white', 'border-transparent');
-                        }, 2500);
+                        showToast('Imagen copiada al portapapeles', 'success');
                     } catch (err) {
-                        const btn = e.target;
-                        const prevText = btn.textContent;
-                        btn.textContent = 'Error. Tu navegador no soporta el API';
-                        btn.classList.add('text-red-500');
-                        setTimeout(() => { 
-                            btn.textContent = prevText;
-                            btn.classList.remove('text-red-500');
-                        }, 3000);
+                        showToast('Error. Tu navegador no soporta esta acción', 'error');
                     }
                 }, 'image/png');
             });
@@ -3132,6 +3233,7 @@
                     URL.revokeObjectURL(url);
                     
                     btn.innerHTML = originalHtml;
+                    showToast('Vector SVG exportado correctamente', 'success');
                 }, 50); 
             });
 
