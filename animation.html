@@ -107,7 +107,7 @@
 
     <!-- Header Animación -->
     <div class="w-full max-w-screen-2xl mx-auto px-4 pt-4 md:pt-6 pb-2 flex-shrink-0">
-        <header class="w-full flex items-center justify-between bento-card px-4 md:px-6 py-3 z-20 relative">
+        <header class="w-full flex items-center justify-between bento-card px-4 md:px-6 py-3 z-20 relative sticky top-4">
             <div class="flex items-center gap-3 md:gap-4">
                 <a href="index.html" class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[var(--bg-input)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] flex items-center justify-center transition-colors text-[var(--text-muted)] hover:text-white" title="Volver al Editor Base">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -399,6 +399,36 @@
                             <div id="custom-palette-editor" class="bg-[var(--bg-input)] rounded-xl p-2 border border-[var(--border-color)] hidden">
                                 <div class="flex flex-wrap gap-1.5 items-center" id="custom-colors-container"></div>
                                 <p class="text-[9px] text-[var(--text-muted)] mt-2 text-center">Tap para editar. Arrastra para reordenar.</p>
+                            </div>
+
+                            <!-- Integración: Tono y Saturación Post-Paleta -->
+                            <div class="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-[var(--border-color)]">
+                                <label class="flex justify-between items-center text-[10px] md:text-xs font-semibold text-[var(--text-muted)] mb-1.5 md:mb-2">
+                                    <span class="text-white uppercase">Post-Modificadores (HSL)</span>
+                                    <button class="kf-btn" title="Añadir Keyframe">⬦</button>
+                                </label>
+                                <div id="post-color-selector" class="flex flex-wrap gap-1.5 mb-2 md:mb-3 bg-[var(--bg-input)] p-1.5 md:p-2 rounded-xl border border-[var(--border-color)] min-h-[40px]"></div>
+
+                                <div class="grid grid-cols-3 gap-2 md:gap-3">
+                                    <div>
+                                        <label class="flex flex-col text-[9px] md:text-[10px] text-[var(--text-muted)] mb-1">
+                                            <span>Hue</span><span id="post-hue-value" class="font-medium text-white">0°</span>
+                                        </label>
+                                        <input type="range" id="post-hue" min="-180" max="180" value="0">
+                                    </div>
+                                    <div>
+                                        <label class="flex flex-col text-[9px] md:text-[10px] text-[var(--text-muted)] mb-1">
+                                            <span>Sat</span><span id="post-sat-value" class="font-medium text-white">0%</span>
+                                        </label>
+                                        <input type="range" id="post-sat" min="-100" max="100" value="0">
+                                    </div>
+                                    <div>
+                                        <label class="flex flex-col text-[9px] md:text-[10px] text-[var(--text-muted)] mb-1">
+                                            <span>Lum</span><span id="post-light-value" class="font-medium text-white">0%</span>
+                                        </label>
+                                        <input type="range" id="post-light" min="-100" max="100" value="0">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -784,6 +814,10 @@
             const canvasWrapper = document.getElementById('canvas-wrapper');
             const zoomLevelLbl = document.getElementById('zoom-level-lbl');
 
+            // POST-PALETA HSL MODIFICADORES
+            let selectedPostColorHex = null;
+            let postModifications = {};
+
             function showLoading() {
                 loadingOverlay.classList.remove('hidden');
                 requestAnimationFrame(() => loadingOverlay.classList.remove('opacity-0'));
@@ -818,7 +852,7 @@
             });
 
             previewContainer.addEventListener('mousedown', (e) => {
-                if (e.target.closest('button')) return; // ignorar botones de zoom
+                if (e.target.closest('button')) return; 
                 isPanning = true;
                 startPanX = e.clientX - previewPanX;
                 startPanY = e.clientY - previewPanY;
@@ -902,6 +936,67 @@
                 return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
             }
 
+            function getNormalizedHex(c) {
+                let hex = Array.isArray(c) ? '#' + c.map(x => x.toString(16).padStart(2, '0')).join('') : c;
+                return hex.toLowerCase();
+            }
+
+            function getBaseActivePalette() {
+                const isCustom = document.getElementById('palette').value === 'custom';
+                return isCustom ? customColorsArray : palettesBase[document.getElementById('palette').value];
+            }
+
+            function rgbToHsl(r, g, b) {
+                r /= 255; g /= 255; b /= 255;
+                let max = Math.max(r, g, b), min = Math.min(r, g, b);
+                let h, s, l = (max + min) / 2;
+                if(max === min){ h = s = 0; } 
+                else {
+                    let d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch(max){
+                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / d + 2; break;
+                        case b: h = (r - g) / d + 4; break;
+                    }
+                    h /= 6;
+                }
+                return [h, s, l];
+            }
+
+            function hslToRgb(h, s, l) {
+                let r, g, b;
+                if(s === 0){ r = g = b = l; } 
+                else {
+                    let hue2rgb = function hue2rgb(p, q, t){
+                        if(t < 0) t += 1;
+                        if(t > 1) t -= 1;
+                        if(t < 1/6) return p + (q - p) * 6 * t;
+                        if(t < 1/2) return q;
+                        if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                        return p;
+                    }
+                    let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                    let p = 2 * l - q;
+                    r = hue2rgb(p, q, h + 1/3);
+                    g = hue2rgb(p, q, h);
+                    b = hue2rgb(p, q, h - 1/3);
+                }
+                return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+            }
+
+            function applyPostHSL(rgb, hOffset, sOffset, lOffset) {
+                let hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+                let h = hsl[0] + (hOffset / 360);
+                if (h < 0) h += 1;
+                if (h > 1) h -= 1;
+                let s = hsl[1] + (sOffset / 100);
+                s = Math.max(0, Math.min(1, s));
+                let l = hsl[2] + (lOffset / 100);
+                l = Math.max(0, Math.min(1, l));
+                return hslToRgb(h, s, l);
+            }
+
             // --- SISTEMA UI PALETA CUSTOM ---
             function renderCustomColors() {
                 const container = document.getElementById('custom-colors-container');
@@ -972,6 +1067,57 @@
                     }
                 };
                 container.appendChild(addBtn);
+
+                renderPostColorSelector();
+                updatePostSlidersFromState();
+            }
+
+            // --- SISTEMA UI Tono y Saturación Post-Paleta ---
+            function renderPostColorSelector() {
+                const container = document.getElementById('post-color-selector');
+                if (!container) return;
+                container.innerHTML = '';
+                
+                const basePalette = getBaseActivePalette().map(getNormalizedHex);
+                
+                if (!selectedPostColorHex || !basePalette.includes(selectedPostColorHex)) {
+                    selectedPostColorHex = basePalette[0];
+                }
+
+                basePalette.forEach((hex) => {
+                    const btn = document.createElement('button');
+                    const isSelected = hex === selectedPostColorHex;
+                    btn.className = `w-5 h-5 md:w-6 md:h-6 rounded-full border-2 transition-all cursor-pointer shadow-sm ${isSelected ? 'border-white scale-125 z-10' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-110'}`;
+                    
+                    let displayRgb = hexToRgb(hex);
+                    if (document.getElementById('invert-palette').checked) {
+                        displayRgb = [255 - displayRgb[0], 255 - displayRgb[1], 255 - displayRgb[2]];
+                    }
+                    const mods = postModifications[hex];
+                    if (mods && (mods.h !== 0 || mods.s !== 0 || mods.l !== 0)) {
+                        displayRgb = applyPostHSL(displayRgb, mods.h, mods.s, mods.l);
+                    }
+                    
+                    btn.style.backgroundColor = `rgb(${displayRgb[0]}, ${displayRgb[1]}, ${displayRgb[2]})`;
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        selectedPostColorHex = hex;
+                        renderPostColorSelector();
+                        updatePostSlidersFromState();
+                    };
+                    container.appendChild(btn);
+                });
+            }
+
+            function updatePostSlidersFromState() {
+                const mods = postModifications[selectedPostColorHex] || {h: 0, s: 0, l: 0};
+                const hueEl = document.getElementById('post-hue');
+                const satEl = document.getElementById('post-sat');
+                const lightEl = document.getElementById('post-light');
+                
+                if(hueEl) { hueEl.value = mods.h; document.getElementById('post-hue-value').textContent = mods.h + '°'; }
+                if(satEl) { satEl.value = mods.s; document.getElementById('post-sat-value').textContent = mods.s + '%'; }
+                if(lightEl) { lightEl.value = mods.l; document.getElementById('post-light-value').textContent = mods.l + '%'; }
             }
 
             document.getElementById('palette').addEventListener('change', (e) => {
@@ -982,6 +1128,13 @@
                 } else {
                     customEditor.classList.add('hidden');
                 }
+                
+                postModifications = {};
+                selectedPostColorHex = null;
+                renderPostColorSelector();
+                updatePostSlidersFromState();
+                
+                if (!isPlaying) scheduleProcess();
             });
 
             // LÓGICA DE EXTRACCIÓN DE PALETA
@@ -1057,6 +1210,9 @@
                     document.getElementById('palette').value = 'custom';
                     document.getElementById('custom-palette-editor').classList.remove('hidden');
                     
+                    postModifications = {};
+                    selectedPostColorHex = null;
+                    
                     renderCustomColors();
                     if (!isPlaying) scheduleProcess();
                     showToast('Paleta extraída de la imagen correctamente', 'success');
@@ -1073,6 +1229,9 @@
                     state[el.id] = el.type === 'checkbox' ? el.checked : el.value;
                 });
                 state['customColorsArray'] = [...customColorsArray];
+                
+                // Incorporamos post-modifications
+                state['postModifications'] = JSON.parse(JSON.stringify(postModifications));
                 return state;
             }
 
@@ -1094,7 +1253,7 @@
 
             function applyStateToUI(state) {
                 for (let key in state) {
-                    if (key === 'customColorsArray') continue;
+                    if (key === 'customColorsArray' || key === 'postModifications') continue;
 
                     const el = document.getElementById(key);
                     if (el) {
@@ -1108,6 +1267,12 @@
                     customColorsArray = [...state['customColorsArray']];
                 }
                 
+                if (state['postModifications']) {
+                    postModifications = JSON.parse(JSON.stringify(state['postModifications']));
+                } else {
+                    postModifications = {};
+                }
+                
                 const postFxControls = document.getElementById('post-fx-controls');
                 if(state['enable-post-fx']) postFxControls.classList.remove('opacity-40', 'pointer-events-none');
                 else postFxControls.classList.add('opacity-40', 'pointer-events-none');
@@ -1119,9 +1284,11 @@
                         renderCustomColors();
                     } else {
                         customEditor.classList.add('hidden');
+                        renderPostColorSelector();
                     }
                 }
                 
+                updatePostSlidersFromState();
                 updateKfButtonsUI();
             }
 
@@ -1135,7 +1302,7 @@
             function lerpState(stateA, stateB, ratio) {
                 const result = {};
                 for (let key in stateA) {
-                    if (key === 'customColorsArray') continue;
+                    if (key === 'customColorsArray' || key === 'postModifications') continue;
 
                     if (typeof stateA[key] === 'number' && typeof stateB[key] === 'number') {
                         result[key] = stateA[key] + (stateB[key] - stateA[key]) * ratio;
@@ -1144,6 +1311,24 @@
                     }
                 }
                 result['customColorsArray'] = ratio < 1 ? [...stateA['customColorsArray']] : [...stateB['customColorsArray']];
+                
+                // Interpolación individual de las modificaciones HSL post-paleta
+                result['postModifications'] = {};
+                const allColors = new Set([
+                    ...Object.keys(stateA['postModifications'] || {}), 
+                    ...Object.keys(stateB['postModifications'] || {})
+                ]);
+                
+                allColors.forEach(color => {
+                    const modA = (stateA['postModifications'] || {})[color] || {h: 0, s: 0, l: 0};
+                    const modB = (stateB['postModifications'] || {})[color] || {h: 0, s: 0, l: 0};
+                    result['postModifications'][color] = {
+                        h: modA.h + (modB.h - modA.h) * ratio,
+                        s: modA.s + (modB.s - modA.s) * ratio,
+                        l: modA.l + (modB.l - modA.l) * ratio
+                    };
+                });
+                
                 return result;
             }
 
@@ -1353,6 +1538,7 @@
                 const eventType = el.type === 'range' ? 'input' : 'change';
                 el.addEventListener(eventType, () => {
                     if (el.type === 'range') updateLabelUI(el.id, el.value);
+                    if (el.id === 'invert-palette') { renderPostColorSelector(); }
 
                     if (el.id === 'enable-post-fx') {
                         const postFxControls = document.getElementById('post-fx-controls');
@@ -1363,6 +1549,29 @@
                         }
                     }
                     if(!isPlaying) scheduleProcess();
+                });
+            });
+
+            // Sliders HSL Modificadores Post-Paleta
+            ['post-hue', 'post-sat', 'post-light'].forEach(id => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                el.addEventListener('input', (e) => {
+                    let text = e.target.value;
+                    const val = parseInt(e.target.value);
+                    if(id === 'post-hue') text += '°';
+                    else text += '%';
+                    document.getElementById(`${id}-value`).textContent = text;
+                    
+                    if (!postModifications[selectedPostColorHex]) {
+                        postModifications[selectedPostColorHex] = {h:0, s:0, l:0};
+                    }
+                    if (id === 'post-hue') postModifications[selectedPostColorHex].h = val;
+                    if (id === 'post-sat') postModifications[selectedPostColorHex].s = val;
+                    if (id === 'post-light') postModifications[selectedPostColorHex].l = val;
+
+                    renderPostColorSelector();
+                    if (!isPlaying) scheduleProcess();
                 });
             });
 
@@ -1471,16 +1680,16 @@
                 return data;
             }
 
-            function findClosestPaletteColor(r, g, b, paletteArray) {
-                let minDst = Infinity; let closest = paletteArray[0];
+            function findClosestPaletteIndex(r, g, b, paletteArray) {
+                let minDst = Infinity; let closestIndex = 0;
                 for (let i = 0; i < paletteArray.length; i++) {
                     let p = paletteArray[i];
                     let rmean = (r + p[0]) / 2;
                     let dr = r - p[0]; let dg = g - p[1]; let db = b - p[2];
                     let dst = (((512 + rmean) * dr * dr) >> 8) + 4 * dg * dg + (((767 - rmean) * db * db) >> 8);
-                    if (dst < minDst) { minDst = dst; closest = p; }
+                    if (dst < minDst) { minDst = dst; closestIndex = i; }
                 }
-                return closest;
+                return closestIndex;
             }
 
             function generateNormalizedBayer(n) {
@@ -1730,13 +1939,26 @@
                     }
                 }
 
-                // MOTOR DITHER
+                // MOTOR DITHER: Soporte para Paleta e Inversión y Ajustes Post-Paleta
                 let rawPalette = state.palette === 'custom' ? (state['customColorsArray'] || customColorsArray) : (palettesBase[state.palette] || palettesBase.bw);
-                let activePalette = rawPalette.map(hexToRgb);
+                
+                let baseActivePalette = rawPalette.map(hexToRgb);
+                let activePalette = baseActivePalette;
                 
                 if (state['invert-palette']) {
                     activePalette = activePalette.map(rgb => [255-rgb[0], 255-rgb[1], 255-rgb[2]]);
                 }
+
+                let currentPostMods = state['postModifications'] || postModifications;
+                let renderPalette = activePalette.map((rgb, index) => {
+                    const hex = getNormalizedHex(rawPalette[index]);
+                    let finalRgb = [...rgb];
+                    const mods = currentPostMods[hex];
+                    if (mods && (mods.h !== 0 || mods.s !== 0 || mods.l !== 0)) {
+                        finalRgb = applyPostHSL(finalRgb, mods.h, mods.s, mods.l);
+                    }
+                    return finalRgb;
+                });
 
                 const f32 = new Float32Array(w * h * 3);
                 const contrastFactor = (259 * (state.contrast + 255)) / (255 * (259 - state.contrast));
@@ -1789,7 +2011,10 @@
                     for (let y = 0; y < h; y++) {
                         for (let x = 0; x < w; x++) {
                             let idx = (y * w + x) * 4;
-                            if (data[idx+3] < 128) continue;
+                            if (data[idx+3] < 128) {
+                                data[idx] = 0; data[idx+1] = 0; data[idx+2] = 0; data[idx+3] = 0;
+                                continue;
+                            }
                             let fi = (y * w + x) * 3;
                             let nx = x / patScale; let ny = y / patScale;
                             let t = 0;
@@ -1837,8 +2062,10 @@
                             }
 
                             let r = f32[fi] + t * spread, g = f32[fi+1] + t * spread, b = f32[fi+2] + t * spread;
-                            let match = findClosestPaletteColor(r, g, b, activePalette);
-                            data[idx] = match[0]; data[idx+1] = match[1]; data[idx+2] = match[2]; data[idx+3] = 255;
+                            let matchIndex = findClosestPaletteIndex(r, g, b, activePalette);
+                            let renderColor = renderPalette[matchIndex];
+                            
+                            data[idx] = renderColor[0]; data[idx+1] = renderColor[1]; data[idx+2] = renderColor[2]; data[idx+3] = 255;
                         }
                     }
                 }
@@ -1850,7 +2077,11 @@
                     for (let y = 0; y < h; y++) {
                         for (let x = 0; x < w; x++) {
                             let idx = (y * w + x) * 4;
-                            if (data[idx+3] < 128) continue;
+                            if (data[idx+3] < 128) {
+                                data[idx] = 0; data[idx+1] = 0; data[idx+2] = 0; data[idx+3] = 0;
+                                continue;
+                            }
+                            
                             let fi = (y * w + x) * 3;
                             let tScale = patScale;
                             if (algo === 'bayerProgressive') {
@@ -1863,8 +2094,10 @@
                             let t = matrix[tpy][tpx]; 
                             
                             let r = f32[fi] + t * spread, g = f32[fi+1] + t * spread, b = f32[fi+2] + t * spread;
-                            let match = findClosestPaletteColor(r, g, b, activePalette);
-                            data[idx] = match[0]; data[idx+1] = match[1]; data[idx+2] = match[2]; data[idx+3] = 255;
+                            let matchIndex = findClosestPaletteIndex(r, g, b, activePalette);
+                            let renderColor = renderPalette[matchIndex];
+                            
+                            data[idx] = renderColor[0]; data[idx+1] = renderColor[1]; data[idx+2] = renderColor[2]; data[idx+3] = 255;
                         }
                     }
                 }
@@ -1882,13 +2115,19 @@
                         let rtl = (dir === -1);
                         let idx = (y * w + x) * 4; 
                         
-                        if (data[idx+3] < 128) continue;
+                        if (data[idx+3] < 128) {
+                            data[idx] = 0; data[idx+1] = 0; data[idx+2] = 0; data[idx+3] = 0;
+                            continue;
+                        }
 
                         let fi = (y * w + x) * 3;
                         let oldR = f32[fi], oldG = f32[fi+1], oldB = f32[fi+2];
                         
-                        let match = findClosestPaletteColor(oldR, oldG, oldB, activePalette);
-                        data[idx] = match[0]; data[idx+1] = match[1]; data[idx+2] = match[2]; data[idx+3] = 255;
+                        let matchIndex = findClosestPaletteIndex(oldR, oldG, oldB, activePalette);
+                        let match = activePalette[matchIndex];
+                        let renderColor = renderPalette[matchIndex];
+                        
+                        data[idx] = renderColor[0]; data[idx+1] = renderColor[1]; data[idx+2] = renderColor[2]; data[idx+3] = 255;
                         
                         let errR = (oldR - match[0]) * errStrength, errG = (oldG - match[1]) * errStrength, errB = (oldB - match[2]) * errStrength;
                         
@@ -1990,7 +2229,7 @@
                             }
 
                             if (doMonoTint) {
-                                let colorDark = activePalette[0], colorLight = activePalette[activePalette.length-1] || [255,255,255];
+                                let colorDark = renderPalette[0], colorLight = renderPalette[renderPalette.length-1] || [255,255,255];
                                 let mix = Math.max(0, Math.min(1, (0.299*r + 0.587*g + 0.114*b) / 255));
                                 r = colorDark[0] * (1-mix) + colorLight[0] * mix; g = colorDark[1] * (1-mix) + colorLight[1] * mix; b = colorDark[2] * (1-mix) + colorLight[2] * mix;
                             }
@@ -2072,7 +2311,7 @@
                 btnExport.disabled = true;
 
                 if (exportAudio) {
-                    // Modo de Exportación en Tiempo Real (Requerido para grabar el audio del video)
+                    // Modo de Exportación en Tiempo Real
                     videoSource.currentTime = 0;
                     await new Promise(r => { videoSource.onseeked = r; });
                     videoSource.play();
@@ -2103,7 +2342,7 @@
                     requestAnimationFrame(renderLoop);
 
                 } else {
-                    // Modo de Exportación Frame por Frame (Más rápido, sin audio)
+                    // Modo de Exportación Frame por Frame
                     for (let f = 0; f <= totalFrames; f++) {
                         const t = (f / exportFps) * 1000;
                         document.getElementById('top-progress').style.width = `${(f/totalFrames)*100}%`;
