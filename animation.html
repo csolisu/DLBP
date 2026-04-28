@@ -102,7 +102,7 @@
 </head>
 <body class="min-h-screen overflow-x-hidden p-0 selection:bg-[var(--accent-primary)] selection:text-white relative flex flex-col">
 
-    <div id="top-progress" class="fixed top-0 left-0 h-1 bg-[var(--accent-primary)] w-0 z-50 transition-all duration-[50ms] ease-linear shadow-[0_0_10px_var(--accent-primary)]"></div>
+    <div id="top-progress" class="fixed top-0 left-0 h-1 bg-[var(--accent-primary)] w-0 z-[100] transition-all duration-[50ms] ease-linear shadow-[0_0_10px_var(--accent-primary)]"></div>
     <div id="toast-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- Header Animación -->
@@ -127,7 +127,7 @@
     <div class="flex-grow w-full max-w-screen-2xl mx-auto flex flex-col md:flex-row gap-4 md:gap-6 p-4 pt-0 min-h-0 md:overflow-hidden md:h-[calc(100vh-100px)]">
         
         <!-- Panel de Controles (Izquierda en Desktop / Abajo en Móvil) -->
-        <div class="w-full md:w-[420px] flex flex-col gap-4 order-3 md:order-1 md:overflow-y-auto custom-scrollbar flex-shrink-0 md:pr-2 md:h-full">
+        <div class="w-full md:w-[420px] flex flex-col gap-4 order-3 md:order-1 md:overflow-y-auto custom-scrollbar flex-shrink-0 md:pr-2 md:h-full pb-4 md:pb-0">
             
             <div class="bento-card p-4 group flex-shrink-0 cursor-pointer hover:border-[var(--accent-primary)]/50 transition-colors" id="drop-zone">
                 <input type="file" id="file-input" accept="image/*,video/*" class="hidden">
@@ -568,7 +568,7 @@
         <div class="contents md:flex flex-1 md:flex-col gap-4 order-1 md:order-2 md:overflow-hidden md:h-full min-h-0">
             
             <!-- Lienzo Preview con Controles de Zoom -->
-            <div id="preview-container" class="order-1 md:order-none sticky top-2 z-40 md:relative md:top-auto md:z-auto h-[45vh] md:h-auto flex-1 min-h-[250px] md:min-h-0 bento-card relative overflow-hidden bg-black p-0 cursor-grab active:cursor-grabbing shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] md:shadow-none border border-[var(--border-color)]">
+            <div id="preview-container" class="order-1 md:order-none sticky top-2 z-40 md:relative md:top-auto md:z-auto h-[280px] md:h-auto flex-none md:flex-1 min-h-[280px] md:min-h-0 bento-card relative overflow-hidden bg-black p-0 cursor-grab active:cursor-grabbing shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] md:shadow-none border border-[var(--border-color)]">
                 <div class="absolute inset-0 opacity-20 pointer-events-none z-0" style="background-image: repeating-linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333), repeating-linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333); background-position: 0 0, 10px 10px; background-size: 20px 20px;"></div>
                 
                 <div id="canvas-wrapper" class="w-full h-full flex items-center justify-center origin-center transition-transform duration-75 relative z-10">
@@ -606,9 +606,8 @@
                 </div>
             </div>
 
-            <!-- Panel Animación & Exportación -->
-            <div class="order-2 md:order-none bento-card p-4 flex flex-col gap-4 flex-shrink-0">
-                
+            <!-- Panel Animación & Timeline (Independiente y Sticky en Mobile) -->
+            <div class="order-2 md:order-none bento-card p-3 md:p-4 flex flex-col gap-2 flex-shrink-0 sticky top-[304px] z-[60] md:relative md:top-auto md:z-auto shadow-[0_10px_30px_-10px_rgba(0,0,0,0.8)] md:shadow-none bg-[var(--bg-card)]/95 backdrop-blur-xl md:bg-[var(--bg-card)] md:backdrop-blur-none border border-[var(--border-color)]">
                 <!-- Línea de tiempo principal -->
                 <div class="w-full relative">
                     <div class="flex justify-between items-end mb-2">
@@ -631,9 +630,11 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Exportación y Ajustes -->
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 border-t border-[var(--border-color)] pt-4 mt-1">
+            <!-- Panel Exportación (Independiente) -->
+            <div class="order-4 md:order-none bento-card p-4 flex flex-col gap-4 flex-shrink-0 w-full mb-4 md:mb-0">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
                     <div class="flex flex-col gap-1">
                         <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Duración (seg)</label>
                         <input type="number" id="anim-duration" value="10" min="1" max="60" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
@@ -715,7 +716,7 @@
         </div>
     </section>
 
-    <!-- === SECCIÓN SEO: BASE DE CONOCIMIENTO === -->
+        <!-- === SECCIÓN SEO: BASE DE CONOCIMIENTO (MODERN BENTO) === -->
     <section id="docs-seo" class="w-full max-w-screen-2xl mx-auto p-3 md:p-6 flex flex-col gap-4 md:gap-6 pb-20">
         <div class="flex items-center gap-2 md:gap-3 ml-1 md:ml-2 mb-2">
             <div class="w-1.5 md:w-2 h-5 md:h-6 bg-[var(--accent-primary)] rounded-full"></div>
@@ -724,6 +725,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             
+            <!-- Card SEO 1: Qué es el Dithering -->
             <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
                 <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
                     <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
@@ -732,10 +734,12 @@
                     <h3 class="text-white font-bold text-lg">¿Qué es el Dithering?</h3>
                 </header>
                 <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
-                    <p>El <strong>dithering</strong> (o tramado) es una técnica gráfica clásica utilizada para simular la profundidad de color y gradientes en imágenes que poseen una paleta de colores muy limitada.</p>
+                    <p>El <strong>dithering</strong> (o tramado) es una técnica gráfica clásica utilizada para simular la profundidad de color y gradientes en imágenes que poseen una paleta de colores muy limitada (como las pantallas retro de 1-bit u 8-bits).</p>
+                    <p>Al aplicar <em>ruido espacial</em> o patrones geométricos precisos, el ojo humano percibe la ilusión de nuevos tonos y sombras. Dither Lab Pro es el generador definitivo para replicar esta estética <em>vintage</em> directamente en tu navegador.</p>
                 </div>
             </article>
 
+            <!-- Card SEO 2: Algoritmos de Tramado -->
             <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
                 <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
                     <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
@@ -745,9 +749,15 @@
                 </header>
                 <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
                     <p>Nuestra herramienta incluye los algoritmos de <strong>difusión de error</strong> más famosos de la historia informática. Cuando un píxel se convierte a un color limitado, el "error" (la diferencia de color) se distribuye a los píxeles vecinos.</p>
+                    <ul class="list-disc pl-4 space-y-1 mt-2 text-white/80">
+                        <li><strong>Floyd-Steinberg:</strong> El estándar de oro. Resultados suaves y orgánicos.</li>
+                        <li><strong>Atkinson:</strong> Creado por Bill Atkinson para Apple. Alto contraste, ideal para estilo Mac antiguo.</li>
+                        <li><strong>Bayer (Tramado Ordenado):</strong> Patrones de cruz matemáticos, el auténtico estilo Gameboy y MS-DOS.</li>
+                    </ul>
                 </div>
             </article>
 
+            <!-- Card SEO 3: Paletas Retro -->
             <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
                 <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
                     <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
@@ -757,6 +767,49 @@
                 </header>
                 <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
                     <p>El color es el alma del pixel art. Hemos integrado librerías históricas exactas para que tu renderizado sea 100% fiel a los monitores CRT y consolas portátiles de los años 80s y 90s.</p>
+                    <p>Encuentra perfiles de color como <strong>Commodore 64 (C64)</strong>, <strong>ZX Spectrum</strong>, <strong>CGA</strong>, la paleta clásica de <strong>Game Boy (GBC)</strong>, e incluso modos modernos como el <em>Cyberpunk</em>, <em>Vaporwave</em> y el célebre <em>DawnBringer (DB16 / DB32)</em>. Además, el botón "Extraer" generará una paleta indexada desde tu propia imagen original.</p>
+                </div>
+            </article>
+
+            <!-- Card SEO 4: Glitch Art y Destrucción -->
+            <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
+                <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Glitch & Distorsión</h3>
+                </header>
+                <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
+                    <p>Más allá de un simple generador de dithering, esta plataforma actúa como un motor de <strong>Glitch Art y Databending</strong> en el navegador.</p>
+                    <p>Usa los controles de "Glitch & Distorsión" para simular fallos de tarjeta gráfica, desincronización de señales de video analógicas (Jitter H-Sync), separación de campos de color (Chroma Bleed) y degradación destructiva (Pixel Sorting). Este nodo procesa la imagen <em>antes</em> de aplicar el tramado, garantizando un crujido estético espectacular.</p>
+                </div>
+            </article>
+
+            <!-- Card SEO 5: Exportación Vectorial SVG -->
+            <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
+                <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Exportar a Vector (SVG)</h3>
+                </header>
+                <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
+                    <p>Una característica exclusiva de Dither Lab Pro es su algoritmo de vectorización sin pérdida. Convierte fotografías tramadas directamente a <strong>archivos SVG escalables al infinito</strong>.</p>
+                    <p>Mediante nuestra optimización <em>Run-Length Encoding (RLE)</em>, el sistema detecta filas de píxeles consecutivos del mismo color y los fusiona en trazados (paths) individuales. Ideal para diseño editorial gráfico, serigrafía, grabado láser, impresión de plotter o plóters de corte.</p>
+                </div>
+            </article>
+
+            <!-- Card SEO 6: Aislamiento (Alpha Purge) -->
+            <article class="bento-card p-5 md:p-6 flex flex-col gap-3 hover:border-[var(--accent-primary)] transition-colors">
+                <header class="flex items-center gap-3 border-b border-[var(--border-color)] pb-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--bg-input)] text-[var(--accent-primary)] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg">Alpha Purge (Canal Transparente)</h3>
+                </header>
+                <div class="text-[var(--text-muted)] text-sm leading-relaxed space-y-2">
+                    <p>En el diseño web moderno y el desarrollo de videojuegos indie, a menudo es preferible no tener un fondo bloqueando tu diseño. Aquí entra el <strong>Aislamiento de Tinta (Alpha Purge)</strong>.</p>
+                    <p>Dirígete a nuestro Centro de Exportación, haz clic en el color de fondo (por ejemplo, el negro absoluto) en la paleta indexada y el motor lo eliminá en tiempo real. Exporta tu arte en PNG para obtener transparencia pura de canal alfa en tus diseños retro.</p>
                 </div>
             </article>
         </div>
