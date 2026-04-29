@@ -7,8 +7,9 @@
     <meta name="theme-color" content="#1e1e24">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Muxer para exportación perfecta en WebM -->
+    <!-- Muxers para exportación perfecta en WebM y MP4 -->
     <script src="https://unpkg.com/webm-muxer/build/webm-muxer.js"></script>
+    <script src="https://unpkg.com/mp4-muxer/build/mp4-muxer.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -145,6 +146,17 @@
                 </div>
             </div>
 
+            <div class="flex gap-2 w-full mt-[-0.5rem] mb-1">
+                <button id="btn-limpiar" class="flex-1 bg-[var(--bg-input)] hover:bg-red-500/20 hover:text-red-400 text-[var(--text-muted)] border border-[var(--border-color)] hover:border-red-500/50 text-xs font-semibold py-2 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Limpiar Entorno
+                </button>
+                <button id="btn-restaurar-todo" class="flex-1 bg-[var(--bg-input)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)] text-[var(--text-muted)] border border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 text-xs font-semibold py-2 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Restaurar Ajustes
+                </button>
+            </div>
+
             <div id="controls" class="flex flex-col gap-4 opacity-50 pointer-events-none transition-opacity duration-300">
                 <!-- NODO 1: Físico & Tonal -->
                 <div class="bento-card">
@@ -153,9 +165,14 @@
                             <div class="w-2 h-2 rounded-full bg-blue-400"></div>
                             <h2 class="text-xs font-bold text-white uppercase">1. Físico & Tonal</h2>
                         </div>
-                        <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <div class="flex items-center gap-2">
+                            <button class="section-reset-btn text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors p-1.5 rounded-md hover:bg-[var(--bg-input)]" data-section="section-1" title="Restaurar parámetros de esta sección" onclick="event.stopPropagation()">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
+                            <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
                     </div>
-                    <div class="px-4 pb-4 collapsible-body space-y-4">
+                    <div id="section-1" class="px-4 pb-4 collapsible-body space-y-4">
                         <div>
                             <label class="flex justify-between text-[10px] text-[var(--text-muted)] mb-2">
                                 <span class="flex items-center gap-1">Escala Interna <button class="kf-btn" title="Añadir Keyframe">⬦</button></span>
@@ -241,9 +258,14 @@
                 <div class="bento-card border-l-4 border-l-[var(--accent-primary)]">
                     <div class="p-4 flex justify-between items-center cursor-pointer collapsible-header hover:bg-[var(--bg-card-hover)]">
                         <h2 class="text-xs font-bold text-white uppercase">2. Core Dither</h2>
-                        <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <div class="flex items-center gap-2">
+                            <button class="section-reset-btn text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors p-1.5 rounded-md hover:bg-[var(--bg-input)]" data-section="section-2" title="Restaurar parámetros de esta sección" onclick="event.stopPropagation()">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
+                            <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
                     </div>
-                    <div class="px-4 pb-4 collapsible-body space-y-4">
+                    <div id="section-2" class="px-4 pb-4 collapsible-body space-y-4">
                         <div>
                             <label class="flex justify-between text-[10px] text-[var(--text-muted)] mb-1">
                                 <span class="flex items-center gap-1">Algoritmo <button class="kf-btn" title="Añadir Keyframe">⬦</button></span>
@@ -445,9 +467,14 @@
                             <div class="w-2 h-2 rounded-full bg-purple-400"></div>
                             <h2 class="text-xs font-bold text-white uppercase">3. Glitch</h2>
                         </div>
-                        <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <div class="flex items-center gap-2">
+                            <button class="section-reset-btn text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors p-1.5 rounded-md hover:bg-[var(--bg-input)]" data-section="section-3" title="Restaurar parámetros de esta sección" onclick="event.stopPropagation()">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
+                            <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
                     </div>
-                    <div class="px-4 pb-4 collapsible-body space-y-3 hidden">
+                    <div id="section-3" class="px-4 pb-4 collapsible-body space-y-3 hidden">
                         <div>
                             <label class="flex justify-between text-[10px] text-[var(--text-muted)] mb-1">
                                 <span class="flex items-center gap-1">Buffer Underflow <button class="kf-btn" title="Añadir Keyframe">⬦</button></span>
@@ -518,14 +545,18 @@
                             <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
                             <h2 class="text-xs font-bold text-white uppercase">4. Post-FX</h2>
                         </div>
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-3">
                             <label class="flex items-center gap-2 text-[10px] font-semibold cursor-pointer" onclick="event.stopPropagation()">
                                 Activar <input type="checkbox" id="enable-post-fx" class="discrete-param"> <button class="kf-btn" title="Añadir Keyframe">⬦</button>
                             </label>
+                            <div class="h-4 w-px bg-[var(--border-color)]"></div>
+                            <button class="section-reset-btn text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors p-1 rounded-md hover:bg-[var(--bg-input)]" data-section="section-4" title="Restaurar parámetros de esta sección" onclick="event.stopPropagation()">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
                             <svg class="w-4 h-4 text-[var(--text-muted)] transform transition-transform chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                     </div>
-                    <div class="px-4 pb-4 collapsible-body space-y-3 hidden">
+                    <div id="section-4" class="px-4 pb-4 collapsible-body space-y-3 hidden">
                         <div id="post-fx-controls" class="space-y-3 opacity-40 pointer-events-none">
                             <div>
                                 <label class="flex justify-between text-[10px] text-[var(--text-muted)] mb-1">
@@ -669,6 +700,7 @@
                         <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Formato</label>
                         <select id="export-format" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
                             <option value="webm" selected>WebM (VP9)</option>
+                            <option value="mp4">MP4 (H.264)</option>
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
@@ -881,6 +913,7 @@
             let currentMedia = originalImage;
             let isVideo = false;
             let isRendering = false;
+            let initialState = null; // Guardará el estado predeterminado de la UI
 
             // Sincronización Dinámica de Exportación
             function syncExportUI() {
@@ -1810,6 +1843,95 @@
                 }
             }
 
+            function restoreAll() {
+                if (!initialState) return;
+                applyStateToUI(initialState);
+                keyframes = [];
+                updateKeyframeMarkers();
+                updateKfButtonsUI();
+                
+                // Reiniciar duración si se requiere 
+                document.getElementById('anim-duration').value = 10;
+                durationSeconds = 10;
+                document.getElementById('anim-start').value = 0;
+                trimStartSeconds = 0;
+                
+                if (currentMedia && currentMedia.src) {
+                    syncEngineToTime(currentPlayTime);
+                }
+                showToast('Configuraciones restauradas', 'success');
+            }
+
+            function clearAll() {
+                if (isPlaying) togglePlay();
+                
+                restoreAll();
+                
+                currentMedia = null;
+                isVideo = false;
+                
+                // Evitar que al limpiar el src se dispare el evento de error
+                videoSource.onerror = null;
+                originalImage.onerror = null;
+                
+                videoSource.src = '';
+                originalImage.src = '';
+                controls.classList.add('opacity-50', 'pointer-events-none');
+                ctxPreview.clearRect(0, 0, canvasPreview.width, canvasPreview.height);
+                bCtx.clearRect(0, 0, buffer.width, buffer.height);
+                fileInput.value = ''; 
+                
+                previewZoom = 1; 
+                previewPanX = 0; 
+                previewPanY = 0; 
+                updatePreviewTransform();
+                
+                currentPlayTime = 0;
+                updateTimeDisplay();
+                
+                showToast('Entorno limpiado por completo', 'success');
+            }
+
+            function restoreSection(sectionId) {
+                if (!initialState) return;
+                const section = document.getElementById(sectionId);
+                if (!section) return;
+                
+                const inputs = section.querySelectorAll('.animatable, .discrete-param');
+                inputs.forEach(el => {
+                    if (el.id in initialState) {
+                        if (el.type === 'checkbox') el.checked = initialState[el.id];
+                        else el.value = initialState[el.id];
+                        updateLabelUI(el.id, initialState[el.id]);
+                    }
+                });
+                
+                if (sectionId === 'section-2') {
+                    customColorsArray = [...initialState['customColorsArray']];
+                    postModifications = JSON.parse(JSON.stringify(initialState['postModifications']));
+                    const customEditor = document.getElementById('custom-palette-editor');
+                    if (initialState['palette'] === 'custom') {
+                        customEditor.classList.remove('hidden');
+                        renderCustomColors();
+                    } else {
+                        customEditor.classList.add('hidden');
+                        renderPostColorSelector();
+                    }
+                    updatePostSlidersFromState();
+                }
+                
+                if (sectionId === 'section-4') {
+                    const postFxControls = document.getElementById('post-fx-controls');
+                    if (initialState['enable-post-fx']) postFxControls.classList.remove('opacity-40', 'pointer-events-none');
+                    else postFxControls.classList.add('opacity-40', 'pointer-events-none');
+                }
+
+                if (currentMedia && currentMedia.src) {
+                    scheduleProcess();
+                }
+                showToast('Sección restaurada', 'success');
+            }
+
             function scheduleProcess() {
                 if(!isRendering) {
                     isRendering = true;
@@ -2436,7 +2558,7 @@
                 }
             }
 
-            // --- EXPORTACIÓN PERFECCIONADA DE VIDEO ---
+            // --- EXPORTACIÓN PERFECCIONADA DE VIDEO (MP4 & WebM) ---
             const btnExport = document.getElementById('btn-export-video');
             btnExport.addEventListener('click', async () => {
                 if (!currentMedia || (isVideo && currentMedia.readyState < 2) || (!isVideo && !currentMedia.src)) {
@@ -2446,9 +2568,10 @@
 
                 if (isPlaying) togglePlay();
 
-                const exportFps = parseInt(document.getElementById('anim-fps').value);
+                const exportFps = parseInt(document.getElementById('anim-fps').value) || 30;
                 const resolutionMultStr = document.getElementById('anim-resolution').value;
                 const exportAudio = document.getElementById('export-audio').value === 'source' && isVideo;
+                const format = document.getElementById('export-format').value; // 'webm' o 'mp4'
                 
                 const totalMs = durationSeconds * 1000;
                 const totalFrames = Math.floor(durationSeconds * exportFps);
@@ -2472,7 +2595,7 @@
                     finalExpHeight = Math.round(baseHeight * mult);
                 }
 
-                // Fuerza valores estrictamente pares para que el códec de WebCodecs no falle
+                // Fuerza valores estrictamente pares para que los códecs (VP9/H264) no fallen
                 finalExpWidth = Math.floor(finalExpWidth / 2) * 2;
                 finalExpHeight = Math.floor(finalExpHeight / 2) * 2;
 
@@ -2482,12 +2605,13 @@
                 const expCtx = expCanvas.getContext('2d', { willReadFrequently: true });
 
                 // DEFINICIÓN DE MOTOR DE EXPORTACIÓN (WebCodecs para perfecta matemática, o Fallback a MediaRecorder)
-                let useWebCodecs = !exportAudio && typeof VideoEncoder !== 'undefined' && typeof WebMMuxer !== 'undefined';
+                let useWebCodecs = !exportAudio && typeof VideoEncoder !== 'undefined' && typeof WebMMuxer !== 'undefined' && typeof Mp4Muxer !== 'undefined';
 
                 if (useWebCodecs) {
                     try {
+                        const testCodec = format === 'mp4' ? 'avc1.4d002a' : 'vp09.00.10.08';
                         const config = {
-                            codec: 'vp09.00.10.08',
+                            codec: testCodec,
                             width: finalExpWidth,
                             height: finalExpHeight,
                             bitrate: 8_000_000,
@@ -2496,7 +2620,7 @@
                         const support = await VideoEncoder.isConfigSupported(config);
                         if (!support.supported) {
                             useWebCodecs = false;
-                            console.warn("VideoEncoder no soporta esta configuración, usando fallback a MediaRecorder.");
+                            console.warn(`VideoEncoder no soporta la configuración (${testCodec}), usando fallback a MediaRecorder.`);
                         }
                     } catch (e) {
                         useWebCodecs = false;
@@ -2505,7 +2629,7 @@
 
                 if (!useWebCodecs) {
                     // MODO MEDIARECORDER (Si se requiere audio o si WebCodecs no está disponible)
-                    showToast(exportAudio ? 'Exportación en Tiempo Real (Con Audio)' : 'Renderizando (Fallback a WebM)', 'warning');
+                    showToast(exportAudio ? 'Exportación en Tiempo Real (Con Audio)' : 'Renderizando (Fallback a MediaRecorder)', 'warning');
                     
                     const stream = expCanvas.captureStream(exportFps); 
                     
@@ -2528,9 +2652,11 @@
                         audioDest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
                     }
 
-                    let mimeType = 'video/webm; codecs=vp9';
-                    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-                    let fileExt = 'webm';
+                    let mimeType = format === 'mp4' ? 'video/mp4; codecs="avc1.42E01E"' : 'video/webm; codecs=vp9';
+                    if (!MediaRecorder.isTypeSupported(mimeType)) {
+                        mimeType = format === 'mp4' ? 'video/mp4' : 'video/webm';
+                    }
+                    let fileExt = format;
                     
                     const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
                     const chunks = [];
@@ -2540,10 +2666,13 @@
                         const blob = new Blob(chunks, { type: mimeType });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
+                        a.style.display = 'none';
                         a.href = url;
                         a.download = `dither_anim_${Date.now()}.${fileExt}`;
+                        document.body.appendChild(a);
                         a.click();
                         URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
                         
                         if (isVideo) {
                             videoSource.muted = isAudioMuted;
@@ -2561,14 +2690,14 @@
                         
                         btnExport.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Exportar`;
                         btnExport.disabled = false;
-                        showToast('Exportación Finalizada', 'success');
+                        showToast(`Exportación Finalizada (${fileExt.toUpperCase()})`, 'success');
                     };
 
                     recorder.start();
 
                     document.getElementById('processing-overlay').classList.remove('hidden');
                     document.getElementById('processing-overlay').classList.remove('opacity-0');
-                    btnExport.innerHTML = 'Procesando...';
+                    btnExport.innerHTML = `<svg class="animate-spin w-4 h-4 mr-2" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Procesando...`;
                     btnExport.disabled = true;
 
                     if (isVideo) {
@@ -2606,19 +2735,25 @@
                     requestAnimationFrame(renderLoop);
 
                 } else {
-                    // MODO WEBCODECS (Frame a Frame Matemáticamente Perfecto)
+                    // MODO WEBCODECS (Frame a Frame Matemáticamente Perfecto para WebM o MP4)
                     try {
-                        let MuxerClass = WebMMuxer.Muxer;
-                        let ArrayBufferTarget = WebMMuxer.ArrayBufferTarget;
+                        let muxer;
+                        let videoCodec;
 
-                        let muxer = new MuxerClass({
-                            target: new ArrayBufferTarget(),
-                            video: {
-                                codec: 'V_VP9',
-                                width: finalExpWidth,
-                                height: finalExpHeight
-                            }
-                        });
+                        if (format === 'mp4') {
+                            muxer = new Mp4Muxer.Muxer({
+                                target: new Mp4Muxer.ArrayBufferTarget(),
+                                video: { codec: 'avc', width: finalExpWidth, height: finalExpHeight },
+                                fastStart: 'in-memory'
+                            });
+                            videoCodec = 'avc1.4d002a'; // H.264
+                        } else {
+                            muxer = new WebMMuxer.Muxer({
+                                target: new WebMMuxer.ArrayBufferTarget(),
+                                video: { codec: 'V_VP9', width: finalExpWidth, height: finalExpHeight }
+                            });
+                            videoCodec = 'vp09.00.10.08'; // VP9
+                        }
 
                         let videoEncoder = new VideoEncoder({
                             output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
@@ -2626,7 +2761,7 @@
                         });
 
                         videoEncoder.configure({
-                            codec: 'vp09.00.10.08',
+                            codec: videoCodec,
                             width: finalExpWidth,
                             height: finalExpHeight,
                             bitrate: 8_000_000,
@@ -2637,7 +2772,7 @@
                         
                         document.getElementById('processing-overlay').classList.remove('hidden');
                         document.getElementById('processing-overlay').classList.remove('opacity-0');
-                        btnExport.innerHTML = 'Calculando Fotogramas...';
+                        btnExport.innerHTML = `<svg class="animate-spin w-4 h-4 mr-2" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Calculando...`;
                         btnExport.disabled = true;
 
                         for (let f = 0; f <= totalFrames; f++) {
@@ -2672,13 +2807,16 @@
                         muxer.finalize();
                         
                         let buffer = muxer.target.buffer;
-                        let blob = new Blob([buffer], { type: 'video/webm' });
+                        let blob = new Blob([buffer], { type: `video/${format}` });
                         let url = URL.createObjectURL(blob);
                         let a = document.createElement('a');
+                        a.style.display = 'none';
                         a.href = url;
-                        a.download = `dither_anim_${Date.now()}.webm`;
+                        a.download = `dither_anim_${Date.now()}.${format}`;
+                        document.body.appendChild(a);
                         a.click();
                         URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
 
                         document.getElementById('processing-overlay').classList.add('hidden');
                         document.getElementById('top-progress').style.width = `0%`;
@@ -2688,7 +2826,7 @@
                         
                         btnExport.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Exportar`;
                         btnExport.disabled = false;
-                        showToast('Video Matemáticamente Perfecto Creado', 'success');
+                        showToast(`Video ${format.toUpperCase()} con Hardware Creado`, 'success');
 
                     } catch (err) {
                         console.error(err);
@@ -2698,6 +2836,19 @@
                         document.getElementById('processing-overlay').classList.add('hidden');
                     }
                 }
+            });
+
+            // Capturar estado inicial justo al terminar la inicialización del DOM
+            initialState = getUIState();
+
+            // Asignar listeners a los nuevos botones
+            document.getElementById('btn-restaurar-todo').addEventListener('click', restoreAll);
+            document.getElementById('btn-limpiar').addEventListener('click', clearAll);
+
+            document.querySelectorAll('.section-reset-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    restoreSection(e.currentTarget.dataset.section);
+                });
             });
 
         });
