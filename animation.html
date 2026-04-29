@@ -615,6 +615,9 @@
                             <button id="btn-play" class="w-10 h-10 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center hover:bg-[var(--accent-hover)] transition-transform active:scale-95 shadow-lg">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
                             </button>
+                            <button id="btn-mute" class="w-10 h-10 rounded-full bg-[var(--bg-input)] text-[var(--text-muted)] flex items-center justify-center hover:bg-[var(--bg-card-hover)] hover:text-white transition-colors border border-[var(--border-color)] shadow-sm hidden" title="Activar Sonido">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+                            </button>
                             <span id="time-display" class="font-mono text-sm font-bold text-[var(--text-muted)] bg-[var(--bg-input)] px-3 py-1.5 rounded-lg border border-[var(--border-color)]">00.00s / 10.00s</span>
                         </div>
                         <button id="btn-add-keyframe" class="text-xs font-bold bg-[var(--bg-card-hover)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
@@ -885,11 +888,34 @@
             let keyframes = [];
             let durationSeconds = 10;
             let isPlaying = false;
+            let isAudioMuted = true;
             let currentPlayTime = 0;
             let animationFrameId = null;
             let lastTimestamp = 0;
 
             let customColorsArray = ['#000000', '#ffffff'];
+
+            const btnMute = document.getElementById('btn-mute');
+
+            function updateMuteButtonUI() {
+                if (isAudioMuted) {
+                    btnMute.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>`;
+                    btnMute.classList.remove('text-[var(--accent-primary)]', 'border-[var(--accent-primary)]');
+                    btnMute.classList.add('text-[var(--text-muted)]', 'border-[var(--border-color)]');
+                    btnMute.title = "Activar Sonido";
+                } else {
+                    btnMute.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.898a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>`;
+                    btnMute.classList.add('text-[var(--accent-primary)]', 'border-[var(--accent-primary)]');
+                    btnMute.classList.remove('text-[var(--text-muted)]', 'border-[var(--border-color)]');
+                    btnMute.title = "Silenciar Sonido";
+                }
+            }
+
+            btnMute.addEventListener('click', () => {
+                isAudioMuted = !isAudioMuted;
+                videoSource.muted = isAudioMuted;
+                updateMuteButtonUI();
+            });
 
             // LÓGICA DE MANEJADOR DE ZOOM Y PANEO
             function updatePreviewTransform() {
@@ -1645,6 +1671,8 @@
                 
                 if (file.type.startsWith('video/')) {
                     isVideo = true;
+                    btnMute.classList.remove('hidden');
+                    videoSource.muted = isAudioMuted;
                     currentMedia = videoSource;
                     videoSource.src = url;
                     videoSource.load(); 
@@ -1668,6 +1696,7 @@
                     };
                 } else {
                     isVideo = false;
+                    btnMute.classList.add('hidden');
                     currentMedia = originalImage;
                     originalImage.src = url;
                     originalImage.onload = () => {
@@ -2361,8 +2390,11 @@
                     URL.revokeObjectURL(url);
                     
                     if (exportAudio) {
-                        videoSource.muted = true;
-                        if (window.exportAudioSource) window.exportAudioSource.disconnect();
+                        videoSource.muted = isAudioMuted; // Restaurar preferencia del usuario
+                        if (window.exportAudioSource) {
+                            window.exportAudioSource.disconnect();
+                            window.exportAudioSource.connect(window.exportAudioCtx.destination); // Reconectar a altavoces
+                        }
                     }
                     
                     document.getElementById('processing-overlay').classList.add('hidden');
