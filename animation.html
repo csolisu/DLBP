@@ -6,6 +6,11 @@
     <title>Dither Lab Pro | Animación y Keyframes</title>
     <meta name="theme-color" content="#1e1e24">
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Muxers para exportación perfecta en MP4 y WebM -->
+    <script src="https://unpkg.com/mp4-muxer/build/mp4-muxer.js"></script>
+    <script src="https://unpkg.com/webm-muxer/build/webm-muxer.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         html { scroll-behavior: smooth; }
@@ -48,22 +53,22 @@
 
         #timeline-scrubber { height: 32px; }
         #timeline-scrubber::-webkit-slider-runnable-track { height: 12px; }
-        #timeline-scrubber::-webkit-slider-thumb { height: 20px; width: 8px; border-radius: 4px; margin-top: -5px; background: #fff; }
+        #timeline-scrubber::-webkit-slider-thumb { height: 20px; width: 8px; border-radius: 4px; margin-top: -5px; background: #fff; cursor: ew-resize; }
         
         .keyframe-marker {
             position: absolute;
             top: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) rotate(45deg);
             width: 12px;
             height: 12px;
             background-color: var(--accent-primary);
             border: 2px solid var(--bg-card);
-            border-radius: 50%;
-            cursor: pointer;
+            cursor: grab;
             z-index: 10;
-            transition: transform 0.2s;
+            transition: transform 0.1s, background-color 0.2s;
         }
-        .keyframe-marker:hover { transform: translate(-50%, -50%) scale(1.5); }
+        .keyframe-marker:hover { transform: translate(-50%, -50%) rotate(45deg) scale(1.3); }
+        .keyframe-marker:active { cursor: grabbing; transform: translate(-50%, -50%) rotate(45deg) scale(1.1); }
         .keyframe-marker.active { background-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
 
         input[type="checkbox"] {
@@ -123,10 +128,10 @@
         </header>
     </div>
 
-    <!-- Envoltura Principal - Modificado para soportar scroll nativo en móvil y estructura sólida en Desktop -->
+    <!-- Envoltura Principal -->
     <div class="flex-grow w-full max-w-screen-2xl mx-auto flex flex-col md:flex-row gap-4 md:gap-6 px-4 md:px-6 pb-4 md:pb-6 pt-0 min-h-0 md:overflow-hidden md:h-[calc(100vh-120px)]">
         
-        <!-- Panel de Controles (Izquierda en Desktop / Abajo en Móvil) -->
+        <!-- Panel de Controles -->
         <div class="w-full md:w-[420px] flex flex-col gap-4 order-3 md:order-1 md:overflow-y-auto custom-scrollbar flex-shrink-0 md:pr-2 md:h-full pb-4 md:pb-0">
             
             <div class="bento-card p-4 group flex-shrink-0 cursor-pointer hover:border-[var(--accent-primary)]/50 transition-colors" id="drop-zone">
@@ -564,7 +569,7 @@
             </div>
         </div>
 
-        <!-- Área Derecha: Previsualización & Línea de Tiempo. Se usa "contents" en móvil para que los hijos fluyan directamente en el contenedor principal y el sticky funcione perfecto -->
+        <!-- Área Derecha: Previsualización & Línea de Tiempo. -->
         <div class="contents md:flex flex-1 md:flex-col gap-4 order-1 md:order-2 md:overflow-hidden md:h-full min-h-0">
             
             <!-- Lienzo Preview con Controles de Zoom -->
@@ -602,13 +607,12 @@
 
                 <div id="processing-overlay" class="absolute inset-0 bg-[var(--bg-main)]/50 backdrop-blur-[2px] z-40 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-200 hidden">
                     <div class="w-8 h-8 border-4 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin mb-3"></div>
-                    <span class="text-white text-xs font-bold tracking-[0.2em] uppercase">Renderizando</span>
+                    <span class="text-white text-xs font-bold tracking-[0.2em] uppercase" id="processing-label">Renderizando</span>
                 </div>
             </div>
 
-            <!-- Panel Animación & Timeline (Independiente y Sticky en Mobile) -->
+            <!-- Panel Animación & Timeline -->
             <div class="order-2 md:order-none bento-card p-3 md:p-4 flex flex-col gap-2 flex-shrink-0 sticky top-[304px] z-[60] md:relative md:top-auto md:z-auto shadow-[0_10px_30px_-10px_rgba(0,0,0,0.8)] md:shadow-none bg-[var(--bg-card)]/95 backdrop-blur-xl md:bg-[var(--bg-card)] md:backdrop-blur-none border border-[var(--border-color)]">
-                <!-- Línea de tiempo principal -->
                 <div class="w-full relative">
                     <div class="flex justify-between items-end mb-2">
                         <div class="flex items-center gap-3">
@@ -620,30 +624,40 @@
                             </button>
                             <span id="time-display" class="font-mono text-sm font-bold text-[var(--text-muted)] bg-[var(--bg-input)] px-3 py-1.5 rounded-lg border border-[var(--border-color)]">00.00s / 10.00s</span>
                         </div>
-                        <button id="btn-add-keyframe" class="text-xs font-bold bg-[var(--bg-card-hover)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            Añadir Keyframe
+                        <button id="btn-toggle-keyframe" class="text-xs font-bold bg-[var(--bg-card-hover)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                            <svg id="kf-icon" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            <span id="kf-text">Añadir Keyframe</span>
                         </button>
                     </div>
 
-                    <div class="relative w-full py-2 group">
+                    <div class="w-full relative flex flex-col gap-2 pt-2">
+                        <!-- Scrubber Track -->
                         <input type="range" id="timeline-scrubber" min="0" max="1000" value="0" class="w-full relative z-10 cursor-pointer">
-                        <div id="keyframes-track" class="absolute top-1/2 left-[8px] right-[8px] h-0 pointer-events-none z-20">
-                            <!-- Marcadores generados por JS -->
+                        
+                        <!-- Keyframes Track -->
+                        <div class="relative w-full h-8 bg-[var(--bg-input)] rounded-lg border border-[var(--border-color)] overflow-hidden">
+                            <div class="absolute top-1/2 left-0 w-full h-px bg-white/10 -translate-y-1/2 pointer-events-none"></div>
+                            <div id="keyframes-track" class="absolute inset-y-0 left-[10px] right-[10px]">
+                                <!-- Marcadores generados por JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Panel Exportación (Independiente) -->
+            <!-- Panel Exportación -->
             <div class="order-4 md:order-none bento-card p-4 flex flex-col gap-4 flex-shrink-0 w-full mb-4 md:mb-0">
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Duración (seg)</label>
-                        <input type="number" id="anim-duration" value="10" min="1" max="60" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
+                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Inicio (s)</label>
+                        <input type="number" id="anim-start" value="0" min="0" step="0.1" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Framerate (FPS)</label>
+                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Duración (s)</label>
+                        <input type="number" id="anim-duration" value="10" min="0.5" max="60" step="0.5" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Framerate</label>
                         <select id="anim-fps" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
                             <option value="12">12 FPS</option>
                             <option value="15">15 FPS</option>
@@ -653,7 +667,14 @@
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Salida Visual</label>
+                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Formato</label>
+                        <select id="export-format" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
+                            <option value="webm" selected>WebM (VP9)</option>
+                            <option value="mp4">MP4 (H.264)</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Resolución</label>
                         <select id="anim-resolution" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
                             <option value="1" selected>Nativa (1x)</option>
                             <option value="1.5">1.5x Escala</option>
@@ -663,10 +684,10 @@
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Audio (Solo Video)</label>
+                        <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Audio Video</label>
                         <select id="export-audio" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
-                            <option value="none" selected>Sin Audio (Rápido)</option>
-                            <option value="source">Con Audio (Render TR)</option>
+                            <option value="none" selected>Sin Audio</option>
+                            <option value="source">Con Audio</option>
                         </select>
                     </div>
                     <div class="flex flex-col justify-end">
@@ -826,7 +847,7 @@
             function showToast(message, type = 'success') {
                 const container = document.getElementById('toast-container');
                 const toast = document.createElement('div');
-                const bgColor = type === 'success' ? 'bg-emerald-500/90' : type === 'error' ? 'bg-red-500/90' : 'bg-[var(--accent-primary)]/90';
+                const bgColor = type === 'success' ? 'bg-emerald-500/90' : type === 'error' ? 'bg-red-500/90' : (type === 'warning' ? 'bg-orange-500/90' : 'bg-[var(--accent-primary)]/90');
                 toast.className = `toast ${bgColor} text-white px-4 py-3 rounded-xl shadow-lg backdrop-blur-md flex items-center gap-3 border border-white/20 text-sm font-bold min-w-[250px]`;
                 toast.innerHTML = `<span>${message}</span>`;
                 container.appendChild(toast);
@@ -855,12 +876,38 @@
             const videoSource = document.getElementById('video-source');
             const loadingOverlay = document.getElementById('loading-overlay');
 
+            const exportFormatSelect = document.getElementById('export-format');
+            const exportAudioSelect = document.getElementById('export-audio');
+
             let originalImage = new Image();
             let currentMedia = originalImage;
             let isVideo = false;
             let isRendering = false;
 
-            // ESTADO PAN/ZOOM UI (Solo Visualización)
+            // Sincronización Dinámica de Exportación
+            function syncExportUI() {
+                const optAudioNone = exportAudioSelect.querySelector('option[value="none"]');
+                const optAudioSource = exportAudioSelect.querySelector('option[value="source"]');
+
+                if (isVideo) {
+                    optAudioSource.disabled = false;
+                    if (exportFormatSelect.value === 'mp4') {
+                        exportAudioSelect.value = 'source';
+                        optAudioNone.disabled = true;
+                    } else {
+                        optAudioNone.disabled = false;
+                    }
+                } else {
+                    optAudioSource.disabled = true;
+                    optAudioNone.disabled = false;
+                    exportAudioSelect.value = 'none';
+                }
+            }
+
+            exportFormatSelect.addEventListener('change', syncExportUI);
+            syncExportUI(); // Estado inicial de la página
+
+            // ESTADO PAN/ZOOM UI
             let previewZoom = 1;
             let previewPanX = 0;
             let previewPanY = 0;
@@ -870,7 +917,7 @@
             const canvasWrapper = document.getElementById('canvas-wrapper');
             const zoomLevelLbl = document.getElementById('zoom-level-lbl');
 
-            // POST-PALETA HSL MODIFICADORES
+            // POST-PALETA
             let selectedPostColorHex = null;
             let postModifications = {};
 
@@ -886,6 +933,7 @@
 
             // ESTADO DE ANIMACIÓN
             let keyframes = [];
+            let trimStartSeconds = 0;
             let durationSeconds = 10;
             let isPlaying = false;
             let isAudioMuted = true;
@@ -1309,7 +1357,6 @@
                 });
                 state['customColorsArray'] = [...customColorsArray];
                 
-                // Incorporamos post-modifications
                 state['postModifications'] = JSON.parse(JSON.stringify(postModifications));
                 return state;
             }
@@ -1371,13 +1418,6 @@
                 updateKfButtonsUI();
             }
 
-            function initBaseKeyframe() {
-                if (keyframes.length === 0) {
-                    keyframes.push({ time: 0, data: getUIState() });
-                    updateKeyframeMarkers();
-                }
-            }
-
             function lerpState(stateA, stateB, ratio) {
                 const result = {};
                 for (let key in stateA) {
@@ -1391,7 +1431,6 @@
                 }
                 result['customColorsArray'] = ratio < 1 ? [...stateA['customColorsArray']] : [...stateB['customColorsArray']];
                 
-                // Interpolación individual de las modificaciones HSL post-paleta
                 result['postModifications'] = {};
                 const allColors = new Set([
                     ...Object.keys(stateA['postModifications'] || {}), 
@@ -1433,28 +1472,36 @@
                 return getUIState();
             }
 
-            function addGlobalKeyframe() {
+            function toggleGlobalKeyframe() {
                 const tolerance = 50; 
-                keyframes = keyframes.filter(k => Math.abs(k.time - currentPlayTime) > tolerance);
-                keyframes.push({ time: currentPlayTime, data: getUIState() });
-                keyframes.sort((a, b) => a.time - b.time);
+                const existingIndex = keyframes.findIndex(k => Math.abs(k.time - currentPlayTime) <= tolerance);
+                
+                if (existingIndex !== -1) {
+                    keyframes.splice(existingIndex, 1);
+                    showToast(`Keyframe eliminado en ${(currentPlayTime/1000).toFixed(2)}s`, 'success');
+                } else {
+                    keyframes.push({ time: currentPlayTime, data: getUIState() });
+                    keyframes.sort((a, b) => a.time - b.time);
+                    showToast(`Keyframe añadido en ${(currentPlayTime/1000).toFixed(2)}s`, 'success');
+                }
+                
                 updateKeyframeMarkers();
                 updateKfButtonsUI();
-                showToast(`Keyframe añadido en ${(currentPlayTime/1000).toFixed(2)}s`);
             }
 
             document.querySelectorAll('.kf-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    addGlobalKeyframe();
+                    toggleGlobalKeyframe();
                 });
             });
 
-            document.getElementById('btn-add-keyframe').addEventListener('click', addGlobalKeyframe);
+            document.getElementById('btn-toggle-keyframe').addEventListener('click', toggleGlobalKeyframe);
 
             function updateKfButtonsUI() {
                 const tolerance = 50;
                 const hasKfHere = keyframes.some(k => Math.abs(k.time - currentPlayTime) < tolerance);
+                
                 document.querySelectorAll('.kf-btn').forEach(btn => {
                     if (hasKfHere) {
                         btn.classList.add('has-kf');
@@ -1464,12 +1511,29 @@
                         btn.innerHTML = '⬦';
                     }
                 });
+
+                const btnToggleMain = document.getElementById('btn-toggle-keyframe');
+                const kfText = document.getElementById('kf-text');
+                const kfIcon = document.getElementById('kf-icon');
+
+                if (hasKfHere) {
+                    kfText.textContent = "Quitar Keyframe";
+                    kfIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>`;
+                    btnToggleMain.classList.replace('text-white', 'text-[var(--accent-primary)]');
+                    btnToggleMain.classList.add('border-[var(--accent-primary)]');
+                } else {
+                    kfText.textContent = "Añadir Keyframe";
+                    kfIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>`;
+                    btnToggleMain.classList.replace('text-[var(--accent-primary)]', 'text-white');
+                    btnToggleMain.classList.remove('border-[var(--accent-primary)]');
+                }
             }
 
             // --- UI TIMELINE ---
             const scrubber = document.getElementById('timeline-scrubber');
             const timeDisplay = document.getElementById('time-display');
             const durationInput = document.getElementById('anim-duration');
+            const startInput = document.getElementById('anim-start');
             const trackContainer = document.getElementById('keyframes-track');
 
             function updateTimeDisplay() {
@@ -1487,28 +1551,54 @@
                     if (kf.time > totalMs) return;
                     const pct = (kf.time / totalMs) * 100;
                     const marker = document.createElement('div');
-                    marker.className = 'keyframe-marker';
+                    marker.className = 'keyframe-marker cursor-grab active:cursor-grabbing';
                     marker.style.left = `${pct}%`;
-                    marker.title = `Keyframe ${index + 1} (${(kf.time/1000).toFixed(2)}s)\nClick derecho para borrar`;
+                    marker.title = `Keyframe ${index + 1} (${(kf.time/1000).toFixed(2)}s)\nArrastra para mover. Click derecho para borrar.`;
                     
-                    marker.addEventListener('click', (e) => {
+                    marker.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return; 
+                        e.preventDefault(); 
                         e.stopPropagation();
-                        currentPlayTime = kf.time;
-                        scrubber.value = (currentPlayTime / totalMs) * 1000;
-                        syncEngineToTime(currentPlayTime);
-                        updateTimeDisplay();
+                        let isDraggingKF = false;
+                        let startX = e.clientX;
+                        const trackRect = trackContainer.getBoundingClientRect();
+                        
+                        const onMouseMove = (moveEvent) => {
+                            if (Math.abs(moveEvent.clientX - startX) > 2) isDraggingKF = true; 
+                            if (!isDraggingKF) return;
+                            
+                            let newX = moveEvent.clientX - trackRect.left;
+                            let newPct = Math.max(0, Math.min(1, newX / trackRect.width));
+                            kf.time = newPct * totalMs;
+                            marker.style.left = `${newPct * 100}%`;
+                        };
+                        
+                        const onMouseUp = (upEvent) => {
+                            if (!isDraggingKF) {
+                                currentPlayTime = kf.time;
+                                scrubber.value = (currentPlayTime / totalMs) * 1000;
+                            } else {
+                                keyframes.sort((a, b) => a.time - b.time);
+                                updateKeyframeMarkers();
+                            }
+                            syncEngineToTime(currentPlayTime);
+                            updateTimeDisplay();
+                            
+                            document.removeEventListener('mousemove', onMouseMove);
+                            document.removeEventListener('mouseup', onMouseUp);
+                        };
+                        
+                        document.addEventListener('mousemove', onMouseMove);
+                        document.addEventListener('mouseup', onMouseUp);
                     });
 
                     marker.addEventListener('contextmenu', (e) => {
                         e.preventDefault();
-                        if (keyframes.length > 1) {
-                            keyframes.splice(index, 1);
-                            updateKeyframeMarkers();
-                            showToast('Keyframe eliminado', 'success');
-                            syncEngineToTime(currentPlayTime);
-                        } else {
-                            showToast('Debe existir al menos un Keyframe', 'error');
-                        }
+                        keyframes.splice(index, 1);
+                        updateKeyframeMarkers();
+                        showToast('Keyframe eliminado', 'success');
+                        syncEngineToTime(currentPlayTime);
+                        updateKfButtonsUI();
                     });
 
                     trackContainer.appendChild(marker);
@@ -1521,7 +1611,7 @@
                 
                 if (isVideo) {
                     videoSource.onseeked = null; 
-                    videoSource.currentTime = time / 1000;
+                    videoSource.currentTime = trimStartSeconds + (time / 1000);
                     if (!isPlaying) {
                         videoSource.onseeked = () => {
                             scheduleProcess();
@@ -1540,6 +1630,12 @@
                 if(currentPlayTime > durationSeconds * 1000) currentPlayTime = durationSeconds * 1000;
                 updateTimeDisplay();
                 updateKeyframeMarkers();
+            });
+
+            startInput.addEventListener('change', (e) => {
+                trimStartSeconds = parseFloat(e.target.value) || 0;
+                if (isVideo && trimStartSeconds > videoSource.duration) trimStartSeconds = 0;
+                syncEngineToTime(currentPlayTime);
             });
 
             scrubber.addEventListener('input', (e) => {
@@ -1562,7 +1658,7 @@
                     if (currentPlayTime >= durationSeconds * 1000) currentPlayTime = 0;
                     
                     if (isVideo) {
-                        videoSource.currentTime = currentPlayTime / 1000;
+                        videoSource.currentTime = trimStartSeconds + (currentPlayTime / 1000);
                         videoSource.play().catch(e => console.warn('Reproducción de video prevenida', e));
                     }
                     
@@ -1583,7 +1679,7 @@
                 if (!isPlaying) return;
                 
                 if (isVideo) {
-                    currentPlayTime = videoSource.currentTime * 1000;
+                    currentPlayTime = (videoSource.currentTime - trimStartSeconds) * 1000;
                     if (videoSource.ended || currentPlayTime >= durationSeconds * 1000) {
                         currentPlayTime = durationSeconds * 1000;
                         togglePlay(); 
@@ -1669,8 +1765,16 @@
                 showLoading();
                 const url = URL.createObjectURL(file);
                 
+                keyframes = [];
+                updateKeyframeMarkers();
+                updateKfButtonsUI();
+
                 if (file.type.startsWith('video/')) {
                     isVideo = true;
+                    exportFormatSelect.value = 'webm';
+                    exportAudioSelect.value = 'source';
+                    syncExportUI();
+
                     btnMute.classList.remove('hidden');
                     videoSource.muted = isAudioMuted;
                     currentMedia = videoSource;
@@ -1684,9 +1788,9 @@
                         if (videoSource.duration && videoSource.duration !== Infinity) {
                             durationSeconds = videoSource.duration;
                             document.getElementById('anim-duration').value = durationSeconds.toFixed(1);
+                            document.getElementById('anim-start').max = durationSeconds.toFixed(1);
                         }
                         
-                        initBaseKeyframe();
                         syncEngineToTime(0);
                         videoSource.oncanplay = null;
                     };
@@ -1696,13 +1800,16 @@
                     };
                 } else {
                     isVideo = false;
+                    exportFormatSelect.value = 'webm';
+                    exportAudioSelect.value = 'none';
+                    syncExportUI();
+
                     btnMute.classList.add('hidden');
                     currentMedia = originalImage;
                     originalImage.src = url;
                     originalImage.onload = () => {
                         hideLoading();
                         controls.classList.remove('opacity-50', 'pointer-events-none');
-                        initBaseKeyframe();
                         syncEngineToTime(0);
                     };
                     originalImage.onerror = () => {
@@ -1855,7 +1962,7 @@
             }
 
             // --- FUNCIÓN MAESTRA DE RENDERIZADO CON SOPORTE ESTADO ---
-            function processMediaToCanvas(targetCanvas, targetCtx, forceScale = null) {
+            function processMediaToCanvas(targetCanvas, targetCtx, isExport = false, exportW = 0, exportH = 0) {
                 if (!currentMedia || (isVideo && currentMedia.readyState < 2) || (!isVideo && !currentMedia.src)) return;
 
                 const sourceWidth = isVideo ? currentMedia.videoWidth : currentMedia.width;
@@ -1863,19 +1970,21 @@
 
                 const state = getUIState(); 
 
-                const baseScale = state.scale / 100;
-                let scale = baseScale;
-                
-                if (forceScale === 'HD') scale = 1080 / sourceHeight;
-                else if (forceScale === '4K') scale = 2160 / sourceHeight;
-                else if (forceScale !== null) scale = baseScale * forceScale;
+                const scale = state.scale / 100;
 
                 const w = Math.max(1, Math.floor(sourceWidth * scale));
                 const h = Math.max(1, Math.floor(sourceHeight * scale));
                 
-                if (targetCanvas.width !== w || targetCanvas.height !== h) {
-                    targetCanvas.width = w; targetCanvas.height = h;
-                    buffer.width = w; buffer.height = h;
+                if (!window.ditherWorkerCanvas) {
+                    window.ditherWorkerCanvas = document.createElement('canvas');
+                    window.ditherWorkerCtx = window.ditherWorkerCanvas.getContext('2d', { willReadFrequently: true });
+                }
+                
+                if (window.ditherWorkerCanvas.width !== w || window.ditherWorkerCanvas.height !== h) {
+                    window.ditherWorkerCanvas.width = w; 
+                    window.ditherWorkerCanvas.height = h;
+                    buffer.width = w; 
+                    buffer.height = h;
                 }
 
                 bCtx.drawImage(currentMedia, 0, 0, w, h);
@@ -2321,162 +2430,303 @@
                     }
                 }
 
-                targetCtx.putImageData(imageData, 0, 0);
+                window.ditherWorkerCtx.putImageData(imageData, 0, 0);
+
+                if (isExport) {
+                    targetCtx.imageSmoothingEnabled = false;
+                    targetCtx.clearRect(0, 0, exportW, exportH);
+                    targetCtx.drawImage(window.ditherWorkerCanvas, 0, 0, exportW, exportH);
+                } else {
+                    if (targetCanvas.width !== w || targetCanvas.height !== h) {
+                        targetCanvas.width = w; 
+                        targetCanvas.height = h;
+                    }
+                    targetCtx.putImageData(imageData, 0, 0);
+                }
             }
 
-            // --- EXPORTACIÓN DE VIDEO CON AUDIO OPCIONAL ---
+            // --- EXPORTACIÓN PERFECCIONADA DE VIDEO ---
             const btnExport = document.getElementById('btn-export-video');
             btnExport.addEventListener('click', async () => {
                 if (!currentMedia || (isVideo && currentMedia.readyState < 2) || (!isVideo && !currentMedia.src)) {
                     showToast('Por favor carga un archivo multimedia primero', 'error');
                     return;
                 }
-                if (keyframes.length === 0) {
-                    showToast('Añade al menos un Keyframe para animar', 'error');
-                    return;
-                }
 
                 if (isPlaying) togglePlay();
 
                 const exportFps = parseInt(document.getElementById('anim-fps').value);
-                const resolutionMult = document.getElementById('anim-resolution').value;
+                const resolutionMultStr = document.getElementById('anim-resolution').value;
                 const exportAudio = document.getElementById('export-audio').value === 'source' && isVideo;
+                const selectedFormat = document.getElementById('export-format').value;
                 
                 const totalMs = durationSeconds * 1000;
                 const totalFrames = Math.floor(durationSeconds * exportFps);
                 
-                showToast(`Iniciando renderizado... Resolucion: ${resolutionMult}, FPS: ${exportFps}${exportAudio ? ' (Con Audio)' : ''}`);
-                
-                const expCanvas = document.createElement('canvas');
-                const expCtx = expCanvas.getContext('2d');
-                
-                const stream = expCanvas.captureStream(exportFps); 
-                
-                if (exportAudio) {
-                    videoSource.muted = false;
-                    videoSource.volume = 1;
-                    
-                    // Enrutamiento de audio en segundo plano silencioso (Web Audio API)
-                    if (!window.exportAudioCtx) {
-                        window.exportAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                        window.exportAudioSource = window.exportAudioCtx.createMediaElementSource(videoSource);
-                    }
-                    // Reanudar el contexto si estuviera suspendido por el navegador
-                    if (window.exportAudioCtx.state === 'suspended') {
-                        window.exportAudioCtx.resume();
-                    }
-                    
-                    const audioDest = window.exportAudioCtx.createMediaStreamDestination();
-                    window.exportAudioSource.disconnect(); // Limpiar conexiones previas
-                    window.exportAudioSource.connect(audioDest); // Conectar al destino silencioso
-                    
-                    audioDest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+                // CALCULAR TAMAÑO FIJO DE EXPORTACIÓN
+                let baseWidth = isVideo ? currentMedia.videoWidth : currentMedia.width;
+                let baseHeight = isVideo ? currentMedia.videoHeight : currentMedia.height;
+
+                let finalExpWidth, finalExpHeight;
+                if (resolutionMultStr === 'HD') {
+                    const ratio = baseWidth / baseHeight;
+                    finalExpHeight = 1080;
+                    finalExpWidth = Math.round(1080 * ratio);
+                } else if (resolutionMultStr === '4K') {
+                    const ratio = baseWidth / baseHeight;
+                    finalExpHeight = 2160;
+                    finalExpWidth = Math.round(2160 * ratio);
+                } else {
+                    const mult = parseFloat(resolutionMultStr) || 1;
+                    finalExpWidth = Math.round(baseWidth * mult);
+                    finalExpHeight = Math.round(baseHeight * mult);
                 }
 
-                let mimeType = 'video/webm; codecs=vp9';
-                if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-                
-                const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
-                const chunks = [];
-                recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
-                
-                recorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: mimeType });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `dither_anim_${Date.now()}.webm`;
-                    a.click();
-                    URL.revokeObjectURL(url);
+                // Fuerza valores estrictamente pares para que el códec AVC (MP4) de WebCodecs no falle
+                finalExpWidth = Math.floor(finalExpWidth / 2) * 2;
+                finalExpHeight = Math.floor(finalExpHeight / 2) * 2;
+
+                const expCanvas = document.createElement('canvas');
+                expCanvas.width = finalExpWidth;
+                expCanvas.height = finalExpHeight;
+                const expCtx = expCanvas.getContext('2d', { willReadFrequently: true });
+
+                // DEFINICIÓN DE MOTOR DE EXPORTACIÓN (WebCodecs para perfecta matemática, o Fallback a MediaRecorder)
+                let useWebCodecs = !exportAudio && typeof VideoEncoder !== 'undefined' && typeof Mp4Muxer !== 'undefined' && typeof WebMMuxer !== 'undefined';
+
+                if (useWebCodecs) {
+                    try {
+                        const config = {
+                            codec: selectedFormat === 'mp4' ? 'avc1.4d002a' : 'vp09.00.10.08',
+                            width: finalExpWidth,
+                            height: finalExpHeight,
+                            bitrate: 8_000_000,
+                            framerate: exportFps
+                        };
+                        const support = await VideoEncoder.isConfigSupported(config);
+                        if (!support.supported) {
+                            useWebCodecs = false;
+                            console.warn("VideoEncoder no soporta esta configuración, usando fallback a MediaRecorder.");
+                        }
+                    } catch (e) {
+                        useWebCodecs = false;
+                    }
+                }
+
+                if (!useWebCodecs) {
+                    // MODO MEDIARECORDER (Si se requiere audio o si WebCodecs no está disponible)
+                    showToast(exportAudio ? 'Exportación en Tiempo Real (Con Audio)' : 'Renderizando (Fallback MP4 a WebM en navegadores limitados)', 'warning');
+                    
+                    const stream = expCanvas.captureStream(exportFps); 
                     
                     if (exportAudio) {
-                        videoSource.muted = isAudioMuted; // Restaurar preferencia del usuario
-                        if (window.exportAudioSource) {
-                            window.exportAudioSource.disconnect();
-                            window.exportAudioSource.connect(window.exportAudioCtx.destination); // Reconectar a altavoces
+                        videoSource.muted = false;
+                        videoSource.volume = 1;
+                        
+                        if (!window.exportAudioCtx) {
+                            window.exportAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            window.exportAudioSource = window.exportAudioCtx.createMediaElementSource(videoSource);
                         }
+                        if (window.exportAudioCtx.state === 'suspended') {
+                            window.exportAudioCtx.resume();
+                        }
+                        
+                        const audioDest = window.exportAudioCtx.createMediaStreamDestination();
+                        window.exportAudioSource.disconnect();
+                        window.exportAudioSource.connect(audioDest);
+                        
+                        audioDest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+                    }
+
+                    let mimeType = '';
+                    let fileExt = '';
+
+                    if (selectedFormat === 'mp4') {
+                        const mp4Types = ['video/mp4; codecs="avc1.42E01E, mp4a.40.2"', 'video/mp4', 'video/x-matroska;codecs=avc1'];
+                        for (let t of mp4Types) {
+                            if (MediaRecorder.isTypeSupported(t)) {
+                                mimeType = t;
+                                fileExt = 'mp4';
+                                break;
+                            }
+                        }
+                        if (!mimeType) {
+                            mimeType = 'video/webm; codecs=vp9';
+                            if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+                            fileExt = 'webm';
+                            showToast('Navegador actual restringe MP4 por seguridad. Usando WebM seguro.', 'error');
+                        }
+                    } else {
+                        mimeType = 'video/webm; codecs=vp9';
+                        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+                        fileExt = 'webm';
                     }
                     
-                    document.getElementById('processing-overlay').classList.add('hidden');
-                    btnExport.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Exportar`;
-                    btnExport.disabled = false;
-                    showToast('Exportación Finalizada', 'success');
-                };
-
-                recorder.start();
-
-                document.getElementById('processing-overlay').classList.remove('hidden');
-                document.getElementById('processing-overlay').classList.remove('opacity-0');
-                btnExport.innerHTML = 'Procesando...';
-                btnExport.disabled = true;
-
-                if (exportAudio) {
-                    // Modo de Exportación en Tiempo Real
-                    videoSource.currentTime = 0;
-                    await new Promise(r => { videoSource.onseeked = r; });
-                    videoSource.play();
-
-                    let isExporting = true;
-                    const renderLoop = () => {
-                        if (!isExporting) return;
-                        const t = videoSource.currentTime * 1000;
-                        
-                        if (t >= totalMs || videoSource.ended) {
-                            isExporting = false;
-                            recorder.stop();
-                            videoSource.pause();
-                            document.getElementById('top-progress').style.width = `0%`;
-                            currentPlayTime = 0;
-                            syncEngineToTime(0);
-                            updateTimeDisplay();
-                            return;
-                        }
-
-                        document.getElementById('top-progress').style.width = `${(t/totalMs)*100}%`;
-                        const state = getInterpolatedStateForTime(t);
-                        applyStateToUI(state);
-                        processMediaToCanvas(expCanvas, expCtx, resolutionMult);
-                        
-                        requestAnimationFrame(renderLoop);
-                    };
-                    requestAnimationFrame(renderLoop);
-
-                } else {
-                    // Modo de Exportación Frame por Frame
-                    for (let f = 0; f <= totalFrames; f++) {
-                        const t = (f / exportFps) * 1000;
-                        document.getElementById('top-progress').style.width = `${(f/totalFrames)*100}%`;
-                        
-                        const state = getInterpolatedStateForTime(t);
-                        applyStateToUI(state);
-                        currentPlayTime = t; 
+                    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
+                    const chunks = [];
+                    recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+                    
+                    recorder.onstop = () => {
+                        const blob = new Blob(chunks, { type: mimeType });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `dither_anim_${Date.now()}.${fileExt}`;
+                        a.click();
+                        URL.revokeObjectURL(url);
                         
                         if (isVideo) {
-                            videoSource.currentTime = t / 1000;
-                            await new Promise(r => {
-                                let resolved = false;
-                                const timeout = setTimeout(() => { if(!resolved) { resolved = true; r(); } }, 500);
-                                videoSource.onseeked = () => {
-                                    if(!resolved) { resolved = true; clearTimeout(timeout); r(); }
-                                };
-                            });
+                            videoSource.muted = isAudioMuted;
+                            if (exportAudio && window.exportAudioSource) {
+                                window.exportAudioSource.disconnect();
+                                window.exportAudioSource.connect(window.exportAudioCtx.destination);
+                            }
                         }
-
-                        processMediaToCanvas(expCanvas, expCtx, resolutionMult);
                         
-                        const track = stream.getVideoTracks()[0];
-                        if (track && track.requestFrame) track.requestFrame();
-
-                        await new Promise(r => setTimeout(r, 10));
-                    }
-
-                    setTimeout(() => {
-                        recorder.stop();
+                        document.getElementById('processing-overlay').classList.add('hidden');
                         document.getElementById('top-progress').style.width = `0%`;
                         currentPlayTime = 0;
                         syncEngineToTime(0);
                         updateTimeDisplay();
-                    }, 500);
+                        
+                        btnExport.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Exportar`;
+                        btnExport.disabled = false;
+                        showToast('Exportación Finalizada', 'success');
+                    };
+
+                    recorder.start();
+
+                    document.getElementById('processing-overlay').classList.remove('hidden');
+                    document.getElementById('processing-overlay').classList.remove('opacity-0');
+                    btnExport.innerHTML = 'Procesando...';
+                    btnExport.disabled = true;
+
+                    if (isVideo) {
+                        videoSource.muted = !exportAudio;
+                        videoSource.currentTime = trimStartSeconds;
+                        await new Promise(r => { videoSource.onseeked = r; });
+                        videoSource.play();
+                    }
+
+                    let startTime = null;
+                    let isExporting = true;
+                    
+                    const renderLoop = (timestamp) => {
+                        if (!isExporting) return;
+                        if (!startTime) startTime = timestamp;
+                        
+                        let t = isVideo ? ((videoSource.currentTime - trimStartSeconds) * 1000) : (timestamp - startTime);
+                        
+                        if (t >= totalMs || (isVideo && videoSource.ended) || (isVideo && videoSource.currentTime >= trimStartSeconds + durationSeconds)) {
+                            isExporting = false;
+                            recorder.stop();
+                            if (isVideo) videoSource.pause();
+                            return;
+                        }
+
+                        document.getElementById('top-progress').style.width = `${(t/totalMs)*100}%`;
+                        
+                        const state = getInterpolatedStateForTime(t);
+                        applyStateToUI(state);
+                        processMediaToCanvas(expCanvas, expCtx, true, finalExpWidth, finalExpHeight);
+                        
+                        requestAnimationFrame(renderLoop);
+                    };
+                    
+                    requestAnimationFrame(renderLoop);
+
+                } else {
+                    // MODO WEBCODECS (Frame a Frame Matemáticamente Perfecto)
+                    try {
+                        let MuxerClass = selectedFormat === 'mp4' ? Mp4Muxer.Muxer : WebMMuxer.Muxer;
+                        let ArrayBufferTarget = selectedFormat === 'mp4' ? Mp4Muxer.ArrayBufferTarget : WebMMuxer.ArrayBufferTarget;
+
+                        let muxer = new MuxerClass({
+                            target: new ArrayBufferTarget(),
+                            video: {
+                                codec: selectedFormat === 'mp4' ? 'avc' : 'V_VP9',
+                                width: finalExpWidth,
+                                height: finalExpHeight
+                            }
+                        });
+
+                        let videoEncoder = new VideoEncoder({
+                            output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+                            error: e => { console.error(e); showToast('Error interno de codificación de Video', 'error'); }
+                        });
+
+                        videoEncoder.configure({
+                            codec: selectedFormat === 'mp4' ? 'avc1.4d002a' : 'vp09.00.10.08',
+                            width: finalExpWidth,
+                            height: finalExpHeight,
+                            bitrate: 8_000_000,
+                            framerate: exportFps
+                        });
+
+                        const frameDurationUs = 1000000 / exportFps;
+                        
+                        document.getElementById('processing-overlay').classList.remove('hidden');
+                        document.getElementById('processing-overlay').classList.remove('opacity-0');
+                        btnExport.innerHTML = 'Calculando Fotogramas...';
+                        btnExport.disabled = true;
+
+                        for (let f = 0; f <= totalFrames; f++) {
+                            const t = (f / exportFps) * 1000;
+                            document.getElementById('top-progress').style.width = `${(f/totalFrames)*100}%`;
+                            
+                            const state = getInterpolatedStateForTime(t);
+                            applyStateToUI(state);
+                            currentPlayTime = t; 
+                            
+                            if (isVideo) {
+                                videoSource.currentTime = trimStartSeconds + (t / 1000);
+                                await new Promise(r => {
+                                    let resolved = false;
+                                    const timeout = setTimeout(() => { if(!resolved) { resolved = true; r(); } }, 500);
+                                    videoSource.onseeked = () => {
+                                        if(!resolved) { resolved = true; clearTimeout(timeout); r(); }
+                                    };
+                                });
+                            }
+
+                            processMediaToCanvas(expCanvas, expCtx, true, finalExpWidth, finalExpHeight);
+                            
+                            let frame = new VideoFrame(expCanvas, { timestamp: f * frameDurationUs });
+                            videoEncoder.encode(frame, { keyFrame: f % exportFps === 0 });
+                            frame.close();
+
+                            await new Promise(r => setTimeout(r, 0));
+                        }
+
+                        await videoEncoder.flush();
+                        muxer.finalize();
+                        
+                        let buffer = muxer.target.buffer;
+                        let blob = new Blob([buffer], { type: selectedFormat === 'mp4' ? 'video/mp4' : 'video/webm' });
+                        let url = URL.createObjectURL(blob);
+                        let a = document.createElement('a');
+                        a.href = url;
+                        a.download = `dither_anim_${Date.now()}.${selectedFormat}`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+
+                        document.getElementById('processing-overlay').classList.add('hidden');
+                        document.getElementById('top-progress').style.width = `0%`;
+                        currentPlayTime = 0;
+                        syncEngineToTime(0);
+                        updateTimeDisplay();
+                        
+                        btnExport.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Exportar`;
+                        btnExport.disabled = false;
+                        showToast('Video Matemáticamente Perfecto Creado', 'success');
+
+                    } catch (err) {
+                        console.error(err);
+                        showToast('La configuración de exportación superó los recursos. Intenta WebM.', 'error');
+                        btnExport.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Exportar`;
+                        btnExport.disabled = false;
+                        document.getElementById('processing-overlay').classList.add('hidden');
+                    }
                 }
             });
 
