@@ -7,8 +7,7 @@
     <meta name="theme-color" content="#1e1e24">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Muxers para exportación perfecta en MP4 y WebM -->
-    <script src="https://unpkg.com/mp4-muxer/build/mp4-muxer.js"></script>
+    <!-- Muxer para exportación perfecta en WebM -->
     <script src="https://unpkg.com/webm-muxer/build/webm-muxer.js"></script>
 
     <style>
@@ -670,7 +669,6 @@
                         <label class="text-[10px] text-[var(--text-muted)] font-semibold uppercase">Formato</label>
                         <select id="export-format" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white outline-none focus:border-[var(--accent-primary)]">
                             <option value="webm" selected>WebM (VP9)</option>
-                            <option value="mp4">MP4 (H.264)</option>
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
@@ -891,12 +889,7 @@
 
                 if (isVideo) {
                     optAudioSource.disabled = false;
-                    if (exportFormatSelect.value === 'mp4') {
-                        exportAudioSelect.value = 'source';
-                        optAudioNone.disabled = true;
-                    } else {
-                        optAudioNone.disabled = false;
-                    }
+                    optAudioNone.disabled = false;
                 } else {
                     optAudioSource.disabled = true;
                     optAudioNone.disabled = false;
@@ -1771,7 +1764,6 @@
 
                 if (file.type.startsWith('video/')) {
                     isVideo = true;
-                    exportFormatSelect.value = 'webm';
                     exportAudioSelect.value = 'source';
                     syncExportUI();
 
@@ -1800,7 +1792,6 @@
                     };
                 } else {
                     isVideo = false;
-                    exportFormatSelect.value = 'webm';
                     exportAudioSelect.value = 'none';
                     syncExportUI();
 
@@ -2458,7 +2449,6 @@
                 const exportFps = parseInt(document.getElementById('anim-fps').value);
                 const resolutionMultStr = document.getElementById('anim-resolution').value;
                 const exportAudio = document.getElementById('export-audio').value === 'source' && isVideo;
-                const selectedFormat = document.getElementById('export-format').value;
                 
                 const totalMs = durationSeconds * 1000;
                 const totalFrames = Math.floor(durationSeconds * exportFps);
@@ -2482,7 +2472,7 @@
                     finalExpHeight = Math.round(baseHeight * mult);
                 }
 
-                // Fuerza valores estrictamente pares para que el códec AVC (MP4) de WebCodecs no falle
+                // Fuerza valores estrictamente pares para que el códec de WebCodecs no falle
                 finalExpWidth = Math.floor(finalExpWidth / 2) * 2;
                 finalExpHeight = Math.floor(finalExpHeight / 2) * 2;
 
@@ -2492,12 +2482,12 @@
                 const expCtx = expCanvas.getContext('2d', { willReadFrequently: true });
 
                 // DEFINICIÓN DE MOTOR DE EXPORTACIÓN (WebCodecs para perfecta matemática, o Fallback a MediaRecorder)
-                let useWebCodecs = !exportAudio && typeof VideoEncoder !== 'undefined' && typeof Mp4Muxer !== 'undefined' && typeof WebMMuxer !== 'undefined';
+                let useWebCodecs = !exportAudio && typeof VideoEncoder !== 'undefined' && typeof WebMMuxer !== 'undefined';
 
                 if (useWebCodecs) {
                     try {
                         const config = {
-                            codec: selectedFormat === 'mp4' ? 'avc1.4d002a' : 'vp09.00.10.08',
+                            codec: 'vp09.00.10.08',
                             width: finalExpWidth,
                             height: finalExpHeight,
                             bitrate: 8_000_000,
@@ -2515,7 +2505,7 @@
 
                 if (!useWebCodecs) {
                     // MODO MEDIARECORDER (Si se requiere audio o si WebCodecs no está disponible)
-                    showToast(exportAudio ? 'Exportación en Tiempo Real (Con Audio)' : 'Renderizando (Fallback MP4 a WebM en navegadores limitados)', 'warning');
+                    showToast(exportAudio ? 'Exportación en Tiempo Real (Con Audio)' : 'Renderizando (Fallback a WebM)', 'warning');
                     
                     const stream = expCanvas.captureStream(exportFps); 
                     
@@ -2538,29 +2528,9 @@
                         audioDest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
                     }
 
-                    let mimeType = '';
-                    let fileExt = '';
-
-                    if (selectedFormat === 'mp4') {
-                        const mp4Types = ['video/mp4; codecs="avc1.42E01E, mp4a.40.2"', 'video/mp4', 'video/x-matroska;codecs=avc1'];
-                        for (let t of mp4Types) {
-                            if (MediaRecorder.isTypeSupported(t)) {
-                                mimeType = t;
-                                fileExt = 'mp4';
-                                break;
-                            }
-                        }
-                        if (!mimeType) {
-                            mimeType = 'video/webm; codecs=vp9';
-                            if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-                            fileExt = 'webm';
-                            showToast('Navegador actual restringe MP4 por seguridad. Usando WebM seguro.', 'error');
-                        }
-                    } else {
-                        mimeType = 'video/webm; codecs=vp9';
-                        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-                        fileExt = 'webm';
-                    }
+                    let mimeType = 'video/webm; codecs=vp9';
+                    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+                    let fileExt = 'webm';
                     
                     const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
                     const chunks = [];
@@ -2638,13 +2608,13 @@
                 } else {
                     // MODO WEBCODECS (Frame a Frame Matemáticamente Perfecto)
                     try {
-                        let MuxerClass = selectedFormat === 'mp4' ? Mp4Muxer.Muxer : WebMMuxer.Muxer;
-                        let ArrayBufferTarget = selectedFormat === 'mp4' ? Mp4Muxer.ArrayBufferTarget : WebMMuxer.ArrayBufferTarget;
+                        let MuxerClass = WebMMuxer.Muxer;
+                        let ArrayBufferTarget = WebMMuxer.ArrayBufferTarget;
 
                         let muxer = new MuxerClass({
                             target: new ArrayBufferTarget(),
                             video: {
-                                codec: selectedFormat === 'mp4' ? 'avc' : 'V_VP9',
+                                codec: 'V_VP9',
                                 width: finalExpWidth,
                                 height: finalExpHeight
                             }
@@ -2656,7 +2626,7 @@
                         });
 
                         videoEncoder.configure({
-                            codec: selectedFormat === 'mp4' ? 'avc1.4d002a' : 'vp09.00.10.08',
+                            codec: 'vp09.00.10.08',
                             width: finalExpWidth,
                             height: finalExpHeight,
                             bitrate: 8_000_000,
@@ -2702,11 +2672,11 @@
                         muxer.finalize();
                         
                         let buffer = muxer.target.buffer;
-                        let blob = new Blob([buffer], { type: selectedFormat === 'mp4' ? 'video/mp4' : 'video/webm' });
+                        let blob = new Blob([buffer], { type: 'video/webm' });
                         let url = URL.createObjectURL(blob);
                         let a = document.createElement('a');
                         a.href = url;
-                        a.download = `dither_anim_${Date.now()}.${selectedFormat}`;
+                        a.download = `dither_anim_${Date.now()}.webm`;
                         a.click();
                         URL.revokeObjectURL(url);
 
@@ -2722,7 +2692,7 @@
 
                     } catch (err) {
                         console.error(err);
-                        showToast('La configuración de exportación superó los recursos. Intenta WebM.', 'error');
+                        showToast('La configuración de exportación superó los recursos.', 'error');
                         btnExport.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Exportar`;
                         btnExport.disabled = false;
                         document.getElementById('processing-overlay').classList.add('hidden');
