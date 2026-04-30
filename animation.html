@@ -274,83 +274,193 @@
                             <label class="flex justify-between text-[10px] text-[var(--text-muted)] mb-1">
                                 <span class="flex items-center gap-1">Algoritmo <button class="kf-btn" title="Añadir Keyframe">⬦</button></span>
                             </label>
-                            <select id="algorithm" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-xl p-2.5 text-white discrete-param">
-                                <optgroup label="Difusión de Error">
-                                    <option value="floydSteinberg">Floyd-Steinberg</option>
-                                    <option value="atkinson" selected>Atkinson</option>
-                                    <option value="jarvis">Jarvis, Judice, Ninke</option>
-                                    <option value="stucki">Stucki</option>
-                                    <option value="burkes">Burkes</option>
-                                    <option value="sierra3">Sierra 3</option>
-                                    <option value="sierra2">Sierra 2</option>
-                                    <option value="sierraLite">Sierra Lite</option>
-                                </optgroup>
-                                <optgroup label="Tramado Ordenado">
-                                    <option value="bayer2">Bayer 2x2</option>
-                                    <option value="bayer4">Bayer 4x4</option>
-                                    <option value="bayer8">Bayer 8x8</option>
-                                    <option value="bayer16">Bayer 16x16</option>
-                                    <option value="cluster4">Punto Agrupado 4x4</option>
-                                    <option value="cluster8">Punto Agrupado 8x8</option>
-                                </optgroup>
-                                <optgroup label="Tramado Geométrico (Halftone)">
-                                    <option value="circles">Círculos</option>
-                                    <option value="diamonds">Rombos</option>
-                                    <option value="squares">Cuadrados</option>
-                                    <option value="triangles">Triángulos</option>
-                                </optgroup>
-                                <optgroup label="Métodos Estocásticos">
-                                    <option value="threshold">Umbral Básico</option>
-                                    <option value="random">Ruido Aleatorio</option>
-                                    <option value="blueNoise">Ruido Azul</option>
-                                    <option value="line">Tramado de Línea</option>
-                                </optgroup>
-                                <optgroup label="Experimentales & Autor">
-                                    <option value="voronoi">Ordered Voronoi</option>
-                                    <option value="bayerProgressive">Bayer Progresivo</option>
-                                    <option value="crossHatch">Cross-Hatch (Grabado)</option>
-                                    <option value="spiralWave">Spiral Wave</option>
-                                    <option value="hilbertPattern">Hilbert Curve Pattern</option>
-                                    <option value="dtm">Diffusion Threshold Mod</option>
-                                    <option value="ripples">ripples</option>
-                                    <option value="wavyHatch">wavyHatch</option>
-                                    <option value="etching">etching</option>
-                                    <option value="maze">maze</option>
-                                    <option value="dotMatrix">dotMatrix</option>
-                                    <option value="squareRipples">squareRipples</option>
-                                    <option value="basketWeave">basketWeave</option>
-    <option value="plasmaBreeze">Plasma Breeze</option>
-    <option value="rotatingStripes">Rotating Stripes</option>
-    <option value="movingGrid">Moving Grid</option>
-    <option value="pulsingStars">Pulsing Stars</option>
-    <option value="fluidInterference">Fluid Interference</option>
-    <option value="radarSweep">Radar Sweep</option>
-    <option value="kaleidoscopeAnim">Kaleidoscope</option>
-    <option value="hypnoticRings">Hypnotic Rings</option>
-    <option value="dnaHelix">DNA Helix</option>
-    <option value="rainDrops">Rain Drops</option>
-    <option value="zigzagFlow">Zigzag Flow</option>
-    <option value="vortexSuck">Vortex Inward</option>
-    <option value="wovenSilk">Woven Silk</option>
-    <option value="sonarPing">Sonar Ping</option>
-    <option value="magneticField">Magnetic Field</option>
-    <option value="diagonalRain">Diagonal Rain</option>
-    <option value="windyGrass">Windy Grass</option>
-    <option value="moirePatterns">Moiré Patterns</option>
-    <option value="wobbleRays">Wobble Rays</option>
-    <option value="sandstorm">Sandstorm</option>
-    <option value="breathingTriangles">Breathing Triangles</option>
-    <option value="cellularDrift">Cellular Drift</option>
-    <option value="checkerboardPulse">Checkerboard Pulse</option>
-    <option value="echolocation">Echolocation</option>
-    <option value="lissajousCurve">Lissajous Curve</option>
-    <option value="fractalPulse">Fractal Pulse</option>
-    <option value="matrixRain">Matrix Rain</option>
-    <option value="gearTeeth">Gear Teeth</option>
-    <option value="quantumFoam">Quantum Foam</option>
-    <option value="concentricHexagons">Concentric Hexagons</option>
-                                </optgroup>
-                            </select>
+                            <div class="flex flex-col gap-3">
+    
+    <!-- Etiqueta Principal con Botón de Keyframe -->
+    <label class="flex justify-between items-center text-[10px] text-[var(--text-muted)] mb-1">
+        <span class="flex items-center gap-1 font-bold uppercase tracking-wider text-white">Algoritmo</span>
+        <!-- Botón de Keyframe integrado -->
+        <button class="kf-btn" title="Añadir Keyframe">⬦</button>
+    </label>
+
+    <!-- Recuadro Principal (Muestra el activo) -->
+    <div class="bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-inner mt-[-4px]">
+        <span class="text-[9px] text-[var(--text-muted)] uppercase mb-0.5">Selección Actual</span>
+        <span id="active-algo-display" class="text-sm font-extrabold text-[var(--accent-primary)] leading-tight">Atkinson</span>
+    </div>
+
+    <!-- Las 4 Listas Desplegables -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
+        
+        <!-- Grupo 1: Difusión -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] text-[var(--text-muted)] ml-1">Difusión de Error</label>
+            <select id="group-difusion" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector">
+                <option value="">-- Seleccionar --</option>
+                <option value="floydSteinberg">Floyd-Steinberg</option>
+                <option value="atkinson">Atkinson</option>
+                <option value="jarvis">Jarvis, Judice, Ninke</option>
+                <option value="stucki">Stucki</option>
+                <option value="burkes">Burkes</option>
+                <option value="sierra3">Sierra 3</option>
+                <option value="sierra2">Sierra 2</option>
+                <option value="sierraLite">Sierra Lite</option>
+            </select>
+        </div>
+
+        <!-- Grupo 2: Ordenado -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] text-[var(--text-muted)] ml-1">Tramado Ordenado</label>
+            <select id="group-ordenado" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector">
+                <option value="">-- Seleccionar --</option>
+                <option value="bayer2">Bayer 2x2</option>
+                <option value="bayer4">Bayer 4x4</option>
+                <option value="bayer8">Bayer 8x8</option>
+                <option value="bayer16">Bayer 16x16</option>
+                <option value="cluster4">Punto Agrupado 4x4</option>
+                <option value="cluster8">Punto Agrupado 8x8</option>
+            </select>
+        </div>
+
+        <!-- Grupo 3: Geométrico -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] text-[var(--text-muted)] ml-1">Geométrico y Experimental</label>
+            <select id="group-geometrico" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector">
+                <option value="">-- Seleccionar --</option>
+                <option value="circles">Círculos</option>
+                <option value="diamonds">Rombos</option>
+                <option value="squares">Cuadrados</option>
+                <option value="triangles">Triángulos</option>
+                <option value="threshold">Umbral Básico</option>
+                <option value="blueNoise">Ruido Azul</option>
+                <option value="line">Tramado de Línea</option>
+                <option value="voronoi">Ordered Voronoi</option>
+                <option value="bayerProgressive">Bayer Progresivo</option>
+                <option value="crossHatch">Cross-Hatch</option>
+                <option value="hilbertPattern">Hilbert Curve</option>
+            </select>
+        </div>
+
+        <!-- Grupo 4: Experimentales / Animados -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] text-[var(--text-muted)] ml-1">Animados</label>
+            <select id="group-experimental" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector">
+                <option value="">-- Seleccionar --</option>
+                <option value="random">Ruido Aleatorio</option>
+                <option value="spiralWave">Spiral Wave</option>
+                <option value="dtm">Diffusion Threshold Mod</option>
+                <option value="ripples">Ripples</option>
+                <option value="wavyHatch">Wavy Hatch</option>
+                <option value="etching">Etching</option>
+                <option value="maze">Maze</option>
+                <option value="dotMatrix">Dot Matrix</option>
+                <option value="squareRipples">Square Ripples</option>
+                <option value="basketWeave">Basket Weave</option>
+                <option value="plasmaBreeze">Plasma Breeze</option>
+                <option value="rotatingStripes">Rotating Stripes</option>
+                <option value="movingGrid">Moving Grid</option>
+                <option value="pulsingStars">Pulsing Stars</option>
+                <option value="fluidInterference">Fluid Interference</option>
+                <option value="radarSweep">Radar Sweep</option>
+                <option value="kaleidoscopeAnim">Kaleidoscope</option>
+                <option value="hypnoticRings">Hypnotic Rings</option>
+                <option value="dnaHelix">DNA Helix</option>
+                <option value="rainDrops">Rain Drops</option>
+                <option value="zigzagFlow">Zigzag Flow</option>
+                <option value="vortexSuck">Vortex Inward</option>
+                <option value="wovenSilk">Woven Silk</option>
+                <option value="sonarPing">Sonar Ping</option>
+                <option value="magneticField">Magnetic Field</option>
+                <option value="diagonalRain">Diagonal Rain</option>
+                <option value="windyGrass">Windy Grass</option>
+                <option value="moirePatterns">Moiré Patterns</option>
+                <option value="wobbleRays">Wobble Rays</option>
+                <option value="sandstorm">Sandstorm</option>
+                <option value="breathingTriangles">Breathing Triangles</option>
+                <option value="cellularDrift">Cellular Drift</option>
+                <option value="checkerboardPulse">Checkerboard Pulse</option>
+                <option value="echolocation">Echolocation</option>
+                <option value="lissajousCurve">Lissajous Curve</option>
+                <option value="fractalPulse">Fractal Pulse</option>
+                <option value="matrixRain">Matrix Rain</option>
+                <option value="gearTeeth">Gear Teeth</option>
+                <option value="quantumFoam">Quantum Foam</option>
+                <option value="concentricHexagons">Concentric Hexagons</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- EL CEREBRO OCULTO: Tu select original, ahora invisible pero funcional -->
+    <select id="algorithm" class="hidden discrete-param">
+        <option value="floydSteinberg">floydSteinberg</option>
+        <option value="atkinson" selected>atkinson</option>
+        <option value="jarvis">jarvis</option>
+        <option value="stucki">stucki</option>
+        <option value="burkes">burkes</option>
+        <option value="sierra3">sierra3</option>
+        <option value="sierra2">sierra2</option>
+        <option value="sierraLite">sierraLite</option>
+        <option value="bayer2">bayer2</option>
+        <option value="bayer4">bayer4</option>
+        <option value="bayer8">bayer8</option>
+        <option value="bayer16">bayer16</option>
+        <option value="cluster4">cluster4</option>
+        <option value="cluster8">cluster8</option>
+        <option value="circles">circles</option>
+        <option value="diamonds">diamonds</option>
+        <option value="squares">squares</option>
+        <option value="triangles">triangles</option>
+        <option value="threshold">threshold</option>
+        <option value="random">random</option>
+        <option value="blueNoise">blueNoise</option>
+        <option value="line">line</option>
+        <option value="voronoi">voronoi</option>
+        <option value="bayerProgressive">bayerProgressive</option>
+        <option value="crossHatch">crossHatch</option>
+        <option value="spiralWave">spiralWave</option>
+        <option value="hilbertPattern">hilbertPattern</option>
+        <option value="dtm">dtm</option>
+        <option value="ripples">ripples</option>
+        <option value="wavyHatch">wavyHatch</option>
+        <option value="etching">etching</option>
+        <option value="maze">maze</option>
+        <option value="dotMatrix">dotMatrix</option>
+        <option value="squareRipples">squareRipples</option>
+        <option value="basketWeave">basketWeave</option>
+        <option value="plasmaBreeze">plasmaBreeze</option>
+        <option value="rotatingStripes">rotatingStripes</option>
+        <option value="movingGrid">movingGrid</option>
+        <option value="pulsingStars">pulsingStars</option>
+        <option value="fluidInterference">fluidInterference</option>
+        <option value="radarSweep">radarSweep</option>
+        <option value="kaleidoscopeAnim">kaleidoscopeAnim</option>
+        <option value="hypnoticRings">hypnoticRings</option>
+        <option value="dnaHelix">dnaHelix</option>
+        <option value="rainDrops">rainDrops</option>
+        <option value="zigzagFlow">zigzagFlow</option>
+        <option value="vortexSuck">vortexSuck</option>
+        <option value="wovenSilk">wovenSilk</option>
+        <option value="sonarPing">sonarPing</option>
+        <option value="magneticField">magneticField</option>
+        <option value="diagonalRain">diagonalRain</option>
+        <option value="windyGrass">windyGrass</option>
+        <option value="moirePatterns">moirePatterns</option>
+        <option value="wobbleRays">wobbleRays</option>
+        <option value="sandstorm">sandstorm</option>
+        <option value="breathingTriangles">breathingTriangles</option>
+        <option value="cellularDrift">cellularDrift</option>
+        <option value="checkerboardPulse">checkerboardPulse</option>
+        <option value="echolocation">echolocation</option>
+        <option value="lissajousCurve">lissajousCurve</option>
+        <option value="fractalPulse">fractalPulse</option>
+        <option value="matrixRain">matrixRain</option>
+        <option value="gearTeeth">gearTeeth</option>
+        <option value="quantumFoam">quantumFoam</option>
+        <option value="concentricHexagons">concentricHexagons</option>
+    </select>
+</div>
+<!-- === FIN NUEVA INTERFAZ === -->
+
                         </div>
                         
                         <div>
@@ -1035,7 +1145,50 @@
             let customColorsArray = ['#000000', '#ffffff'];
 
             const btnMute = document.getElementById('btn-mute');
+ const mainAlgoSelect = document.getElementById('algorithm');
+            const displayAlgoName = document.getElementById('active-algo-display');
+            const groupSelectors = document.querySelectorAll('.group-selector');
 
+            // Función para sincronizar todo cuando se elige un algoritmo
+            groupSelectors.forEach(selector => {
+                selector.addEventListener('change', (e) => {
+                    const selectedValue = e.target.value;
+                    
+                    // Si el usuario vuelve a elegir "-- Seleccionar --", ignoramos la acción
+                    if (selectedValue === "") return;
+
+                    // 1. Reiniciar todos los demás selectores para que digan "-- Seleccionar --"
+                    groupSelectors.forEach(otherSelector => {
+                        if (otherSelector !== e.target) {
+                            otherSelector.value = "";
+                        }
+                    });
+
+                    // 2. Obtener el nombre bonito (el texto) de la opción elegida
+                    const selectedText = e.target.options[e.target.selectedIndex].text;
+                    displayAlgoName.textContent = selectedText;
+
+                    // 3. Pasarle el valor al selector maestro oculto
+                    mainAlgoSelect.value = selectedValue;
+
+                    // 4. Disparar el evento 'change' en el maestro para que los Keyframes 
+                    // y el motor de render se enteren del cambio
+                    mainAlgoSelect.dispatchEvent(new Event('change'));
+                });
+            });
+
+            // Función de ayuda para actualizar visualmente si un Keyframe cambia el algoritmo automáticamente
+            mainAlgoSelect.addEventListener('change', () => {
+                const currentVal = mainAlgoSelect.value;
+                // Buscar el nombre en los selectores para actualizar el texto principal
+                groupSelectors.forEach(selector => {
+                    Array.from(selector.options).forEach(opt => {
+                        if(opt.value === currentVal) {
+                            displayAlgoName.textContent = opt.text;
+                        }
+                    });
+                });
+            });
             function updateMuteButtonUI() {
                 if (isAudioMuted) {
                     btnMute.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>`;
