@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Política de Privacidad | Dither Lab Pro</title>
+    <meta name="theme-color" content="#1e1e24">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        html { scroll-behavior: smooth; }
+        :root {
+            --accent-primary: #ff4757;
+            --accent-hover: #ff6b81;
+            --bg-main: #1e1e24;
+            --bg-card: #2d2d3a;
+            --bg-card-hover: #353545;
+            --bg-input: #1a1a20;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            background-image: radial-gradient(circle at center, rgba(255,255,255,0.02) 0%, transparent 100%);
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .bento-card {
+            background-color: var(--bg-card);
+            border-radius: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden p-0 selection:bg-[var(--accent-primary)] selection:text-white relative flex flex-col">
+
+    <!-- Header -->
+    <div class="w-full max-w-screen-lg mx-auto px-4 md:px-6 pt-4 md:pt-6 pb-4 flex-shrink-0">
+        <header class="w-full flex items-center justify-between bento-card px-4 md:px-6 py-3 z-20 relative">
+            <div class="flex items-center gap-3 md:gap-4">
+                <a href="index.html" class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[var(--bg-input)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] flex items-center justify-center transition-colors text-[var(--text-muted)] hover:text-white" title="Volver al inicio">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </a>
+                <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[var(--accent-primary)] flex items-center justify-center shadow-lg shadow-[var(--accent-primary)]/20">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-extrabold tracking-tight text-white leading-none">Política de Privacidad</h1>
+                    <p class="text-[10px] md:text-xs text-[var(--text-muted)] font-medium mt-1">Dither Lab Pro</p>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <!-- Contenido Principal -->
+    <main class="flex-grow w-full max-w-screen-lg mx-auto px-4 md:px-6 pb-12 flex flex-col gap-6">
+        
+        <div class="bento-card p-6 md:p-10 flex flex-col gap-6">
+            <h2 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+                <div class="w-2 h-8 bg-[var(--accent-primary)] rounded-full"></div>
+                Tu Privacidad es Nuestra Prioridad
+            </h2>
+            
+            <div class="space-y-6 text-[var(--text-muted)] leading-relaxed">
+                
+                <section class="space-y-3">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Procesamiento Local Seguro
+                    </h3>
+                    <p>En Dither Lab Pro operamos bajo una arquitectura completamente basada en el lado del cliente (client-side). Esto significa que todas las imágenes, fotografías y videos que subes a nuestra plataforma se procesan única y exclusivamente en la memoria de tu propio navegador web o dispositivo.</p>
+                    <p>Mantenemos tus archivos multimedia estrictamente bajo tu control. Evitamos por completo la subida, transmisión o almacenamiento de tu contenido en servidores externos o bases de datos en la nube.</p>
+                </section>
+
+                <section class="space-y-3 pt-4 border-t border-[var(--border-color)]">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Datos Recopilados
+                    </h3>
+                    <p>Nuestra plataforma funciona libre de requerimientos de cuentas de usuario, correos electrónicos o datos personales para operar el editor de imágenes y videos. Puedes utilizar todas las herramientas creativas de forma anónima y directa.</p>
+                    <p>Empleamos analíticas web básicas e integraciones estándar para comprender métricas generales de tráfico (como el número de visitas a la página o la región geográfica general), operando siempre de forma agregada para ayudarnos a mejorar la estabilidad de la herramienta.</p>
+                </section>
+
+                <section class="space-y-3 pt-4 border-t border-[var(--border-color)]">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        Uso de Tecnologías Locales
+                    </h3>
+                    <p>Hacemos uso de APIs web modernas como Canvas, WebGL y WebCodecs. Todas estas tecnologías se ejecutan de manera aislada dentro del entorno seguro de tu navegador. Si decides guardar configuraciones personalizadas (Presets), la plataforma generará un archivo JSON que se descargará directamente a tu disco duro local, manteniendo tu flujo de trabajo de forma privada.</p>
+                </section>
+
+                <section class="space-y-3 pt-4 border-t border-[var(--border-color)]">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Actualizaciones de la Política
+                    </h3>
+                    <p>Mantenemos este documento actualizado para reflejar cualquier avance en nuestras herramientas o prácticas de transparencia. Te invitamos a revisar esta página periódicamente para mantenerte informado sobre cómo protegemos tu entorno creativo.</p>
+                </section>
+
+            </div>
+        </div>
+    </main>
+</body>
+</html>
