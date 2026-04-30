@@ -442,46 +442,110 @@
                         </div>
                         
                         <div class="px-4 md:px-5 pb-4 md:pb-5 collapsible-body space-y-4 md:space-y-5">
-                            <select id="algorithm" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-xl p-2.5 md:p-3 text-white font-semibold outline-none focus:border-[var(--accent-primary)] transition-colors cursor-pointer shadow-sm">
-                                <optgroup label="Difusión de Error">
-                                    <option value="floydSteinberg">Floyd-Steinberg</option>
-                                    <option value="atkinson" selected>Atkinson</option>
-                                    <option value="jarvis">Jarvis, Judice, Ninke</option>
-                                    <option value="stucki">Stucki</option>
-                                    <option value="burkes">Burkes</option>
-                                    <option value="sierra3">Sierra 3</option>
-                                    <option value="sierra2">Sierra 2</option>
-                                    <option value="sierraLite">Sierra Lite</option>
-                                </optgroup>
-                                <optgroup label="Tramado Ordenado">
-                                    <option value="bayer2">Bayer 2x2</option>
-                                    <option value="bayer4">Bayer 4x4</option>
-                                    <option value="bayer8">Bayer 8x8</option>
-                                    <option value="bayer16">Bayer 16x16</option>
-                                    <option value="cluster4">Punto Agrupado 4x4</option>
-                                    <option value="cluster8">Punto Agrupado 8x8</option>
-                                </optgroup>
-                                <optgroup label="Tramado Geométrico (Halftone)">
-                                    <option value="circles">Círculos</option>
-                                    <option value="diamonds">Rombos</option>
-                                    <option value="squares">Cuadrados</option>
-                                    <option value="triangles">Triángulos</option>
-                                </optgroup>
-                                <optgroup label="Métodos Estocásticos">
-                                    <option value="threshold">Umbral Básico</option>
-                                    <option value="random">Ruido Aleatorio</option>
-                                    <option value="blueNoise">Ruido Azul</option>
-                                    <option value="line">Tramado de Línea</option>
-                                </optgroup>
-                                <optgroup label="Experimentales & Autor">
-                                    <option value="voronoi">Ordered Voronoi</option>
-                                    <option value="bayerProgressive">Bayer Progresivo</option>
-                                    <option value="crossHatch">Cross-Hatch (Grabado)</option>
-                                    <option value="spiralWave">Spiral Wave</option>
-                                    <option value="hilbertPattern">Hilbert Curve Pattern</option>
-                                    <option value="dtm">Diffusion Threshold Mod (DTM)</option>
-                                </optgroup>
-                            </select>
+                           <!-- === NUEVA INTERFAZ DE ALGORITMOS (Para Imágenes) === -->
+<div class="flex flex-col gap-3 mb-2">
+    <!-- Recuadro Principal (Muestra el activo) -->
+    <div class="bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-inner">
+        <span class="text-[9px] md:text-[10px] text-[var(--text-muted)] uppercase mb-0.5 tracking-wider font-bold">Algoritmo Activo</span>
+        <span id="active-algo-display" class="text-sm md:text-base font-extrabold text-[var(--accent-primary)] leading-tight">Atkinson</span>
+    </div>
+
+    <!-- Las 4 Listas Desplegables -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+        
+        <!-- Grupo 1: Difusión -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] md:text-[10px] font-semibold text-[var(--text-muted)] ml-1">Difusión de Error</label>
+            <select id="group-difusion" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-lg p-2 md:p-2.5 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector cursor-pointer">
+                <option value="">-- Seleccionar --</option>
+                <option value="floydSteinberg">Floyd-Steinberg</option>
+                <option value="atkinson">Atkinson</option>
+                <option value="jarvis">Jarvis, Judice, Ninke</option>
+                <option value="stucki">Stucki</option>
+                <option value="burkes">Burkes</option>
+                <option value="sierra3">Sierra 3</option>
+                <option value="sierra2">Sierra 2</option>
+                <option value="sierraLite">Sierra Lite</option>
+            </select>
+        </div>
+
+        <!-- Grupo 2: Ordenado -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] md:text-[10px] font-semibold text-[var(--text-muted)] ml-1">Tramado Ordenado</label>
+            <select id="group-ordenado" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-lg p-2 md:p-2.5 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector cursor-pointer">
+                <option value="">-- Seleccionar --</option>
+                <option value="bayer2">Bayer 2x2</option>
+                <option value="bayer4">Bayer 4x4</option>
+                <option value="bayer8">Bayer 8x8</option>
+                <option value="bayer16">Bayer 16x16</option>
+                <option value="cluster4">Punto Agrupado 4x4</option>
+                <option value="cluster8">Punto Agrupado 8x8</option>
+            </select>
+        </div>
+
+        <!-- Grupo 3: Geométrico -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] md:text-[10px] font-semibold text-[var(--text-muted)] ml-1">Geométrico (Halftone)</label>
+            <select id="group-geometrico" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-lg p-2 md:p-2.5 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector cursor-pointer">
+                <option value="">-- Seleccionar --</option>
+                <option value="circles">Círculos</option>
+                <option value="diamonds">Rombos</option>
+                <option value="squares">Cuadrados</option>
+                <option value="triangles">Triángulos</option>
+            </select>
+        </div>
+
+        <!-- Grupo 4: Experimentales / Estocásticos -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] md:text-[10px] font-semibold text-[var(--text-muted)] ml-1">Estocásticos & Experimentales</label>
+            <select id="group-experimental" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-lg p-2 md:p-2.5 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector cursor-pointer">
+                <option value="">-- Seleccionar --</option>
+                <option value="threshold">Umbral Básico</option>
+                <option value="random">Ruido Aleatorio</option>
+                <option value="blueNoise">Ruido Azul</option>
+                <option value="line">Tramado de Línea</option>
+                <option value="voronoi">Ordered Voronoi</option>
+                <option value="bayerProgressive">Bayer Progresivo</option>
+                <option value="crossHatch">Cross-Hatch (Grabado)</option>
+                <option value="spiralWave">Spiral Wave</option>
+                <option value="hilbertPattern">Hilbert Curve</option>
+                <option value="dtm">Diffusion Threshold Mod</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- EL CEREBRO OCULTO: Mantiene la compatibilidad con tu JS y presets -->
+    <select id="algorithm" class="hidden">
+        <option value="floydSteinberg">floydSteinberg</option>
+        <option value="atkinson" selected>atkinson</option>
+        <option value="jarvis">jarvis</option>
+        <option value="stucki">stucki</option>
+        <option value="burkes">burkes</option>
+        <option value="sierra3">sierra3</option>
+        <option value="sierra2">sierra2</option>
+        <option value="sierraLite">sierraLite</option>
+        <option value="bayer2">bayer2</option>
+        <option value="bayer4">bayer4</option>
+        <option value="bayer8">bayer8</option>
+        <option value="bayer16">bayer16</option>
+        <option value="cluster4">cluster4</option>
+        <option value="cluster8">cluster8</option>
+        <option value="circles">circles</option>
+        <option value="diamonds">diamonds</option>
+        <option value="squares">squares</option>
+        <option value="triangles">triangles</option>
+        <option value="threshold">threshold</option>
+        <option value="random">random</option>
+        <option value="blueNoise">blueNoise</option>
+        <option value="line">line</option>
+        <option value="voronoi">voronoi</option>
+        <option value="bayerProgressive">bayerProgressive</option>
+        <option value="crossHatch">crossHatch</option>
+        <option value="spiralWave">spiralWave</option>
+        <option value="hilbertPattern">hilbertPattern</option>
+        <option value="dtm">dtm</option>
+    </select>
+</div>
 
                             <div>
                                 <label class="flex justify-between text-[10px] md:text-xs font-medium text-[var(--text-muted)] mb-1.5 md:mb-2">
@@ -1930,6 +1994,55 @@
             }
 
             // --- UI BINDINGS ---
+// --- LÓGICA DE INTERFAZ MULTI-SELECTORES DE ALGORITMO ---
+            const mainAlgoSelect = document.getElementById('algorithm');
+            const displayAlgoName = document.getElementById('active-algo-display');
+            const groupSelectors = document.querySelectorAll('.group-selector');
+
+            // Escuchar cambios en las 4 listas visibles
+            groupSelectors.forEach(selector => {
+                selector.addEventListener('change', (e) => {
+                    const selectedValue = e.target.value;
+                    
+                    if (selectedValue === "") return; // Ignorar si seleccionan "Seleccionar"
+
+                    // Limpiar las otras listas
+                    groupSelectors.forEach(otherSelector => {
+                        if (otherSelector !== e.target) {
+                            otherSelector.value = "";
+                        }
+                    });
+
+                    // Actualizar el gran recuadro de texto
+                    const selectedText = e.target.options[e.target.selectedIndex].text;
+                    displayAlgoName.textContent = selectedText;
+
+                    // Asignar el valor al selector oculto y forzar el renderizado de la imagen
+                    mainAlgoSelect.value = selectedValue;
+                    mainAlgoSelect.dispatchEvent(new Event('change'));
+                });
+            });
+
+            // Mantener todo sincronizado si se usa el botón "Restaurar" o se carga un Preset JSON
+            mainAlgoSelect.addEventListener('change', () => {
+                const currentVal = mainAlgoSelect.value;
+                let textFound = "Atkinson"; // Valor por defecto seguro
+                
+                groupSelectors.forEach(selector => {
+                    let hasOption = false;
+                    Array.from(selector.options).forEach(opt => {
+                        if(opt.value === currentVal) {
+                            textFound = opt.text;
+                            hasOption = true;
+                        }
+                    });
+                    // Si este grupo tiene el algoritmo, lo selecciona. Si no, lo pone en blanco.
+                    selector.value = hasOption ? currentVal : "";
+                });
+                
+                displayAlgoName.textContent = textFound;
+            });
+
             document.getElementById('palette').addEventListener('change', (e) => {
                 if(e.target.value !== 'custom') {
                     customColorsArray = [...palettesBase[e.target.value]];
