@@ -319,6 +319,36 @@
                                     <option value="dotMatrix">dotMatrix</option>
                                     <option value="squareRipples">squareRipples</option>
                                     <option value="basketWeave">basketWeave</option>
+    <option value="plasmaBreeze">Plasma Breeze</option>
+    <option value="rotatingStripes">Rotating Stripes</option>
+    <option value="movingGrid">Moving Grid</option>
+    <option value="pulsingStars">Pulsing Stars</option>
+    <option value="fluidInterference">Fluid Interference</option>
+    <option value="radarSweep">Radar Sweep</option>
+    <option value="kaleidoscopeAnim">Kaleidoscope</option>
+    <option value="hypnoticRings">Hypnotic Rings</option>
+    <option value="dnaHelix">DNA Helix</option>
+    <option value="rainDrops">Rain Drops</option>
+    <option value="zigzagFlow">Zigzag Flow</option>
+    <option value="vortexSuck">Vortex Inward</option>
+    <option value="wovenSilk">Woven Silk</option>
+    <option value="sonarPing">Sonar Ping</option>
+    <option value="magneticField">Magnetic Field</option>
+    <option value="diagonalRain">Diagonal Rain</option>
+    <option value="windyGrass">Windy Grass</option>
+    <option value="moirePatterns">Moiré Patterns</option>
+    <option value="wobbleRays">Wobble Rays</option>
+    <option value="sandstorm">Sandstorm</option>
+    <option value="breathingTriangles">Breathing Triangles</option>
+    <option value="cellularDrift">Cellular Drift</option>
+    <option value="checkerboardPulse">Checkerboard Pulse</option>
+    <option value="echolocation">Echolocation</option>
+    <option value="lissajousCurve">Lissajous Curve</option>
+    <option value="fractalPulse">Fractal Pulse</option>
+    <option value="matrixRain">Matrix Rain</option>
+    <option value="gearTeeth">Gear Teeth</option>
+    <option value="quantumFoam">Quantum Foam</option>
+    <option value="concentricHexagons">Concentric Hexagons</option>
                                 </optgroup>
                             </select>
                         </div>
@@ -2343,7 +2373,19 @@
                 const errStrength = state.errstr / 100;
                 const patScale = state['pattern-scale'];
                 
-                const estocasticGroup = ['threshold', 'random', 'blueNoise', 'line', 'circles', 'diamonds', 'squares', 'triangles', 'voronoi', 'crossHatch', 'spiralWave', 'hilbertPattern', 'dtm', 'ripples', 'wavyHatch', 'etching', 'maze', 'dotMatrix', 'squareRipples', 'basketWeave'];
+const estocasticGroup = [
+    'threshold', 'random', 'blueNoise', 'line', 'circles', 'diamonds', 
+    'squares', 'triangles', 'voronoi', 'crossHatch', 'spiralWave', 
+    'hilbertPattern', 'dtm', 'ripples', 'wavyHatch', 'etching', 'maze', 
+    'dotMatrix', 'squareRipples', 'basketWeave', 'plasmaBreeze', 
+    'rotatingStripes', 'movingGrid', 'pulsingStars', 'fluidInterference', 
+    'radarSweep', 'kaleidoscopeAnim', 'hypnoticRings', 'dnaHelix', 
+    'rainDrops', 'zigzagFlow', 'vortexSuck', 'wovenSilk', 'sonarPing', 
+    'magneticField', 'diagonalRain', 'windyGrass', 'moirePatterns', 
+    'wobbleRays', 'sandstorm', 'breathingTriangles', 'cellularDrift', 
+    'checkerboardPulse', 'echolocation', 'lissajousCurve', 'fractalPulse', 
+    'matrixRain', 'gearTeeth', 'quantumFoam', 'concentricHexagons'
+]
 
                 if (estocasticGroup.includes(algo)) {
                     let spread = errStrength * 128;
@@ -2443,6 +2485,188 @@ else if (algo === 'basketWeave') {
         pattern = Math.sin(ny * 1.2 - time);
     }
     t = pattern * 0.4;
+}
+else if (algo === 'plasmaBreeze') {
+    let time = currentPlayTime / 500;
+    t = (Math.sin(nx * 1.5 + time) + Math.sin(ny * 1.5 - time) + Math.sin((nx + ny) * 0.8 + time * 1.2)) / 6.0;
+}
+else if (algo === 'rotatingStripes') {
+    let time = currentPlayTime / 800;
+    let rx = nx * Math.cos(time) - ny * Math.sin(time);
+    t = Math.sin(rx * 3.0) * 0.5;
+}
+else if (algo === 'movingGrid') {
+    let time = currentPlayTime / 600;
+    t = (Math.sin(nx * 2.0 + time) * Math.cos(ny * 2.0 - time)) * 0.5;
+}
+else if (algo === 'pulsingStars') {
+    let time = currentPlayTime / 400;
+    t = (Math.cos(nx * 2.5) * Math.cos(ny * 2.5) * Math.sin(time)) * 0.5;
+}
+else if (algo === 'fluidInterference') {
+    let time = currentPlayTime / 500;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let d1 = Math.sqrt(Math.pow(cx - Math.sin(time)*10, 2) + Math.pow(cy - Math.cos(time)*10, 2));
+    let d2 = Math.sqrt(Math.pow(cx + Math.sin(time)*10, 2) + Math.pow(cy + Math.cos(time)*10, 2));
+    t = (Math.sin(d1 * 2.0) + Math.sin(d2 * 2.0)) * 0.25;
+}
+else if (algo === 'radarSweep') {
+    let time = currentPlayTime / 400;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let ang = Math.atan2(cy, cx);
+    t = Math.sin(ang * 6.0 - time * 4.0) * 0.5;
+}
+else if (algo === 'kaleidoscopeAnim') {
+    let time = currentPlayTime / 700;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let ang = Math.atan2(cy, cx);
+    let dist = Math.sqrt(cx*cx + cy*cy);
+    t = Math.sin(dist * 2.0 + Math.cos(ang * 8.0) * 3.0 + time) * 0.5;
+}
+else if (algo === 'hypnoticRings') {
+    let time = currentPlayTime / 500;
+    let cx = nx - w / (2 * patScale) + Math.sin(time) * 5;
+    let cy = ny - h / (2 * patScale) + Math.cos(time) * 5;
+    let dist = Math.sqrt(cx*cx + cy*cy);
+    t = Math.sin(dist * 3.0 - time * 2.0) * 0.5;
+}
+else if (algo === 'dnaHelix') {
+    let time = currentPlayTime / 400;
+    t = Math.sin(nx * 1.5 + Math.sin(ny * 0.8 + time) * 2.0) * 0.5;
+}
+else if (algo === 'rainDrops') {
+    let time = currentPlayTime / 300;
+    t = Math.sin(ny * 3.0 + time * 6.0 + Math.sin(nx * 1.5) * 2.0) * 0.5;
+}
+else if (algo === 'zigzagFlow') {
+    let time = currentPlayTime / 400;
+    t = Math.sin(ny * 2.0 + Math.abs(Math.sin(nx * 1.2 + time)) * 3.0 - time * 3.0) * 0.5;
+}
+else if (algo === 'vortexSuck') {
+    let time = currentPlayTime / 400;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let dist = Math.sqrt(cx*cx + cy*cy);
+    let ang = Math.atan2(cy, cx);
+    t = Math.sin(dist * 2.5 - ang * 6.0 - time * 4.0) * 0.5;
+}
+else if (algo === 'wovenSilk') {
+    let time = currentPlayTime / 600;
+    t = (Math.sin(nx * 2.0 + Math.cos(ny * 1.0 + time)) + Math.cos(ny * 2.0 + Math.sin(nx * 1.0 - time))) * 0.25;
+}
+else if (algo === 'sonarPing') {
+    let time = currentPlayTime / 300;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let dist = Math.sqrt(cx*cx + cy*cy);
+    t = Math.pow(Math.sin(dist * 2.0 - time * 5.0), 3) * 0.5;
+}
+else if (algo === 'magneticField') {
+    let time = currentPlayTime / 500;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let d1 = Math.sqrt(Math.pow(cx - 10, 2) + cy*cy);
+    let d2 = Math.sqrt(Math.pow(cx + 10, 2) + cy*cy);
+    t = Math.sin((d1 - d2) * 2.0 + time * 3.0) * 0.5;
+}
+else if (algo === 'diagonalRain') {
+    let time = currentPlayTime / 200;
+    t = Math.sin((nx + ny) * 2.5 - time * 8.0) * 0.5;
+}
+else if (algo === 'windyGrass') {
+    let time = currentPlayTime / 400;
+    t = Math.sin(nx * 2.5 + Math.sin(ny * 0.5 + time) * 1.5) * 0.5;
+}
+else if (algo === 'moirePatterns') {
+    let time = currentPlayTime / 1000;
+    let a1 = time * 0.5;
+    let a2 = -time * 0.7;
+    let g1 = Math.sin(nx * Math.cos(a1) * 2.0 + ny * Math.sin(a1) * 2.0);
+    let g2 = Math.sin(nx * Math.cos(a2) * 2.0 + ny * Math.sin(a2) * 2.0);
+    t = (g1 * g2) * 0.5;
+}
+else if (algo === 'wobbleRays') {
+    let time = currentPlayTime / 400;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let ang = Math.atan2(cy, cx);
+    let dist = Math.sqrt(cx*cx + cy*cy);
+    t = Math.sin(ang * 16.0 + Math.sin(dist * 0.5 - time) * 2.0) * 0.5;
+}
+else if (algo === 'sandstorm') {
+    let time = currentPlayTime / 300;
+    let noise = Math.sin(nx * 12.3 + ny * 45.6 + time * 10.0);
+    t = Math.sin((nx - ny) * 3.0 - time * 6.0 + noise) * 0.5;
+}
+else if (algo === 'breathingTriangles') {
+    let time = currentPlayTime / 500;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let ax = Math.abs(cx) * 0.866 + Math.abs(cy) * 0.5;
+    let ay = Math.abs(cy);
+    let dist = Math.max(ax, ay);
+    t = Math.sin(dist * 3.0 - time * 3.0) * 0.5;
+}
+else if (algo === 'cellularDrift') {
+    let time = currentPlayTime / 400;
+    let sx = nx + time * 2.0;
+    let sy = ny - time * 3.0;
+    t = (Math.sin(sx * 1.8) * Math.sin(sy * 2.2) + Math.cos(sx * 1.5 - sy * 1.9)) * 0.25;
+}
+else if (algo === 'checkerboardPulse') {
+    let time = currentPlayTime / 500;
+    t = (Math.sin(nx * 3.0) * Math.sin(ny * 3.0) + Math.sin(time) * 0.5) * 0.33;
+}
+else if (algo === 'echolocation') {
+    let time = currentPlayTime / 400;
+    let waveCenter = Math.sin(time) * 20;
+    t = Math.sin(Math.abs(nx - waveCenter) * 2.5) * 0.5;
+}
+else if (algo === 'lissajousCurve') {
+    let time = currentPlayTime / 500;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let lx = Math.sin(time * 0.8) * 15;
+    let ly = Math.cos(time * 1.1) * 15;
+    let dist = Math.sqrt(Math.pow(cx - lx, 2) + Math.pow(cy - ly, 2));
+    t = Math.sin(dist * 3.0) * 0.5;
+}
+else if (algo === 'fractalPulse') {
+    let time = currentPlayTime / 600;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let fold = Math.sin(time) * 4.0;
+    t = Math.sin((Math.abs(cx) + Math.abs(cy) + fold) * 2.5) * 0.5;
+}
+else if (algo === 'matrixRain') {
+    let time = currentPlayTime / 200;
+    t = Math.sin(ny * 3.0 - time * 8.0 + Math.floor(nx * 1.0) * 2.3) * 0.5;
+}
+else if (algo === 'gearTeeth') {
+    let time = currentPlayTime / 400;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let ang = Math.atan2(cy, cx);
+    let dist = Math.sqrt(cx*cx + cy*cy);
+    t = Math.sin(dist * 2.5 + Math.sin(ang * 12.0 - time * 3.0) * 1.5) * 0.5;
+}
+else if (algo === 'quantumFoam') {
+    let time = currentPlayTime / 300;
+    let qx = nx + Math.sin(ny * 1.5 + time * 3.0);
+    let qy = ny + Math.cos(nx * 1.5 - time * 3.0);
+    t = Math.sin(qx * 2.0) * Math.cos(qy * 2.0) * 0.5;
+}
+else if (algo === 'concentricHexagons') {
+    let time = currentPlayTime / 500;
+    let cx = nx - w / (2 * patScale);
+    let cy = ny - h / (2 * patScale);
+    let hx = Math.abs(cx);
+    let hy = Math.abs(cy);
+    let hdist = Math.max(hx, hx * 0.5 + hy * 0.866);
+    t = Math.sin(hdist * 3.0 - time * 4.0) * 0.5;
 }
                             else if (algo === 'voronoi') {
                                 let xi = Math.floor(nx); let yi = Math.floor(ny);
