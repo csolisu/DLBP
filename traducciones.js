@@ -1,12 +1,20 @@
 /**
  * Diccionario de traducciones para Dither Lab Pro
- * Puedes agregar más términos simplemente añadiendo líneas a este objeto JSON.
+ * Actualizado para cubrir todas las secciones: Editor, Animación, Contacto, Nosotros y Privacidad.
  */
 const traducciones = {
     "en": {
-        // UI Principal & Navegación
+        // === UI Principal & Navegación ===
+        "Inicio": "Home",
+        "Nosotros": "About Us",
+        "Contacto": "Contact",
+        "Privacidad": "Privacy",
+        "Sobre Nosotros": "About Us",
+        "Política de Privacidad": "Privacy Policy",
         "Motor de tramado avanzado v6": "Advanced Dithering Engine v6",
         "Sección Animación & Keyframes": "Animation & Keyframes Section",
+        
+        // === Editor (index.html & animation.html) ===
         "Haz clic o arrastra una imagen": "Click or drag an image",
         "Cargar Imagen o Video para Animar": "Load Image or Video to Animate",
         "Soporta PNG, JPG, WebP": "Supports PNG, JPG, WebP",
@@ -22,232 +30,197 @@ const traducciones = {
         "Procesando": "Processing",
         "Procesando...": "Processing...",
         "Calculando...": "Calculating...",
+        "Vector SVG exportado correctamente": "SVG Vector exported successfully",
+        "La configuración de exportación superó los recursos.": "Export settings exceeded resources.",
+        "Exportar": "Export",
+        "Exportar WebM": "Export WebM",
+        "Exportar MP4": "Export MP4",
+        "Descargar": "Download",
         
-        // Nodos del Sistema - 1. Físico & Tonal
+        // === Parámetros del Editor ===
         "1. Físico & Tonal": "1. Physical & Tonal",
         "Escala Interna": "Internal Scale",
-        "Canales Activos": "Active Channels",
+        "Canales": "Channels",
         "Brillo": "Brightness",
         "Contraste": "Contrast",
-        "Gamma": "Gamma",
         "Saturación": "Saturation",
-        "Enfoque": "Sharpen",
-        "Desenfoque": "Blur",
-        "Posterización": "Posterize",
-        "Recorte (Clipping)": "Clipping",
-        "Recorte (Clip)": "Clipping",
-        "Curvas Tonales": "Tonal Curves",
-        "RGB (Maestro)": "RGB (Master)",
-        "Canal Rojo": "Red Channel",
-        "Canal Verde": "Green Channel",
-        "Canal Azul": "Blue Channel",
-        
-        // Nodos del Sistema - 2. Core Dither
-        "2. Core Dither": "2. Core Dither",
-        "Algoritmo": "Algorithm",
-        "Amplitud Error / Efecto": "Error / Effect Amplitude",
-        "Amplitud Error": "Error Amplitude",
-        "Bias": "Bias",
-        "Escala Celda": "Cell Scale",
-        "Modificadores (Difusión)": "Modifiers (Diffusion)",
-        "Modificadores": "Modifiers",
-        "Rotación": "Rotation",
-        "Sesgo H/V": "H/V Skew",
-        "Patrón de Escaneo": "Scan Pattern",
-        "Gestión de Paleta": "Palette Management",
-        "Extraer de Imagen": "Extract from Image",
-        "Invertir Colores": "Invert Colors",
-        "Tap para editar. Arrastra para reordenar.": "Tap to edit. Drag to reorder.",
-        "Tono y Saturación (Post-Paleta)": "Hue & Saturation (Post-Palette)",
-        "Post-Modificadores (HSL)": "Post-Modifiers (HSL)",
-        "Hue": "Hue",
-        "Sat": "Sat",
-        "Lum": "Lum",
-
-        // Opciones de Dropdowns - Algoritmos y Patrones
-        "Difusión de Error": "Error Diffusion",
-        "Tramado Ordenado": "Ordered Dithering",
-        "Tramado Geométrico (Halftone)": "Geometric Halftone",
-        "Métodos Estocásticos": "Stochastic Methods",
-        "Experimentales & Autor": "Experimental & Custom",
-        "Punto Agrupado 4x4": "Clustered Dot 4x4",
-        "Punto Agrupado 8x8": "Clustered Dot 8x8",
-        "Círculos": "Circles",
-        "Rombos": "Diamonds",
-        "Cuadrados": "Squares",
-        "Triángulos": "Triangles",
-        "Umbral Básico": "Basic Threshold",
-        "Ruido Aleatorio": "Random Noise",
-        "Ruido Azul": "Blue Noise",
-        "Tramado de Línea": "Line Dither",
-        "Ordered Voronoi": "Ordered Voronoi",
-        "Bayer Progresivo": "Progressive Bayer",
-        "Cross-Hatch (Grabado)": "Cross-Hatch",
-        "Spiral Wave": "Spiral Wave",
-        "Hilbert Curve Pattern": "Hilbert Curve Pattern",
-        "Diffusion Threshold Mod (DTM)": "Diffusion Threshold Mod (DTM)",
-        "Diffusion Threshold Mod": "Diffusion Threshold Mod",
-        "Standard": "Standard",
-        "Zig-Zag Estricto": "Strict Zig-Zag",
-        "Spiral": "Spiral",
-        "Hilbert Curve": "Hilbert Curve",
-        "Vertical": "Vertical",
-
-        // Opciones de Dropdowns - Paletas
-        "Paleta Personalizada": "Custom Palette",
-        "Monocromo Estricto": "Strict Monochrome",
-        "Amber CRT (NUEVO)": "Amber CRT (NEW)",
-        "Green Phosphor CRT (NUEVO)": "Green Phosphor CRT (NEW)",
-        "Windows 95 (16) (NUEVO)": "Windows 95 (16) (NEW)",
-        
-        // Nodos del Sistema - 3. Glitch
-        "3. Glitch & Distorsión": "3. Glitch & Distortion",
-        "3. Glitch": "3. Glitch",
-        "Buffer Underflow": "Buffer Underflow",
-        "Sort (H)": "Sort (H)",
-        "Sort (V)": "Sort (V)",
-        "Jitter H-Sync": "Jitter H-Sync",
-        "Chroma Bleed": "Chroma Bleed",
-        "Pixel Flow Drift": "Pixel Flow Drift",
-        "Interlaced Delay": "Interlaced Delay",
-        "Bit-Plane Slicing": "Bit-Plane Slicing",
-        "Desactivado": "Disabled",
-        "Destruir LSB": "Destroy LSB",
-        "Destruir MSB": "Destroy MSB",
-        "Luma Palette Swap": "Luma Palette Swap",
-        
-        // Nodos del Sistema - 4. Post-FX
-        "4. Post-FX": "4. Post-FX",
-        "Activar": "Enable",
-        "Film Grain": "Film Grain",
-        "Vignette Color": "Vignette Color",
-        "Optical Bloom": "Optical Bloom",
-        "Lens Dispersion": "Lens Dispersion",
-        "Grain Alpha": "Grain Alpha",
-        "Dot Gain": "Dot Gain",
-        "Mono Tint": "Mono Tint",
-        "Local Contrast": "Local Contrast",
-        
-        // Controles de Paneo y Zoom
-        "Comparar Original": "Compare Original",
-        "Activar/Desactivar Paneo Libre": "Toggle Free Pan",
-        "Alejar": "Zoom Out",
-        "Acercar": "Zoom In",
-
-        // Controles de Animación y Timeline
-        "Inicio (s)": "Start (s)",
-        "Duración (s)": "Duration (s)",
-        "Framerate": "Framerate",
-        "Formato": "Format",
+        "Pixelación": "Pixelation",
         "Resolución": "Resolution",
-        "Audio Video": "Audio & Video",
-        "Sin Audio": "No Audio",
-        "Con Audio": "With Audio",
-        "WebM (VP9)": "WebM (VP9)",
-        "MP4 (H.264)": "MP4 (H.264)",
-        "Nativa (1x)": "Native (1x)",
-        "1.5x Escala": "1.5x Scale",
-        "2x Escala": "2x Scale",
-        "Forzar 1080p": "Force 1080p",
-        "Forzar 4K": "Force 4K",
-        "Añadir Keyframe": "Add Keyframe",
-        "Quitar Keyframe": "Remove Keyframe",
-        "Exportar": "Export",
+        "Filtros": "Filters",
+        "Ruido": "Noise",
+        "Tramado": "Dithering",
+        "Algoritmo": "Algorithm",
+        "Paleta": "Palette",
+        "Colores": "Colors",
+        "Animación": "Animation",
+        "Fotogramas": "Frames",
+        "Duración": "Duration",
+
+        // === Página de Nosotros (nosotros.html) ===
+        "Sobre Nosotros | Dither Lab Pro": "About Us | Dither Lab Pro",
+        "Sobre Nosotros": "About Us",
+        "Conoce más sobre el proyecto": "Learn more about the project",
+        "Nuestra Misión": "Our Mission",
+        "Nuestra misión es proporcionar a diseñadores, artistas y desarrolladores una herramienta web rápida, privada y potente para la creación de arte retro y efectos de tramado avanzados.": "Our mission is to provide designers, artists, and developers with a fast, private, and powerful web tool for creating retro art and advanced dithering effects.",
+        "Buscamos democratizar el acceso a herramientas de edición técnica, eliminando la barrera de instalaciones complejas mediante el uso de tecnologías web nativas.": "We seek to democratize access to technical editing tools, removing the barrier of complex installations through the use of native web technologies.",
+        "Nuestra Visión": "Our Vision",
+        "Aspiramos a convertirnos en el estándar web definitivo para la manipulación y animación de imágenes con estética retro directamente desde el navegador.": "We aspire to become the definitive web standard for manipulating and animating images with a retro aesthetic directly from the browser.",
+        "Queremos construir una comunidad donde la experimentación visual y el código se encuentren, fomentando el aprendizaje y la creatividad sin límites.": "We want to build a community where visual experimentation and code meet, fostering learning and boundless creativity.",
+        "Valores": "Values",
+        "Por qué elegirnos": "Why choose us",
+        "Rendimiento optimizado": "Optimized performance",
+        "Privacidad garantizada": "Guaranteed privacy",
+        "Herramientas accesibles": "Accessible tools",
+        "Sobre el Creador": "About the Creator",
+        "Este proyecto es impulsado por Carlos Solís Uzuriaga, un apasionado desarrollador y diseñador dedicado a explorar la intersección entre el código y el arte visual.": "This project is driven by Carlos Solís Uzuriaga, a passionate developer and designer dedicated to exploring the intersection of code and visual art.",
+        "Diseñé esta plataforma como un espacio de experimentación continua para artistas, diseñadores gráficos y entusiastas del pixel art que buscan un control milimétrico sobre sus procesos creativos.": "I designed this platform as a space for continuous experimentation for artists, graphic designers, and pixel art enthusiasts looking for pinpoint control over their creative processes.",
+        "Conectar ahora": "Connect now",
+
+        // === Página de Contacto (contacto.html) ===
+        "Contacto | Dither Lab Pro": "Contact | Dither Lab Pro",
+        "Ponte en contacto": "Get in touch",
+        "¿Tienes dudas, sugerencias o simplemente quieres saludar?": "Do you have questions, suggestions, or just want to say hi?",
+        "Redes Sociales": "Social Media",
+        "Síguenos": "Follow us",
+        "TikTok": "TikTok",
+        "Instagram": "Instagram",
+        "Twitter": "Twitter",
+        "GitHub": "GitHub",
+        "Tutoriales y Procesos": "Tutorials and Processes",
+        "Galería e inspiración": "Gallery and inspiration",
+        "Novedades y anuncios": "News and announcements",
+        "Repositorio oficial": "Official repository",
+        "Proyectos y código": "Projects and code",
+        "Únete a la comunidad": "Join the community",
+        "Envíanos un mensaje": "Send us a message",
+        "Nombre": "Name",
+        "Nombre completo": "Full name",
+        "Tu nombre": "Your name",
+        "Escribe tu nombre": "Write your name",
+        "Correo": "Email",
+        "Correo electrónico": "Email address",
+        "Tu correo electrónico": "Your email address",
+        "Escribe tu correo": "Write your email",
+        "Asunto": "Subject",
+        "Elige un asunto": "Choose a subject",
+        "Mensaje": "Message",
+        "Escribe tu mensaje aquí...": "Write your message here...",
+        "Enviar": "Send",
+        "Enviar mensaje": "Send message",
+        "Opcional": "Optional",
+        "Dirección de correo no válida": "Invalid email address",
+
+        // === Página de Privacidad (privacidad.html) ===
+        "Política de Privacidad | Dither Lab Pro": "Privacy Policy | Dither Lab Pro",
+        "Tu privacidad es importante para nosotros": "Your privacy is important to us",
+        "Privacidad 100% garantizada": "100% guaranteed privacy",
+        "Procesamiento de datos en el cliente": "Client-side data processing",
+        "Ninguna imagen o video se sube a nuestros servidores. Todo se procesa localmente en tu dispositivo.": "No images or videos are uploaded to our servers. Everything is processed locally on your device.",
+        "Uso de Tecnologías Locales": "Use of Local Technologies",
+        "Hacemos uso de APIs web modernas como Canvas, WebGL y WebCodecs. Todas estas tecnologías se ejecutan de manera aislada dentro del entorno seguro de tu navegador. Si decides guardar configuraciones personalizadas (Presets), la plataforma generará un archivo JSON que se descargará directamente a tu disco duro local, manteniendo tu flujo de trabajo de forma privada.": "We use modern web APIs like Canvas, WebGL, and WebCodecs. All these technologies run in isolation within the secure environment of your browser. If you decide to save custom configurations (Presets), the platform will generate a JSON file that will be downloaded directly to your local hard drive, keeping your workflow strictly private.",
+        "Cookies y Almacenamiento Local": "Cookies and Local Storage",
+        "Utilizamos el almacenamiento local (localStorage) únicamente para guardar tus preferencias de idioma y ajustes básicos de la interfaz, mejorando así tu experiencia de usuario sin rastrear información personal.": "We use local storage (localStorage) only to save your language preferences and basic interface settings, thereby improving your user experience without tracking personal information.",
+        "Actualizaciones de la Política": "Policy Updates",
+        "Mantenemos este documento actualizado para reflejar cualquier avance en nuestras herramientas o prácticas de transparencia. Te invitamos a revisar esta página periódicamente para mantenerte informado sobre cómo protegemos tu entorno...": "We keep this document updated to reflect any advances in our tools or transparency practices. We invite you to review this page periodically to stay informed about how we protect your environment...",
+        "Última actualización": "Last updated",
         
-        // Centro de Exportación
-        "Opciones de Exportación": "Export Options",
-        "Salida HD, SVG, Alpha Purge & JSON": "HD Output, SVG, Alpha Purge & JSON",
-        "Centro de Exportación": "Export Center",
-        "Salida de Imagen & Vector": "Image & Vector Output",
-        "Multiplicador de Escala (Píxel Perfecto)": "Scale Multiplier (Pixel Perfect)",
-        "Peso raster:": "Raster Weight:",
-        "Exportar PNG": "Export PNG",
-        "Vector (SVG)": "Vector (SVG)",
-        "Copiar Portapapeles": "Copy to Clipboard",
-        "Aislamiento (Alpha Purge)": "Isolation (Alpha Purge)",
-        "Limpiar": "Clear",
-        "Clic en el color de la paleta resultante para volverlo ": "Click the resulting palette color to make it ",
-        "transparente": "transparent",
-        " en la exportación.": " upon export.",
-        "Aislamiento/SVG Desactivado": "Isolation/SVG Disabled",
-        "Apaga los efectos de Post-Procesado (FX) para interactuar.": "Turn off Post-Processing (FX) effects to interact.",
-        "Inspección de Paleta Final": "Final Palette Inspection",
-        "Variables CSS": "CSS Variables",
-        "Clic para copiar el valor HEX al portapapeles.": "Click to copy HEX value to clipboard.",
-        "Terminal de Presets": "Presets Terminal",
-        "Guarda tu configuración (Algoritmos, Curvas, Paletas, Glitch) en un archivo JSON local.": "Save your configuration (Algorithms, Curves, Palettes, Glitch) to a local JSON file.",
-        "Descargar Preset Maestro": "Download Master Preset",
-        "Cargar Preset": "Load Preset",
+        // === Base de Conocimientos ===
+        "Base de conocimientos": "Knowledge Base",
+        "Base de Conocimientos": "Knowledge Base",
+        "Buscar en la base de conocimientos...": "Search the knowledge base...",
+        "Categorías": "Categories",
+        "Artículos recientes": "Recent Articles",
+        "Guías de inicio rápido": "Quick Start Guides",
+        "Resolución de problemas": "Troubleshooting",
+        "Manual de usuario": "User Manual",
+        "Conceptos básicos de Dithering": "Dithering Basics",
+        "Aprende a usar Dither Lab Pro paso a paso.": "Learn how to use Dither Lab Pro step by step.",
+        "Volver a la Base de Conocimientos": "Back to Knowledge Base",
+        "Resultados de búsqueda": "Search results",
+        "No se encontraron resultados": "No results found",
+        "Leer más": "Read more",
+        "Artículo": "Article",
         
-        // Textos Largos / SEO / Conecta
-        "Sigamos creando juntos": "Let's keep creating together",
-        "Si este proyecto te ha resultado útil y te apasiona el diseño gráfico, la comunicación y el arte retro, me encantaría conectar contigo. Acompáñame en mis redes sociales para compartir procesos, descubrir nuevas herramientas y seguir explorando el mundo visual en comunidad.": "If you found this project useful and are passionate about graphic design, communication, and retro art, I would love to connect with you. Join me on my social networks to share processes, discover new tools, and continue exploring the visual world as a community.",
-        "Base de Conocimiento & Ayuda": "Knowledge Base & Help",
-        "¿Qué es el Dithering?": "What is Dithering?",
-        "Algoritmos de Difusión": "Diffusion Algorithms",
-        "Paletas Nostálgicas": "Nostalgic Palettes",
-        "Glitch & Distorsión": "Glitch & Distortion",
-        "Exportar a Vector (SVG)": "Export to Vector (SVG)",
-        "Alpha Purge (Canal Transparente)": "Alpha Purge (Transparent Channel)"
+        // === Textos Globales y Pie de Página ===
+        "Todos los derechos reservados.": "All rights reserved.",
+        "Términos y Condiciones": "Terms and Conditions",
+        "Soporte": "Support",
+        "Preguntas Frecuentes": "FAQ"
     }
 };
 
-/**
- * Función principal del motor de internacionalización
- */
+// Utilizamos un WeakMap para guardar el texto original en español de cada nodo del DOM
+// Esto nos permite volver al español limpiamente sin perder espacios ni saltos de línea.
+const textosOriginalesDOM = new WeakMap();
+
 function traducirInterfaz(idioma) {
-    // Seleccionamos los elementos comunes que contienen texto.
-    // Ignoramos inputs o textareas, operamos solo en etiquetas de UI
-    const elementos = document.querySelectorAll('h1, h2, h3, h4, p, span, button, a, label, option');
+    const caminarDOM = (nodo) => {
+        // Si es un nodo de texto puro
+        if (nodo.nodeType === Node.TEXT_NODE) {
+            const textoLimpio = nodo.nodeValue.trim();
+            
+            if (textoLimpio.length > 0) {
+                // Registrar el texto en español la primera vez que se escanea el nodo
+                if (!textosOriginalesDOM.has(nodo)) {
+                    textosOriginalesDOM.set(nodo, nodo.nodeValue);
+                }
 
-    elementos.forEach(el => {
-        // Recorremos los nodos hijos buscando los que sean de tipo Texto (Node.TEXT_NODE === 3)
-        // Esto previene que destruyamos iconos SVG u otros elementos anidados
-        el.childNodes.forEach(nodo => {
-            if (nodo.nodeType === Node.TEXT_NODE) {
-                let textoOriginalDOM = nodo.nodeValue.trim();
-                
-                if (textoOriginalDOM !== '') {
-                    // Si es la primera vez que procesamos este nodo, guardamos su texto nativo (español) en una propiedad personalizada
-                    if (!nodo.originalText) {
-                        nodo.originalText = textoOriginalDOM;
-                    }
+                const textoOriginal = textosOriginalesDOM.get(nodo);
+                const llaveBusqueda = textoOriginal.trim();
 
-                    // Identificamos la llave original
-                    let llaveOriginal = nodo.originalText;
-                    
-                    // Lógica de reemplazo
-                    if (idioma === 'es') {
-                        // Si volvemos a español, restituimos el texto original guardado
-                        nodo.nodeValue = nodo.nodeValue.replace(textoOriginalDOM, llaveOriginal);
-                    } else if (traducciones[idioma] && traducciones[idioma][llaveOriginal]) {
-                        // Si hay traducción disponible, la reemplazamos
-                        nodo.nodeValue = nodo.nodeValue.replace(textoOriginalDOM, traducciones[idioma][llaveOriginal]);
-                    }
+                if (idioma === 'es') {
+                    // Restaurar al español original
+                    nodo.nodeValue = textoOriginal;
+                } else if (traducciones[idioma] && traducciones[idioma][llaveBusqueda]) {
+                    // Aplicar traducción conservando los espacios en blanco alrededor
+                    nodo.nodeValue = textoOriginal.replace(llaveBusqueda, traducciones[idioma][llaveBusqueda]);
                 }
             }
-        });
-    });
+        } 
+        // Si es un elemento HTML (ignorando scripts y estilos)
+        else if (nodo.nodeType === Node.ELEMENT_NODE && nodo.tagName !== 'SCRIPT' && nodo.tagName !== 'STYLE') {
+            
+            // Traducir atributos comunes como placeholders en formularios
+            if (nodo.placeholder) {
+                if (!nodo.dataset.origPlaceholder) {
+                    nodo.dataset.origPlaceholder = nodo.placeholder;
+                }
+                const llavePlaceholder = nodo.dataset.origPlaceholder.trim();
+                
+                if (idioma === 'es') {
+                    nodo.placeholder = nodo.dataset.origPlaceholder;
+                } else if (traducciones[idioma] && traducciones[idioma][llavePlaceholder]) {
+                    nodo.placeholder = traducciones[idioma][llavePlaceholder];
+                }
+            }
+
+            // Continuar escaneando los hijos del nodo
+            nodo.childNodes.forEach(caminarDOM);
+        }
+    };
+
+    // Iniciar el recorrido desde el cuerpo del documento
+    caminarDOM(document.body);
     
-    // Sincronizar todos los selectores de idioma de la UI si existieran varios
+    // Sincronizar todos los selectores de idioma de la UI
     document.querySelectorAll('.lang-selector').forEach(sel => sel.value = idioma);
     
-    // Guardamos la preferencia en el navegador para que persista
+    // Guardar la preferencia en el navegador para que persista entre páginas
     localStorage.setItem('dither_lang', idioma);
 }
 
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-    // Detectar si el usuario ya tenía un idioma guardado
+    // Detectar si el usuario ya tenía un idioma guardado, por defecto es 'es'
     const idiomaGuardado = localStorage.getItem('dither_lang') || 'es';
     
-    // Asignar los eventos a los selectores
+    // Asignar los eventos a los selectores de idioma en el nav
     document.querySelectorAll('.lang-selector').forEach(selector => {
         selector.value = idiomaGuardado;
         selector.addEventListener('change', (e) => traducirInterfaz(e.target.value));
     });
 
-    // Si el idioma no es el predeterminado, ejecutar la traducción al cargar
+    // Ejecutar la traducción inicial si el idioma guardado es distinto al español
     if (idiomaGuardado !== 'es') {
         traducirInterfaz(idiomaGuardado);
     }
