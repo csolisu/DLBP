@@ -312,6 +312,13 @@
                                     <option value="spiralWave">Spiral Wave</option>
                                     <option value="hilbertPattern">Hilbert Curve Pattern</option>
                                     <option value="dtm">Diffusion Threshold Mod</option>
+                                    <option value="ripples">ripples</option>
+                                    <option value="wavyHatch">wavyHatch</option>
+                                    <option value="etching">etching</option>
+                                    <option value="maze">maze</option>
+                                    <option value="dotMatrix">dotMatrix</option>
+                                    <option value="squareRipples">squareRipples</option>
+                                    <option value="basketWeave">basketWeave</option>
                                 </optgroup>
                             </select>
                         </div>
@@ -2336,7 +2343,7 @@
                 const errStrength = state.errstr / 100;
                 const patScale = state['pattern-scale'];
                 
-                const estocasticGroup = ['threshold', 'random', 'blueNoise', 'line', 'circles', 'diamonds', 'squares', 'triangles', 'voronoi', 'crossHatch', 'spiralWave', 'hilbertPattern', 'dtm'];
+                const estocasticGroup = ['threshold', 'random', 'blueNoise', 'line', 'circles', 'diamonds', 'squares', 'triangles', 'voronoi', 'crossHatch', 'spiralWave', 'hilbertPattern', 'dtm', 'ripples', 'wavyHatch', 'etching', 'maze', 'dotMatrix', 'squareRipples', 'basketWeave'];
 
                 if (estocasticGroup.includes(algo)) {
                     let spread = errStrength * 128;
@@ -2369,6 +2376,74 @@
                                 let ang = Math.atan2(cy, cx);
                                 t = Math.sin(dist * 2.0 + ang * 8.0 + (currentPlayTime/500)) * 0.5; 
                             }
+else if (algo === 'ripples') {
+    let cx = nx - w / (2 * patScale); 
+    let cy = ny - h / (2 * patScale);
+    let dist = Math.sqrt(cx * cx + cy * cy);
+    let tVar = currentPlayTime / 500;
+    t = Math.sin(dist * 0.8 - tVar * 5.0) * 0.5;
+}
+else if (algo === 'wavyHatch') {
+    let freq = 0.8; 
+    let amp = 2.0; 
+    let time = currentPlayTime / 400; // Velocidad de flujo
+    t = Math.sin((nx + Math.sin(ny * freq + time) * amp) * freq + time) * 0.5;
+}
+else if (algo === 'etching') {
+    let freq = 1.2;
+    let time = currentPlayTime / 800;
+    let line1 = Math.sin((nx + ny) * freq + time);
+    let line2 = Math.sin((nx - ny) * freq - time);
+    t = (line1 + line2) * 0.25;
+}
+else if (algo === 'maze') {
+    let size = 5.0; 
+    let speed = currentPlayTime / 100;
+    let mnx = nx + speed; // Desplazamiento horizontal
+    let mny = ny + speed; // Desplazamiento vertical
+    
+    let tx = Math.floor(mnx / size);
+    let ty = Math.floor(mny / size);
+    let rand = Math.sin(tx * 12.8 + ty * 31.5) > 0 ? 1 : -1;
+    let lx = (mnx % size) / size;
+    let ly = (mny % size) / size;
+    
+    let dist = rand > 0 ? 
+        Math.abs(Math.sqrt(lx*lx + ly*ly) - 0.5) : 
+        Math.abs(Math.sqrt((1-lx)*(1-lx) + ly*ly) - 0.5);
+    
+    t = dist < 0.15 ? 0.5 : -0.5;
+}
+else if (algo === 'dotMatrix') {
+    let cellSize = 4.0; 
+    let time = currentPlayTime / 500;
+    let lx = (nx % cellSize) - cellSize/2;
+    let ly = (ny % cellSize) - cellSize/2;
+    let dist = Math.sqrt(lx*lx + ly*ly);
+    // El radio de los puntos oscila con el tiempo
+    let pulse = Math.sin(time + (nx + ny) * 0.05) * 0.2 + 0.8;
+    t = (dist / (cellSize * 0.6 * pulse)) - 0.5;
+}
+else if (algo === 'squareRipples') {
+    let cx = nx - w / (2 * patScale); 
+    let cy = ny - h / (2 * patScale);
+    let time = currentPlayTime / 300;
+    let dist = Math.max(Math.abs(cx), Math.abs(cy));
+    t = Math.sin(dist * 1.2 - time) * 0.5;
+}
+else if (algo === 'basketWeave') {
+    let size = 8.0;
+    let time = currentPlayTime / 600;
+    let tx = Math.floor((nx + time * 10) / size);
+    let ty = Math.floor((ny + time * 5) / size);
+    let pattern;
+    if ((tx + ty) % 2 === 0) {
+        pattern = Math.sin(nx * 1.2 + time);
+    } else {
+        pattern = Math.sin(ny * 1.2 - time);
+    }
+    t = pattern * 0.4;
+}
                             else if (algo === 'voronoi') {
                                 let xi = Math.floor(nx); let yi = Math.floor(ny);
                                 let xf = nx - xi; let yf = ny - yi;
@@ -2680,11 +2755,28 @@
                         audioDest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
                     }
 
-                    let mimeType = format === 'mp4' ? 'video/mp4; codecs="avc1.42E01E"' : 'video/webm; codecs=vp9';
-                    if (!MediaRecorder.isTypeSupported(mimeType)) {
-                        mimeType = format === 'mp4' ? 'video/mp4' : 'video/webm';
-                    }
-                    let fileExt = format;
+let mimeType = '';
+let fileExt = format;
+
+if (format === 'mp4') {
+    // 1. Forzamos video H.264 y audio AAC (mp4a.40.2) para compatibilidad nativa en Windows
+    if (MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E, mp4a.40.2"')) {
+        mimeType = 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+    } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+        mimeType = 'video/mp4';
+    } else {
+        // Fallback seguro si el navegador rechaza grabar MP4
+        mimeType = 'video/webm';
+        fileExt = 'webm';
+    }
+} else {
+    // 2. Configuración explícita para WebM
+    if (MediaRecorder.isTypeSupported('video/webm; codecs="vp9, opus"')) {
+        mimeType = 'video/webm; codecs="vp9, opus"';
+    } else {
+        mimeType = 'video/webm';
+    }
+}
                     
                     const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
                     const chunks = [];
