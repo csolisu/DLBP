@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="google-adsense-account" content="ca-pub-9873897649527371">
+    
     <!-- === ETIQUETAS SEO AVANZADAS === -->
     <title>Dither Lab Pro | Generador de Dithering para Imágenes y Video con Keyframes</title>
     <meta name="description" content="Dither Lab Pro: La herramienta profesional para aplicar efectos de tramado (dithering) y glitch a imágenes y videos. Controla parámetros con keyframes, exporta en alta calidad y crea arte retro animado sin instalar software.">
@@ -15,7 +15,7 @@
     <!-- === FAVICON FÍSICO === -->
     <link rel="icon" href="https://ditherlabpro.com/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="https://ditherlabpro.com/favicon.png" sizes="192x192" type="image/png">
-    <link rel="apple-touch-icon" href="https://ditherlabpro.com/apple-touch-icon.png"
+    <link rel="apple-touch-icon" href="https://ditherlabpro.com/apple-touch-icon.png">
 
     <!-- Open Graph / Redes Sociales -->
     <meta property="og:title" content="Dither Lab Pro | Generador de Dithering Avanzado">
@@ -249,6 +249,48 @@
             transition: all 0.3s ease-in-out;
             transform-origin: top;
         }
+
+        /* --- ESTILOS DEL PANEL DE CAPAS --- */
+        #layers-panel.open {
+            transform: translateX(0);
+        }
+        #layers-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+        #layers-panel.open #close-panel-icon {
+            display: block;
+        }
+        #layers-panel.open #expand-panel-icon {
+            display: none;
+        }
+        #layers-list {
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) transparent;
+        }
+        .layer-item {
+            background: var(--bg-card);
+            border-radius: 0.5rem;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid transparent;
+        }
+        .layer-item:hover {
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+        }
+        .layer-item.active {
+            background: var(--accent-primary);
+            color: white;
+            border-left: 3px solid white;
+        }
         
     </style>
 </head>
@@ -276,6 +318,10 @@
             </div>
             
             <div class="flex items-center gap-2 md:gap-3">
+                <!-- Botón de Capas Agregado -->
+                <button id="toggle-layers-btn" class="p-1.5 md:p-2 rounded-xl bg-[var(--bg-input)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] transition-colors text-white" title="Abrir Panel de Capas" onclick="toggleLayersPanel()">
+                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                </button>
                 <select class="lang-selector bg-[var(--bg-input)] border border-[var(--border-color)] text-white text-xs rounded-xl p-1.5 md:p-2 cursor-pointer outline-none focus:border-[var(--accent-primary)]">
                     <option value="es">🇪🇸 ES</option>
                     <option value="en">🇺🇸 EN</option>
@@ -312,6 +358,10 @@
                     Modo Animación y Video
                 </a>
                 
+                <a href="nodos.html" class="w-full btn-modern bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-white py-3 md:py-3.5 text-xs md:text-sm shadow-lg shadow-[var(--accent-primary)]/20 flex items-center justify-center gap-2 flex-shrink-0" title="Ir al Motor de edición por nodos">
+                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    Modo edición por nodos
+                </a>
                 <!-- Caja: Acciones Rápidas -->
                 <div class="flex gap-2 md:gap-3 flex-shrink-0">
                     <input type="file" id="quick-preset-input" accept=".json" class="hidden">
@@ -1036,23 +1086,17 @@
             <div class="flex items-center gap-3 md:gap-4 z-10 flex-shrink-0">
                 <!-- TikTok -->
                 <a href="https://www.tiktok.com/@carlossolisuzuriaga" target="_blank" rel="noopener noreferrer" class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center hover:bg-[var(--bg-card-hover)] hover:border-[var(--accent-primary)] hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg group/social">
-                    <!-- Reemplaza el src con tu imagen de TikTok -->
-                    <img src="URL_IMAGEN_TIKTOK.png" alt="TikTok" class="w-6 h-6 md:w-7 md:h-7 object-contain opacity-70 group-hover/social:opacity-100 transition-opacity" 
-                         onerror="this.outerHTML='<svg class=\'w-6 h-6 md:w-7 md:h-7 text-white opacity-70 group-hover/social:opacity-100 transition-opacity\' fill=\'currentColor\' viewBox=\'0 0 24 24\'><path d=\'M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z\'/></svg>'">
+                    <svg class='w-6 h-6 md:w-7 md:h-7 text-white opacity-70 group-hover/social:opacity-100 transition-opacity' fill='currentColor' viewBox='0 0 24 24'><path d='M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z'/></svg>
                 </a>
 
                 <!-- LinkedIn -->
                 <a href="https://www.linkedin.com/in/carlos-solis-uzuriaga" target="_blank" rel="noopener noreferrer" class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center hover:bg-[#0077b5]/10 hover:border-[#0077b5] hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg group/social">
-                    <!-- Reemplaza el src con tu imagen de LinkedIn -->
-                    <img src="URL_IMAGEN_LINKEDIN.png" alt="LinkedIn" class="w-6 h-6 md:w-7 md:h-7 object-contain opacity-70 group-hover/social:opacity-100 transition-opacity" 
-                         onerror="this.outerHTML='<svg class=\'w-6 h-6 md:w-7 md:h-7 text-[#0077b5] opacity-70 group-hover/social:opacity-100 transition-opacity\' fill=\'currentColor\' viewBox=\'0 0 24 24\'><path d=\'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z\'/></svg>'">
+                    <svg class='w-6 h-6 md:w-7 md:h-7 text-[#0077b5] opacity-70 group-hover/social:opacity-100 transition-opacity' fill='currentColor' viewBox='0 0 24 24'><path d='M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z'/></svg>
                 </a>
 
                 <!-- Instagram -->
                 <a href="https://www.instagram.com/carlossolisuzuriaga" target="_blank" rel="noopener noreferrer" class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center hover:bg-gradient-to-tr hover:from-yellow-500/10 hover:via-pink-500/10 hover:to-purple-500/10 hover:border-pink-500 hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg group/social">
-                    <!-- Reemplaza el src con tu imagen de Instagram -->
-                    <img src="URL_IMAGEN_INSTAGRAM.png" alt="Instagram" class="w-6 h-6 md:w-7 md:h-7 object-contain opacity-70 group-hover/social:opacity-100 transition-opacity" 
-                         onerror="this.outerHTML='<svg class=\'w-6 h-6 md:w-7 md:h-7 text-pink-500 opacity-70 group-hover/social:opacity-100 transition-opacity\' fill=\'currentColor\' viewBox=\'0 0 24 24\'><path d=\'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z\'/></svg>'">
+                    <svg class='w-6 h-6 md:w-7 md:h-7 text-pink-500 opacity-70 group-hover/social:opacity-100 transition-opacity' fill='currentColor' viewBox='0 0 24 24'><path d='M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z'/></svg>
                 </a>
             </div>
         </div>
@@ -1181,6 +1225,31 @@
             </div>
         </div>
 <!-- Fin de Enlaces rápidos (Privacidad, Nosotros, Contacto) -->
+
+    <!-- === PANEL DE CAPAS (LATERAL) === -->
+    <aside id="layers-panel" class="fixed right-0 top-24 z-50 w-[320px] bg-[var(--bg-main)] border-l border-[var(--border-color)] h-full transition-transform duration-300 transform translate-x-full shadow-2xl">
+        <!-- Header del panel -->
+        <div id="layers-header" class="flex items-center justify-between p-4 border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--bg-card-hover)] transition-colors" onclick="toggleLayersPanel()">
+            <h3 class="text-lg font-bold text-white">Capas de Trabajo</h3>
+            <svg id="close-panel-icon" class="w-6 h-6 text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <svg id="expand-panel-icon" class="w-6 h-6 text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </div>
+
+        <!-- Lista de capas (se rellena dinámicamente con JS) -->
+        <div id="layers-list" class="flex-grow overflow-y-auto p-4 space-y-3 pb-32">
+            <p class="text-[var(--text-muted)] text-sm text-center italic" id="empty-layers-msg">Carga una imagen para habilitar las capas de estado.</p>
+        </div>
+
+        <!-- Footer con acciones -->
+        <div class="absolute bottom-24 left-0 w-full p-4 border-t border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-sm z-10">
+            <button id="add-layer-btn" onclick="createNewLayer()" class="w-full py-3 px-4 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-lg shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <span>Nueva Capa de Ajuste</span>
+            </button>
+        </div>
+    </aside>
+    <!-- === FIN PANEL DE CAPAS === -->
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
@@ -1264,6 +1333,11 @@
             let comparePercent = 50;
             let currentExportScale = 1; 
             
+            // ESTADO CAPAS
+            let layers = [];
+            let activeLayerId = null;
+            let layerCounter = 0;
+
             // ESTADO: Aislamiento de Tinta
             let isolatedColors = new Set();
             
@@ -1989,12 +2063,18 @@
                     
                     updateCursors();
                     controls.classList.remove('opacity-50', 'pointer-events-none');
+                    
+                    // Iniciar el sistema de capas ahora que hay una imagen válida
+                    if (window.initLayersSystem) {
+                        window.initLayersSystem();
+                    }
+                    
                     scheduleProcess();
                 };
             }
 
             // --- UI BINDINGS ---
-// --- LÓGICA DE INTERFAZ MULTI-SELECTORES DE ALGORITMO ---
+            // --- LÓGICA DE INTERFAZ MULTI-SELECTORES DE ALGORITMO ---
             const mainAlgoSelect = document.getElementById('algorithm');
             const displayAlgoName = document.getElementById('active-algo-display');
             const groupSelectors = document.querySelectorAll('.group-selector');
@@ -2657,6 +2737,12 @@
                     updatePaletteSquares();
                     updateIsolationSquares();
                     updateEstimatedSize();
+                    
+                    // Asegurarse de que el sistema de capas procesa el thumbnail tras renderizar
+                    if(activeLayerId && window.updateLayerThumbnail) {
+                        window.updateLayerThumbnail(activeLayerId);
+                        window.renderLayersList();
+                    }
                 }, 50);
             }
 
@@ -3205,11 +3291,12 @@
                     algoBias: document.getElementById('algo-bias').value,
 
                     selectedPostColorHex: selectedPostColorHex,
-                    postModifications: postModifications,
-
-                    curves: curves,
+                    
+                    // CLONACIÓN PROFUNDA (Evita problemas de referencia al cambiar de capa)
+                    postModifications: JSON.parse(JSON.stringify(postModifications)),
+                    curves: JSON.parse(JSON.stringify(curves)),
                     activeCurveChannel: activeCurveChannel,
-                    customColorsArray: customColorsArray,
+                    customColorsArray: [...customColorsArray],
                     isolatedColors: Array.from(isolatedColors)
                 };
             };
@@ -3243,7 +3330,7 @@
                 setChk('invert-palette', data.invertPalette);
                 setVal('palette', data.palette);
 
-                // Nuevos Glitch
+                 // Nuevos Glitch
                 setVal('glitch-underflow', data.glitchUnderflow); setLbl('glitch-underflow', data.glitchUnderflow);
                 setVal('glitch-sort', data.glitchSort); setLbl('glitch-sort', data.glitchSort);
                 setVal('glitch-sort-v', data.glitchSortV); setLbl('glitch-sort-v', data.glitchSortV);
@@ -3271,16 +3358,16 @@
                 setVal('algo-rot', data.algoRot); setLbl('algo-rot', data.algoRot, '°');
                 setVal('algo-bias', data.algoBias); setLbl('algo-bias', data.algoBias);
 
-                if(data.postModifications) postModifications = data.postModifications;
+                if(data.postModifications) postModifications = JSON.parse(JSON.stringify(data.postModifications));
                 if(data.selectedPostColorHex) selectedPostColorHex = data.selectedPostColorHex;
 
-                if(data.curves) curves = data.curves;
+                if(data.curves) curves = JSON.parse(JSON.stringify(data.curves));
                 if(data.activeCurveChannel) {
                     activeCurveChannel = data.activeCurveChannel;
                     const ccEl = document.getElementById('curve-channel');
                     if(ccEl) ccEl.value = activeCurveChannel;
                 }
-                if(data.customColorsArray) customColorsArray = data.customColorsArray;
+                if(data.customColorsArray) customColorsArray = [...data.customColorsArray];
                 if(data.isolatedColors) isolatedColors = new Set(data.isolatedColors);
 
                 drawCurve();
@@ -3349,7 +3436,7 @@
                         ]);
                         showToast('Imagen copiada al portapapeles', 'success');
                     } catch (err) {
-                        showToast('Error. Tu navegador no soporta esta acción', 'error');
+                        showToast('Copiado fallido. Usa exportar PNG.', 'error');
                     }
                 }, 'image/png');
             });
@@ -3371,13 +3458,11 @@
                     let currentHex = null;
                     let startX = 0;
                     
-                    // Algoritmo RLE Horizontal para generar trayectorias
                     for (let y = 0; y < h; y++) {
                         for (let x = 0; x < w; x++) {
                             let idx = (y * w + x) * 4;
                             let a = imgData[idx + 3];
                             
-                            // Ignorar píxeles transparentes
                             if (a < 128) {
                                 if (currentHex !== null) {
                                     if (!paths[currentHex]) paths[currentHex] = [];
@@ -3423,6 +3508,165 @@
                     showToast('Vector SVG exportado correctamente', 'success');
                 }, 50); 
             });
+
+            // ==========================================
+            // === SISTEMA DE CAPAS DE AJUSTE (NUEVO) ===
+            // ==========================================
+
+            window.toggleLayersPanel = function() {
+                const panel = document.getElementById('layers-panel');
+                panel.classList.toggle('open');
+                panel.classList.toggle('translate-x-full');
+            };
+
+            window.initLayersSystem = function() {
+                if (layers.length === 0) {
+                    layerCounter = 1;
+                    activeLayerId = `layer-${layerCounter}`;
+                    layers.push({
+                        id: activeLayerId,
+                        name: `Ajuste ${layerCounter}`,
+                        state: getPresetData(),
+                        thumbnail: ''
+                    });
+                    renderLayersList();
+                }
+            };
+
+            window.createNewLayer = function() {
+                if (!originalImage.src) {
+                    showToast('Sube una imagen primero para usar capas.', 'error');
+                    return;
+                }
+                
+                const activeLayer = layers.find(l => l.id === activeLayerId);
+                if (activeLayer) {
+                    activeLayer.state = getPresetData();
+                }
+
+                layerCounter++;
+                const newLayerId = `layer-${layerCounter}`;
+                layers.push({
+                    id: newLayerId,
+                    name: `Ajuste ${layerCounter}`,
+                    state: getPresetData(),
+                    thumbnail: ''
+                });
+
+                activeLayerId = newLayerId;
+                renderLayersList();
+                showToast(`Capa "${layers[layers.length-1].name}" creada`);
+                
+                updateLayerThumbnail(activeLayerId);
+            };
+
+            window.switchLayer = function(targetId) {
+                if (targetId === activeLayerId) return;
+
+                const currentLayer = layers.find(l => l.id === activeLayerId);
+                if (currentLayer) {
+                    currentLayer.state = getPresetData();
+                }
+
+                activeLayerId = targetId;
+
+                const targetLayer = layers.find(l => l.id === targetId);
+                if (targetLayer && targetLayer.state) {
+                    applyPresetData(targetLayer.state);
+                }
+
+                renderLayersList();
+            };
+
+            window.deleteLayer = function(idToDelete) {
+                if (layers.length <= 1) {
+                    showToast('No puedes eliminar la única capa restante.', 'error');
+                    return;
+                }
+
+                const index = layers.findIndex(l => l.id === idToDelete);
+                if (index === -1) return;
+
+                layers.splice(index, 1);
+
+                if (activeLayerId === idToDelete) {
+                    activeLayerId = layers[layers.length - 1].id;
+                    applyPresetData(layers[layers.length - 1].state);
+                }
+
+                renderLayersList();
+                showToast('Capa eliminada');
+            };
+
+            window.updateLayerThumbnail = function(layerId) {
+                if (!canvas || !originalImage.src) return;
+                
+                const thumbCanvas = document.createElement('canvas');
+                const MAX_THUMB_SIZE = 64;
+                const scale = Math.min(MAX_THUMB_SIZE / canvas.width, MAX_THUMB_SIZE / canvas.height, 1);
+                
+                thumbCanvas.width = canvas.width * scale;
+                thumbCanvas.height = canvas.height * scale;
+                const tCtx = thumbCanvas.getContext('2d');
+                tCtx.imageSmoothingEnabled = false;
+                tCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
+
+                const dataURL = thumbCanvas.toDataURL('image/jpeg', 0.5);
+                
+                const layer = layers.find(l => l.id === layerId);
+                if (layer) {
+                    layer.thumbnail = dataURL;
+                    const imgEl = document.getElementById(`thumb-${layerId}`);
+                    if (imgEl) imgEl.src = dataURL;
+                }
+            };
+
+            window.renderLayersList = function() {
+                const listContainer = document.getElementById('layers-list');
+                
+                if (layers.length === 0) {
+                    listContainer.innerHTML = '<p class="text-[var(--text-muted)] text-sm text-center italic" id="empty-layers-msg">Carga una imagen para habilitar las capas de estado.</p>';
+                    return;
+                }
+
+                listContainer.innerHTML = '';
+                
+                [...layers].reverse().forEach(layer => {
+                    const item = document.createElement('div');
+                    const isActive = layer.id === activeLayerId;
+                    
+                    item.className = `layer-item ${isActive ? 'active' : ''} mb-2 flex items-center justify-between p-2 rounded-lg`;
+                    
+                    const thumb = document.createElement('img');
+                    thumb.id = `thumb-${layer.id}`;
+                    thumb.src = layer.thumbnail || 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+                    thumb.className = 'w-10 h-10 object-cover rounded bg-black/50 flex-shrink-0 border border-white/10';
+                    
+                    const infoCont = document.createElement('div');
+                    infoCont.className = 'flex-grow ml-3 overflow-hidden cursor-pointer';
+                    infoCont.onclick = () => switchLayer(layer.id);
+                    
+                    const name = document.createElement('div');
+                    name.className = `text-sm font-semibold truncate ${isActive ? 'text-white' : 'text-[var(--text-muted)]'}`;
+                    name.textContent = layer.name;
+                    
+                    infoCont.appendChild(name);
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = `w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isActive ? 'text-white/80 hover:bg-white/20 hover:text-white' : 'text-red-400/50 hover:bg-red-500/20 hover:text-red-400'}`;
+                    delBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+                    delBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteLayer(layer.id);
+                    };
+
+                    item.appendChild(thumb);
+                    item.appendChild(infoCont);
+                    item.appendChild(delBtn);
+
+                    listContainer.appendChild(item);
+                });
+            };
 
             // Iniciar UI vacía
             updatePaletteSquares();
