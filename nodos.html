@@ -1,0 +1,2538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Dither Lab Pro Nodos | Dithering Avanzado</title>
+    <meta name="description" content="Dither Lab Pro Nudos: Composición visual y dithering mediante nodos independientes con modos de fusión.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        html { scroll-behavior: smooth; }
+
+        :root {
+            --accent-primary: #ff4757;
+            --accent-hover: #ff6b81;
+            --bg-main: #0f0f13; 
+            --bg-card: #1c1c22; 
+            --bg-card-hover: #23232b;
+            --bg-input: #121216;
+            --text-main: #f1f5f9;
+            --text-muted: #8b96a5;
+            --border-color: rgba(255, 255, 255, 0.08);
+            
+            --node-bg: #1c1c22;
+            --node-header: #24242c;
+            --node-port: #ff4757;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, rgba(255,255,255,0.02) 0%, transparent 100%);
+        }
+
+        canvas { image-rendering: pixelated; }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .bento-card {
+            background-color: var(--bg-card);
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            height: 20px;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px;
+            background: var(--bg-input);
+            border-radius: 9999px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            margin-top: -5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            transition: transform 0.1s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 100%;
+            height: 30px;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0.5rem; }
+
+        input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 0.375rem;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        input[type="checkbox"]:checked {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        select, input[type="file"], input[type="number"] {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        select:focus { border-color: var(--accent-primary); }
+
+        .btn-modern {
+            border-radius: 0.75rem;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+        .btn-modern:active:not(:disabled) { transform: scale(0.98); }
+
+        /* === EDITOR DE NODOS === */
+        #node-canvas-container {
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-color: #15151a; 
+            cursor: default;
+        }
+        #node-canvas-container.panning { cursor: grabbing !important; }
+        #node-canvas-container.linking { cursor: crosshair !important; }
+
+        .node {
+            position: absolute;
+            background-color: var(--node-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.75rem;
+            width: 220px;
+            min-width: 220px;
+            box-sizing: border-box;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            cursor: default;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        .node.selected {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px var(--accent-primary), 0 15px 30px rgba(0,0,0,0.6);
+            z-index: 20;
+        }
+        .node-header {
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: grab;
+            background-color: var(--node-header);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .node-header:active { cursor: grabbing; }
+        .node-body {
+            padding: 1.25rem 1rem;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60px;
+        }
+        
+        .port {
+            width: 16px;
+            height: 16px;
+            background-color: var(--node-bg);
+            border: 3px solid var(--node-port);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: crosshair;
+            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+            z-index: 50;
+        }
+        .port:hover {
+            transform: translateY(-50%) scale(1.3);
+            background-color: var(--node-port);
+        }
+        .port.active-link {
+            box-shadow: 0 0 15px 3px rgba(255, 255, 255, 0.6);
+            background-color: #ffffff;
+            border-color: #ffffff;
+        }
+        .port-in { left: -8px; }
+        .port-out { right: -8px; }
+
+        /* Cables: Línea Blanca Simple y Sin Relleno */
+        #svg-links {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: visible !important; 
+        }
+        .node-link {
+            fill: none !important;
+            stroke: #ffffff !important;
+            stroke-width: 3px !important;
+            stroke-linecap: round;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: stroke 0.2s, stroke-width 0.2s;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));
+        }
+        .node-link:hover, .node-link.selected {
+            stroke: var(--accent-primary) !important;
+            stroke-width: 5px !important;
+        }
+        .node-link-temp {
+            fill: none !important;
+            stroke: #ffffff !important;
+            stroke-width: 3px !important;
+            pointer-events: none;
+        }
+
+        .preview-checker {
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.03) 75%, rgba(255,255,255,0.03)), repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.03) 75%, rgba(255,255,255,0.03));
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+            background-color: #08080a;
+        }
+
+        .panel-collapsed-right { width: 0 !important; margin-left: 0 !important; padding: 0 !important; border: none !important; opacity: 0; pointer-events: none; }
+        .panel-collapsed-bottom { height: 48px !important; min-height: 48px !important; }
+
+        .live-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse-live 2s infinite; }
+        @keyframes pulse-live { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+        
+        .color-del-btn { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; background: var(--bg-main); color: #fff; border-radius: 50%; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; border: 1px solid var(--border-color); }
+        .color-del-btn:hover { background: #ef4444; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-2 md:p-3 gap-3 relative">
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <header class="bento-card flex-row items-center justify-between px-5 py-3 flex-shrink-0 z-40 bg-[var(--bg-card)] max-w-screen-2xl mx-auto w-full">
+        <div class="flex items-center gap-3">
+            
+            <!-- Back Button -->
+            <a href="/Index.html" class="w-10 h-10 flex-shrink-0 rounded-xl bg-[var(--bg-input)] hover:bg-[#2a2a35] flex items-center justify-center transition-colors border border-transparent hover:border-[var(--border-color)]" title="Volver">
+                <svg class="w-5 h-5 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </a>
+
+            <!-- Logo Icon (Red) -->
+            <div class="w-10 h-10 flex-shrink-0 rounded-xl bg-[var(--accent-primary)] flex items-center justify-center shadow-[0_0_15px_rgba(255,71,87,0.4)]">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+            </div>
+
+            <!-- Titles -->
+            <div class="flex flex-col justify-center ml-1">
+                <h1 class="text-lg font-bold tracking-tight text-white leading-tight">Dither Lab <span class="text-[var(--accent-primary)]">Pro</span></h1>
+                <span class="text-[11px] font-medium text-[var(--text-muted)] leading-none">Edición Avanzada por Nodos</span>
+            </div>
+
+            <!-- Live Engine Indicator -->
+            <div class="ml-4 flex items-center gap-1.5 bg-[var(--bg-input)] border border-[var(--border-color)] px-2.5 py-1 rounded-full hidden sm:flex">
+                <span class="live-indicator"></span>
+                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Motor en Vivo</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="btn-process" class="bg-[var(--bg-input)] border border-[var(--border-color)] hover:bg-[var(--bg-card-hover)] text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Forzar Render
+            </button>
+            <a href="#export-center" class="bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-white px-4 py-2 rounded-lg text-xs font-bold transition-transform active:scale-95 shadow-lg flex items-center gap-2">
+                Centro de Exportación
+            </a>
+        </div>
+    </header>
+
+    <main class="w-full max-w-screen-2xl mx-auto flex h-[calc(100dvh-100px)] gap-3 overflow-hidden min-h-0">
+        
+        <div class="flex-1 flex flex-col gap-3 min-w-0 transition-all duration-300">
+            
+            <!-- Visor Principal (Preview) -->
+            <div id="preview-section" class="bento-card flex-1 relative preview-checker group border border-[var(--border-color)] overflow-hidden" title="Arrastra una imagen aquí">
+                <div class="absolute top-0 left-0 w-full p-3 flex justify-between items-center z-10 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
+                    <span class="text-xs font-bold text-white/80 uppercase tracking-wider drop-shadow-md">Previsualización (Tiempo Real)</span>
+                </div>
+
+                <button id="toggle-props-btn" class="absolute top-3 right-3 z-30 bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-card-hover)] text-white p-2 rounded-lg shadow-lg transition-transform active:scale-95 flex items-center justify-center pointer-events-auto" title="Ocultar/Mostrar Inspector">
+                    <svg class="w-4 h-4 transform transition-transform duration-300" id="props-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                </button>
+
+                <div class="absolute bottom-3 right-3 flex bg-[var(--bg-input)]/90 border border-[var(--border-color)] rounded-lg shadow-lg z-30 p-1.5 gap-1.5 text-[var(--text-muted)] backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button id="toggle-compare" class="p-1.5 rounded-md bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity" title="Comparar Original">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v18m6-18v18M4 3h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z"></path></svg>
+                    </button>
+                    <div class="w-[1px] bg-[var(--border-color)] my-1 mx-0.5"></div>
+                    <button id="toggle-pan" class="p-1.5 rounded-md hover:bg-[var(--bg-card)] hover:text-white transition-colors" title="Desplazar Imagen">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17a5 5 0 01-5-5V8a2 2 0 014 0v4h2V5a2 2 0 014 0v7h2V7a2 2 0 014 0v5a7 7 0 01-7 7z"></path></svg>
+                    </button>
+                    <button id="zoom-out" class="p-1.5 rounded-md hover:bg-[var(--bg-card)] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg></button>
+                    <button id="zoom-reset" class="px-2 rounded-md text-[10px] font-bold hover:bg-[var(--bg-card)] hover:text-white transition-colors flex items-center">100%</button>
+                    <button id="zoom-in" class="p-1.5 rounded-md hover:bg-[var(--bg-card)] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg></button>
+                </div>
+
+                <div id="zoom-wrapper" class="absolute inset-0 flex items-center justify-center transition-transform duration-75 z-10 min-w-0 min-h-0">
+                    <div id="canvas-container" class="relative items-center justify-center rounded-md overflow-hidden max-w-full max-h-full min-w-0 min-h-0" style="display: none;">
+                        <img id="sizing-img" class="block opacity-0 pointer-events-none object-contain max-w-full max-h-full" src="">
+                        <canvas id="canvas-original" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-0"></canvas>
+                        
+                        <div id="dither-layer" class="absolute inset-0 pointer-events-none z-10" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+                            <canvas id="canvas-preview" class="absolute inset-0 w-full h-full object-contain pointer-events-none"></canvas>
+                        </div>
+                        
+                        <div id="compare-line" class="absolute top-0 bottom-0 z-10 flex items-center justify-center pointer-events-none" style="left: 50%; width: 2px; background: var(--accent-primary); transform: translateX(-50%);">
+                            <div class="w-6 h-6 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center shadow-[0_0_10px_rgba(255,71,87,0.8)]"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 9l-3 3m0 0l3 3m-3-3h14M16 15l3-3m0 0l-3-3m3 3H4"></path></svg></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="placeholder-text" class="text-center text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 bg-[var(--bg-card)]/90 backdrop-blur p-6 rounded-2xl border border-[var(--border-color)] z-20 pointer-events-none shadow-xl">
+                    <div class="w-12 h-12 bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <p class="font-bold text-sm uppercase tracking-wide text-[var(--text-muted)]">Arrastra una imagen aquí para iniciar</p>
+                </div>
+
+                <div id="loading-overlay" class="absolute top-4 left-1/2 -translate-x-1/2 bg-[var(--bg-card)]/90 backdrop-blur border border-[var(--border-color)] px-4 py-2 rounded-full flex items-center gap-2 z-20 shadow-lg transition-opacity duration-200 opacity-0 pointer-events-none">
+                    <div class="w-3 h-3 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-[10px] font-bold text-white uppercase tracking-wider">Calculando...</span>
+                </div>
+            </div>
+
+            <!-- Nudos Area -->
+            <div id="node-editor-panel" class="bento-card h-[40%] min-h-[250px] relative flex flex-col border border-[var(--border-color)]">
+                <div class="w-full bg-[var(--bg-input)] border-b border-[var(--border-color)] p-2 flex gap-2 z-20 shadow-sm items-center h-[48px] flex-shrink-0 overflow-x-auto">
+                    <button class="add-node-btn bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] text-[10px] font-semibold text-white px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex items-center gap-1.5 transition-colors flex-shrink-0" data-type="input">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span> + Entrada
+                    </button>
+                    <button class="add-node-btn bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] text-[10px] font-semibold text-white px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex items-center gap-1.5 transition-colors flex-shrink-0" data-type="adjust">
+                        <span class="w-2 h-2 rounded-full bg-yellow-500"></span> + Ajuste Color
+                    </button>
+                    <button class="add-node-btn bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] text-[10px] font-semibold text-white px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex items-center gap-1.5 transition-colors flex-shrink-0" data-type="palette">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span> + Paleta de Colores
+                    </button>
+                    <button class="add-node-btn bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] text-[10px] font-semibold text-white px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex items-center gap-1.5 transition-colors flex-shrink-0" data-type="glitch">
+                        <span class="w-2 h-2 rounded-full bg-purple-500"></span> + Glitch/Distorsión
+                    </button>
+                    <button class="add-node-btn bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] text-[10px] font-semibold text-white px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex items-center gap-1.5 transition-colors flex-shrink-0" data-type="dither">
+                        <span class="w-2 h-2 rounded-full bg-green-500"></span> + Dither
+                    </button>
+                    <button class="add-node-btn bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] text-[10px] font-semibold text-white px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex items-center gap-1.5 transition-colors flex-shrink-0" data-type="postfx">
+                        <span class="w-2 h-2 rounded-full bg-pink-500"></span> + Post FX
+                    </button>
+                    
+                    <div class="ml-auto flex items-center gap-3 pr-2">
+                        <button id="center-nodes-btn" class="text-[10px] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] text-white px-2 py-1 rounded border border-[var(--border-color)] transition-colors flex-shrink-0">
+                            Centrar Vista
+                        </button>
+                        <span class="hidden lg:inline text-[10px] text-[var(--text-muted)] flex-shrink-0">Clic para conectar | Doble clic en puerto para quitar cable</span>
+                        <button id="toggle-nodes-btn" class="ml-2 bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] text-white p-1.5 rounded-lg transition-transform active:scale-95 flex-shrink-0" title="Minimizar Nodos">
+                            <svg class="w-4 h-4 transform transition-transform duration-300" id="nodes-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="node-canvas-container" class="flex-1 relative overflow-hidden">
+                    <div id="node-workspace" class="absolute top-0 left-0 w-full h-full transform-origin-top-left">
+                        <svg id="svg-links"></svg>
+                        <div id="nodes-container" class="absolute inset-0"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <aside id="properties-panel" class="w-[320px] md:w-[380px] bento-card flex flex-col flex-shrink-0 relative z-30 transition-all duration-300 border border-[var(--border-color)] bg-[var(--bg-card)]">
+            <div class="bg-[var(--bg-input)] border-b border-[var(--border-color)] p-3 flex justify-between items-center h-[48px] flex-shrink-0">
+                <h2 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2 whitespace-nowrap overflow-hidden">
+                    <svg class="w-4 h-4 flex-shrink-0 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Inspector
+                </h2>
+            </div>
+            
+            <div id="inspector-content" class="flex-1 overflow-y-auto custom-scrollbar opacity-100 transition-opacity duration-200">
+                <div id="empty-inspector" class="h-full flex flex-col items-center justify-center text-center opacity-50 p-6">
+                    <svg class="w-12 h-12 mb-3 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                    <p class="text-xs font-medium text-[var(--text-main)]">Selecciona un nodo en el editor para configurar sus parámetros.</p>
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- === CONTENEDORES OCULTOS DE UI (Plantillas Inspector) === -->
+    <div id="ui-templates" class="hidden">
+        
+        <!-- UI: INPUT -->
+        <div id="tpl-input" class="p-4 space-y-5">
+            <div class="bg-[var(--bg-input)] p-4 rounded-xl border border-[var(--border-color)] border-dashed hover:border-[var(--accent-primary)] transition-colors cursor-pointer text-center group" onclick="document.getElementById('file-input-node').click()">
+                <input type="file" id="file-input-node" accept="image/*" class="hidden">
+                <svg class="w-8 h-8 mx-auto text-[var(--text-muted)] group-hover:text-[var(--accent-primary)] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                <p class="text-xs font-bold text-white">Cargar Imagen Base</p>
+                <p class="text-[10px] text-[var(--text-muted)] mt-1">Sube una imagen desde tu equipo</p>
+            </div>
+            <div>
+                <label class="flex justify-between text-xs font-semibold text-[var(--text-muted)] mb-2">
+                    <span>Escala de Trabajo</span><span id="ui-scale-val" class="text-white bg-[var(--bg-input)] px-2 py-0.5 rounded-md">25%</span>
+                </label>
+                <input type="range" id="ui-scale" min="5" max="100" value="25" data-bind="scale">
+            </div>
+        </div>
+
+        <!-- UI: ADJUST -->
+        <div id="tpl-adjust" class="p-4 space-y-5">
+            <div class="mb-4 pb-3 border-b border-[var(--border-color)] grid grid-cols-2 gap-3 items-end">
+                <div>
+                    <label class="flex justify-between text-[10px] md:text-[11px] font-bold text-[var(--accent-primary)] mb-1.5 uppercase tracking-wide">
+                        <span>Fuerza / Mix</span><span id="ui-adj-opacity-val">100%</span>
+                    </label>
+                    <input type="range" id="ui-adj-opacity" min="0" max="100" value="100" data-bind="opacity">
+                </div>
+                <div>
+                    <label class="block text-[10px] md:text-[11px] font-bold text-[var(--text-muted)] mb-1.5 uppercase tracking-wide">Modo de Fusión</label>
+                    <select id="ui-adj-blend" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg py-1 px-2 text-[10px] md:text-xs text-white cursor-pointer outline-none focus:border-[var(--accent-primary)]" data-bind="blendMode">
+                        <option value="source-over">Normal</option>
+                        <optgroup label="Oscurecer">
+                            <option value="darken">Oscurecer</option>
+                            <option value="multiply">Multiplicar</option>
+                            <option value="color-burn">Subexponer color</option>
+                        </optgroup>
+                        <optgroup label="Aclarar">
+                            <option value="lighten">Aclarar</option>
+                            <option value="screen">Trama</option>
+                            <option value="color-dodge">Sobreexponer color</option>
+                        </optgroup>
+                        <optgroup label="Contraste">
+                            <option value="overlay">Superponer</option>
+                            <option value="soft-light">Luz suave</option>
+                            <option value="hard-light">Luz fuerte</option>
+                        </optgroup>
+                        <optgroup label="Inversión">
+                            <option value="difference">Diferencia</option>
+                            <option value="exclusion">Exclusión</option>
+                        </optgroup>
+                        <optgroup label="Componentes">
+                            <option value="hue">Tono</option>
+                            <option value="saturation">Saturación</option>
+                            <option value="color">Color</option>
+                            <option value="luminosity">Luminosidad</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-[var(--bg-input)] rounded-xl p-3 border border-[var(--border-color)]">
+                <label class="block text-xs font-semibold text-[var(--text-muted)] mb-3 text-center">Canales Activos</label>
+                <div class="flex gap-4 justify-center">
+                    <label class="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-red-400"><input type="checkbox" id="ui-adj-chR" data-bind="chR"> R</label>
+                    <label class="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-green-400"><input type="checkbox" id="ui-adj-chG" data-bind="chG"> G</label>
+                    <label class="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-blue-400"><input type="checkbox" id="ui-adj-chB" data-bind="chB"> B</label>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Brillo</span><span id="ui-adj-brightness-val">0</span></label><input type="range" id="ui-adj-brightness" min="-100" max="100" data-bind="brightness"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Contraste</span><span id="ui-adj-contrast-val">0</span></label><input type="range" id="ui-adj-contrast" min="-100" max="100" data-bind="contrast"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Gamma</span><span id="ui-adj-gamma-val">1.00</span></label><input type="range" id="ui-adj-gamma" min="0.1" max="3.0" step="0.01" data-bind="gamma"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Saturación</span><span id="ui-adj-saturation-val">100%</span></label><input type="range" id="ui-adj-saturation" min="0" max="200" data-bind="saturation"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Desenfoque (Bleed)</span><span id="ui-adj-bleed-val">0px</span></label><input type="range" id="ui-adj-bleed" min="0" max="10" step="0.5" data-bind="bleed"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Enfoque (Sharpen)</span><span id="ui-adj-sharpen-val">0</span></label><input type="range" id="ui-adj-sharpen" min="0" max="5" step="0.5" data-bind="sharpen"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Posterización</span><span id="ui-adj-posterize-val">255</span></label><input type="range" id="ui-adj-posterize" min="2" max="255" data-bind="posterize"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Recorte (Clipping)</span><span id="ui-adj-clipping-val">0</span></label><input type="range" id="ui-adj-clipping" min="0" max="100" data-bind="clipping"></div>
+            </div>
+
+            <div class="pt-4 border-t border-[var(--border-color)]">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="text-xs font-bold text-[var(--text-muted)] uppercase">Curvas Tonales</label>
+                    <button id="ui-reset-curve" class="text-[10px] font-semibold text-white bg-[var(--bg-input)] px-3 py-1 rounded-full hover:bg-[var(--accent-primary)] transition-colors">Resetear Curva</button>
+                </div>
+                <select id="ui-curve-channel" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white mb-3 cursor-pointer" data-bind="curveChannel">
+                    <option value="master">RGB (Maestro)</option>
+                    <option value="r">Canal Rojo</option>
+                    <option value="g">Canal Verde</option>
+                    <option value="b">Canal Azul</option>
+                </select>
+                <div class="rounded-xl bg-[var(--bg-input)] cursor-crosshair overflow-hidden border border-[var(--border-color)] relative touch-none shadow-inner h-[120px]">
+                    <div class="absolute inset-0 pointer-events-none" style="background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 32px 30px;"></div>
+                    <canvas id="ui-curve-canvas" width="316" height="120" class="w-full h-full block relative z-10"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- UI: PALETA DE COLORES (NUEVO NODO) -->
+        <div id="tpl-palette" class="p-4 space-y-4">
+            <div class="mb-4 pb-3 border-b border-[var(--border-color)] grid grid-cols-2 gap-3 items-end">
+                <div>
+                    <label class="flex justify-between text-[10px] md:text-[11px] font-bold text-[var(--accent-primary)] mb-1.5 uppercase tracking-wide">
+                        <span>Fuerza / Mix</span><span id="ui-p-opacity-val">100%</span>
+                    </label>
+                    <input type="range" id="ui-p-opacity" min="0" max="100" value="100" data-bind="opacity">
+                </div>
+                <div>
+                    <label class="block text-[10px] md:text-[11px] font-bold text-[var(--text-muted)] mb-1.5 uppercase tracking-wide">Modo de Fusión</label>
+                    <select id="ui-p-blend" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg py-1 px-2 text-[10px] md:text-xs text-white cursor-pointer outline-none focus:border-[var(--accent-primary)]" data-bind="blendMode">
+                        <option value="source-over">Normal</option>
+                        <optgroup label="Oscurecer">
+                            <option value="darken">Oscurecer</option>
+                            <option value="multiply">Multiplicar</option>
+                            <option value="color-burn">Subexponer color</option>
+                        </optgroup>
+                        <optgroup label="Aclarar">
+                            <option value="lighten">Aclarar</option>
+                            <option value="screen">Trama</option>
+                            <option value="color-dodge">Sobreexponer color</option>
+                        </optgroup>
+                        <optgroup label="Contraste">
+                            <option value="overlay">Superponer</option>
+                            <option value="soft-light">Luz suave</option>
+                            <option value="hard-light">Luz fuerte</option>
+                        </optgroup>
+                        <optgroup label="Inversión">
+                            <option value="difference">Diferencia</option>
+                            <option value="exclusion">Exclusión</option>
+                        </optgroup>
+                        <optgroup label="Componentes">
+                            <option value="hue">Tono</option>
+                            <option value="saturation">Saturación</option>
+                            <option value="color">Color</option>
+                            <option value="luminosity">Luminosidad</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-3">
+                <label class="text-xs font-bold text-white uppercase tracking-wide">Gestión de Paleta</label>
+                <button id="ui-p-extract" class="text-[10px] font-semibold bg-[var(--accent-primary)] text-white px-3 py-1.5 rounded-full hover:bg-[var(--accent-hover)] transition-colors shadow-sm">Extraer (Auto)</button>
+            </div>
+            
+            <select id="ui-p-palette" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-xl p-3 text-white font-semibold mb-3 shadow-sm cursor-pointer" data-bind="palette">
+                <option value="custom">Paleta Personalizada</option><option value="bw">Blanco y Negro</option><option value="acid">Ácido</option><option value="amber">Fósforo Ámbar</option><option value="amiga">Amiga OCS</option><option value="apple2">Apple II</option><option value="mac1">Apple Macintosh (1-bit)</option><option value="artdeco">Art Deco</option><option value="atarist">Atari ST</option><option value="bauhaus">Bauhaus</option><option value="c64subset">C64 (Reducida)</option><option value="cga">CGA Clásica</option><option value="c64">Commodore 64</option><option value="cyberpunk">Cyberpunk</option><option value="db16">DawnBringer 16</option><option value="db32">DawnBringer 32</option><option value="deepsea">Deep Sea</option><option value="ega">EGA</option><option value="fireash">Fuego y Ceniza</option><option value="galactic">Galáctico</option><option value="gameboy">Game Boy Clásico</option><option value="gbc">Game Boy Color</option><option value="gray4">Escala de Grises (4)</option><option value="gray8">Escala de Grises (8)</option><option value="greenCRT">Fósforo Verde</option><option value="gruvbox">Gruvbox</option><option value="highcontrast">Alto Contraste</option><option value="impressionist">Impresionista</option><option value="material">Material Design</option><option value="monokai">Monokai</option><option value="msx">MSX</option><option value="neon">Neón</option><option value="nds">Nintendo DS</option><option value="noir">Noir Clásico</option><option value="nord">Nord</option><option value="pastel">Pastel</option><option value="pico8">PICO-8</option><option value="retrowave">Retrowave</option><option value="sepia">Sepia Vintage</option><option value="solarpunk">Solar Punk</option><option value="solarized">Solarized</option><option value="synthwave">Synthwave</option><option value="tokyonight">Tokyo Night</option><option value="vaporwave">Vaporwave</option><option value="websafe">Web Safe (16)</option><option value="win95">Windows 95 (16)</option><option value="zxspectrum">ZX Spectrum</option>
+            </select>
+
+            <label class="flex items-center gap-2 text-sm font-medium cursor-pointer mb-3 w-max hover:text-white transition-colors text-[var(--text-muted)]">
+                <input type="checkbox" id="ui-p-invert" data-bind="invertPalette"> Invertir Colores
+            </label>
+            
+            <div id="ui-p-custom-box" class="bg-[var(--bg-input)] rounded-xl p-3 border border-[var(--border-color)]">
+                <div class="flex flex-wrap gap-2 items-center" id="ui-p-custom-colors"></div>
+                <p class="text-[10px] text-[var(--text-muted)] mt-3 text-center">Haz clic para editar el color. Arrastra para reordenar.</p>
+            </div>
+            
+            <div class="mt-4">
+                <label class="block text-xs font-semibold text-[var(--text-muted)] mb-2">Tono y Saturación por Color (HSL)</label>
+                <div id="ui-p-post-colors" class="flex flex-wrap gap-1.5 mb-3 bg-[var(--bg-input)] p-2 rounded-xl border border-[var(--border-color)] min-h-[40px]"></div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div><label class="flex flex-col text-[10px] text-[var(--text-muted)] mb-1"><span>Hue</span><span id="ui-p-ph-val" class="text-white">0°</span></label><input type="range" id="ui-p-ph" min="-180" max="180" value="0"></div>
+                    <div><label class="flex flex-col text-[10px] text-[var(--text-muted)] mb-1"><span>Sat</span><span id="ui-p-ps-val" class="text-white">0%</span></label><input type="range" id="ui-p-ps" min="-100" max="100" value="0"></div>
+                    <div><label class="flex flex-col text-[10px] text-[var(--text-muted)] mb-1"><span>Lum</span><span id="ui-p-pl-val" class="text-white">0%</span></label><input type="range" id="ui-p-pl" min="-100" max="100" value="0"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UI: GLITCH -->
+        <div id="tpl-glitch" class="p-4 space-y-4">
+            <div class="mb-4 pb-3 border-b border-[var(--border-color)] grid grid-cols-2 gap-3 items-end">
+                <div>
+                    <label class="flex justify-between text-[10px] md:text-[11px] font-bold text-[var(--accent-primary)] mb-1.5 uppercase tracking-wide">
+                        <span>Fuerza / Mix</span><span id="ui-g-opacity-val">100%</span>
+                    </label>
+                    <input type="range" id="ui-g-opacity" min="0" max="100" value="100" data-bind="opacity">
+                </div>
+                <div>
+                    <label class="block text-[10px] md:text-[11px] font-bold text-[var(--text-muted)] mb-1.5 uppercase tracking-wide">Modo de Fusión</label>
+                    <select id="ui-g-blend" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg py-1 px-2 text-[10px] md:text-xs text-white cursor-pointer outline-none focus:border-[var(--accent-primary)]" data-bind="blendMode">
+                        <option value="source-over">Normal</option>
+                        <optgroup label="Oscurecer">
+                            <option value="darken">Oscurecer</option>
+                            <option value="multiply">Multiplicar</option>
+                            <option value="color-burn">Subexponer color</option>
+                        </optgroup>
+                        <optgroup label="Aclarar">
+                            <option value="lighten">Aclarar</option>
+                            <option value="screen">Trama</option>
+                            <option value="color-dodge">Sobreexponer color</option>
+                        </optgroup>
+                        <optgroup label="Contraste">
+                            <option value="overlay">Superponer</option>
+                            <option value="soft-light">Luz suave</option>
+                            <option value="hard-light">Luz fuerte</option>
+                        </optgroup>
+                        <optgroup label="Inversión">
+                            <option value="difference">Diferencia</option>
+                            <option value="exclusion">Exclusión</option>
+                        </optgroup>
+                        <optgroup label="Componentes">
+                            <option value="hue">Tono</option>
+                            <option value="saturation">Saturación</option>
+                            <option value="color">Color</option>
+                            <option value="luminosity">Luminosidad</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Buffer Underflow</span><span id="ui-g-underflow-val">0</span></label><input type="range" id="ui-g-underflow" min="0" max="100" data-bind="underflow"></div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Orden H</span><span id="ui-g-sorth-val">0</span></label><input type="range" id="ui-g-sorth" min="0" max="100" data-bind="sortH"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Orden V</span><span id="ui-g-sortv-val">0</span></label><input type="range" id="ui-g-sortv" min="0" max="100" data-bind="sortV"></div>
+            </div>
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Desfase H-Sync</span><span id="ui-g-hsync-val">0</span></label><input type="range" id="ui-g-hsync" min="0" max="100" data-bind="hsync"></div>
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Sangrado de Croma</span><span id="ui-g-chroma-val">0</span></label><input type="range" id="ui-g-chroma" min="0" max="100" data-bind="chroma"></div>
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Desvío de Píxeles</span><span id="ui-g-drift-val">0</span></label><input type="range" id="ui-g-drift" min="0" max="100" data-bind="drift"></div>
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Retraso Entrelazado</span><span id="ui-g-interlace-val">0</span></label><input type="range" id="ui-g-interlace" min="0" max="100" data-bind="interlace"></div>
+            <div class="pt-3 border-t border-[var(--border-color)]">
+                <label class="block text-[10px] font-semibold text-[var(--text-muted)] mb-2 uppercase">Destrucción de Bits</label>
+                <select id="ui-g-bitplane" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white cursor-pointer" data-bind="bitplane">
+                    <option value="none">Desactivado</option>
+                    <option value="remove-lsb">Eliminar LSB</option>
+                    <option value="remove-msb">Eliminar MSB</option>
+                    <option value="swap-palette">Intercambio Luma</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- UI: DITHER -->
+        <div id="tpl-dither" class="p-4 space-y-5">
+            <div class="mb-4 pb-3 border-b border-[var(--border-color)] grid grid-cols-2 gap-3 items-end">
+                <div>
+                    <label class="flex justify-between text-[10px] md:text-[11px] font-bold text-[var(--accent-primary)] mb-1.5 uppercase tracking-wide">
+                        <span>Fuerza / Mix</span><span id="ui-d-opacity-val">100%</span>
+                    </label>
+                    <input type="range" id="ui-d-opacity" min="0" max="100" value="100" data-bind="opacity">
+                </div>
+                <div>
+                    <label class="block text-[10px] md:text-[11px] font-bold text-[var(--text-muted)] mb-1.5 uppercase tracking-wide">Modo de Fusión</label>
+                    <select id="ui-d-blend" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg py-1 px-2 text-[10px] md:text-xs text-white cursor-pointer outline-none focus:border-[var(--accent-primary)]" data-bind="blendMode">
+                        <option value="source-over">Normal</option>
+                        <optgroup label="Oscurecer">
+                            <option value="darken">Oscurecer</option>
+                            <option value="multiply">Multiplicar</option>
+                            <option value="color-burn">Subexponer color</option>
+                        </optgroup>
+                        <optgroup label="Aclarar">
+                            <option value="lighten">Aclarar</option>
+                            <option value="screen">Trama</option>
+                            <option value="color-dodge">Sobreexponer color</option>
+                        </optgroup>
+                        <optgroup label="Contraste">
+                            <option value="overlay">Superponer</option>
+                            <option value="soft-light">Luz suave</option>
+                            <option value="hard-light">Luz fuerte</option>
+                        </optgroup>
+                        <optgroup label="Inversión">
+                            <option value="difference">Diferencia</option>
+                            <option value="exclusion">Exclusión</option>
+                        </optgroup>
+                        <optgroup label="Componentes">
+                            <option value="hue">Tono</option>
+                            <option value="saturation">Saturación</option>
+                            <option value="color">Color</option>
+                            <option value="luminosity">Luminosidad</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div class="bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-inner">
+                    <span class="text-[10px] text-[var(--text-muted)] uppercase mb-1 tracking-wider font-bold">Algoritmo Activo</span>
+                    <span id="ui-d-algo-display" class="text-sm font-extrabold text-[var(--accent-primary)] leading-tight">Atkinson</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-semibold text-[var(--text-muted)] ml-1">Difusión de Error</label>
+                        <select id="ui-d-algo-diff" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white group-selector cursor-pointer">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="floydSteinberg">Floyd-Steinberg</option>
+                            <option value="atkinson">Atkinson</option>
+                            <option value="jarvis">Jarvis, Judice, Ninke</option>
+                            <option value="stucki">Stucki</option>
+                            <option value="burkes">Burkes</option>
+                            <option value="sierra3">Sierra 3</option>
+                            <option value="sierra2">Sierra 2</option>
+                            <option value="sierraLite">Sierra Lite</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-semibold text-[var(--text-muted)] ml-1">Tramado Ordenado</label>
+                        <select id="ui-d-algo-ord" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white group-selector cursor-pointer">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="bayer2">Bayer 2x2</option>
+                            <option value="bayer4">Bayer 4x4</option>
+                            <option value="bayer8">Bayer 8x8</option>
+                            <option value="bayer16">Bayer 16x16</option>
+                            <option value="cluster4">Punto Agrupado 4x4</option>
+                            <option value="cluster8">Punto Agrupado 8x8</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-semibold text-[var(--text-muted)] ml-1">Geométrico</label>
+                        <select id="ui-d-algo-geo" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white group-selector cursor-pointer">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="circles">Círculos</option>
+                            <option value="diamonds">Rombos</option>
+                            <option value="squares">Cuadrados</option>
+                            <option value="triangles">Triángulos</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-semibold text-[var(--text-muted)] ml-1">Estocástico</label>
+                        <select id="ui-d-algo-exp" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white group-selector cursor-pointer">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="threshold">Umbral Básico</option>
+                            <option value="random">Ruido Aleatorio</option>
+                            <option value="blueNoise">Ruido Azul</option>
+                            <option value="line">Tramado de Línea</option>
+                            <option value="voronoi">Voronoi Ordenado</option>
+                            <option value="bayerProgressive">Bayer Progresivo</option>
+                            <option value="crossHatch">Trazo Cruzado</option>
+                            <option value="spiralWave">Onda Espiral</option>
+                            <option value="hilbertPattern">Curva Hilbert</option>
+                            <option value="dtm">Modulación DTM</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <select id="ui-d-algorithm" class="hidden" data-bind="algorithm">
+                <option value="floydSteinberg">floydSteinberg</option><option value="atkinson">atkinson</option><option value="jarvis">jarvis</option><option value="stucki">stucki</option><option value="burkes">burkes</option><option value="sierra3">sierra3</option><option value="sierra2">sierra2</option><option value="sierraLite">sierraLite</option><option value="bayer2">bayer2</option><option value="bayer4">bayer4</option><option value="bayer8">bayer8</option><option value="bayer16">bayer16</option><option value="cluster4">cluster4</option><option value="cluster8">cluster8</option><option value="circles">circles</option><option value="diamonds">diamonds</option><option value="squares">squares</option><option value="triangles">triangles</option><option value="threshold">threshold</option><option value="random">random</option><option value="blueNoise">blueNoise</option><option value="line">line</option><option value="voronoi">voronoi</option><option value="bayerProgressive">bayerProgressive</option><option value="crossHatch">crossHatch</option><option value="spiralWave">spiralWave</option><option value="hilbertPattern">hilbertPattern</option><option value="dtm">dtm</option>
+            </select>
+
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Fuerza de Error</span><span id="ui-d-errstr-val" class="text-white font-bold">100%</span></label><input type="range" id="ui-d-errstr" min="0" max="200" data-bind="errstr"></div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Sesgo General</span><span id="ui-d-bias-val">0</span></label><input type="range" id="ui-d-bias" min="-128" max="128" data-bind="bias"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Escala de Patrón</span><span id="ui-d-patscale-val">1.0x</span></label><input type="range" id="ui-d-patscale" min="1" max="20" step="0.5" data-bind="patScale"></div>
+            </div>
+
+            <div class="bg-[var(--bg-input)] rounded-xl p-3 border border-[var(--border-color)]">
+                <label class="block text-[10px] font-bold text-[var(--text-muted)] uppercase mb-3">Modificadores</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-1"><span>Rotación</span><span id="ui-d-rot-val">0°</span></label><input type="range" id="ui-d-rot" min="0" max="360" data-bind="rotDeg"></div>
+                    <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-1"><span>Sesgo H/V</span><span id="ui-d-errbias-val">0</span></label><input type="range" id="ui-d-errbias" min="-100" max="100" data-bind="errBias"></div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-medium text-[var(--text-muted)] mb-2">Dirección de Escaneo</label>
+                <select id="ui-d-scan" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg p-2 text-xs text-white cursor-pointer" data-bind="scanPattern">
+                    <option value="standard">Estándar</option><option value="zigzag">Zig-Zag Estricto</option><option value="spiral">Espiral</option><option value="hilbert">Curva Hilbert</option><option value="vertical">Vertical</option>
+                </select>
+            </div>
+            
+            <!-- Aviso si no hay paleta conectada -->
+            <p class="text-[10px] text-[var(--text-muted)] mt-2 italic text-center opacity-70">Asegúrate de conectar un nodo de "Paleta" antes de este nodo para aplicar colores personalizados.</p>
+        </div>
+
+        <!-- UI: POST-FX -->
+        <div id="tpl-postfx" class="p-4 space-y-4">
+            <div class="mb-4 pb-3 border-b border-[var(--border-color)] grid grid-cols-2 gap-3 items-end">
+                <div>
+                    <label class="flex justify-between text-[10px] md:text-[11px] font-bold text-[var(--accent-primary)] mb-1.5 uppercase tracking-wide">
+                        <span>Fuerza / Mix</span><span id="ui-pf-opacity-val">100%</span>
+                    </label>
+                    <input type="range" id="ui-pf-opacity" min="0" max="100" value="100" data-bind="opacity">
+                </div>
+                <div>
+                    <label class="block text-[10px] md:text-[11px] font-bold text-[var(--text-muted)] mb-1.5 uppercase tracking-wide">Modo de Fusión</label>
+                    <select id="ui-pf-blend" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg py-1 px-2 text-[10px] md:text-xs text-white cursor-pointer outline-none focus:border-[var(--accent-primary)]" data-bind="blendMode">
+                        <option value="source-over">Normal</option>
+                        <optgroup label="Oscurecer">
+                            <option value="darken">Oscurecer</option>
+                            <option value="multiply">Multiplicar</option>
+                            <option value="color-burn">Subexponer color</option>
+                        </optgroup>
+                        <optgroup label="Aclarar">
+                            <option value="lighten">Aclarar</option>
+                            <option value="screen">Trama</option>
+                            <option value="color-dodge">Sobreexponer color</option>
+                        </optgroup>
+                        <optgroup label="Contraste">
+                            <option value="overlay">Superponer</option>
+                            <option value="soft-light">Luz suave</option>
+                            <option value="hard-light">Luz fuerte</option>
+                        </optgroup>
+                        <optgroup label="Inversión">
+                            <option value="difference">Diferencia</option>
+                            <option value="exclusion">Exclusión</option>
+                        </optgroup>
+                        <optgroup label="Componentes">
+                            <option value="hue">Tono</option>
+                            <option value="saturation">Saturación</option>
+                            <option value="color">Color</option>
+                            <option value="luminosity">Luminosidad</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Grano de Película</span><span id="ui-pf-grain-val">0</span></label><input type="range" id="ui-pf-grain" min="0" max="100" data-bind="grain"></div>
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Viñeta</span><span id="ui-pf-vignette-val">0</span></label><input type="range" id="ui-pf-vignette" min="0" max="100" data-bind="vignette"></div>
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Resplandor Óptico</span><span id="ui-pf-bloom-val">0</span></label><input type="range" id="ui-pf-bloom" min="0" max="100" data-bind="bloom"></div>
+            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Dispersión de Lente</span><span id="ui-pf-dispersion-val">0</span></label><input type="range" id="ui-pf-dispersion" min="0" max="200" data-bind="dispersion"></div>
+            
+            <div class="pt-3 border-t border-[var(--border-color)] grid grid-cols-2 gap-3">
+                <label class="flex items-center gap-2 text-[10px] font-medium text-white cursor-pointer"><input type="checkbox" id="ui-pf-galpha" data-bind="grainAlpha"> Grano Alpha</label>
+                <label class="flex items-center gap-2 text-[10px] font-medium text-white cursor-pointer"><input type="checkbox" id="ui-pf-dgain" data-bind="dotGain"> Derrame Tinta</label>
+                <label class="flex items-center gap-2 text-[10px] font-medium text-white cursor-pointer"><input type="checkbox" id="ui-pf-mono" data-bind="monoTint"> Tinte Mono</label>
+                <label class="flex items-center gap-2 text-[10px] font-medium text-white cursor-pointer"><input type="checkbox" id="ui-pf-clarity" data-bind="clarity"> Claridad Local</label>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 pt-3 border-t border-[var(--border-color)]">
+                <div>
+                    <label class="block text-[10px] font-medium text-[var(--text-muted)] mb-1">Tinte Oscuro</label>
+                    <input type="color" id="ui-pf-tintdark" data-bind="tintDark">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-medium text-[var(--text-muted)] mb-1">Tinte Claro</label>
+                    <input type="color" id="ui-pf-tintlight" data-bind="tintLight">
+                </div>
+            </div>
+        </div>
+
+        <div id="tpl-output" class="p-4">
+            <div class="bg-[var(--bg-input)] p-4 rounded-xl border border-[var(--border-color)] text-center">
+                <div class="w-12 h-12 rounded-full bg-[var(--node-link)] flex items-center justify-center mx-auto mb-3 border-2 border-white/20">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 class="text-sm font-bold text-white mb-2">Punto Final de Renderizado</h3>
+                <p class="text-xs text-[var(--text-muted)] leading-relaxed">Este nodo compila toda la gráfica y muestra el resultado en la vista superior. Configura la exportación en el área inferior.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <footer id="export-center" class="w-full max-w-screen-2xl mx-auto flex flex-col gap-4 md:gap-6 mb-12 px-2 md:px-4 mt-4">
+        
+        <div class="flex items-center gap-2 md:gap-3 ml-2">
+            <div class="w-2 h-6 bg-[var(--accent-primary)] rounded-full"></div>
+            <h2 class="text-2xl font-bold tracking-tight text-white">Centro de Exportación</h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            
+            <div class="bento-card flex flex-col">
+                <div class="p-4 border-b border-[var(--border-color)] bg-[var(--bg-input)]/50">
+                    <h3 class="font-bold text-base text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Exportación HD y Vectorial
+                    </h3>
+                </div>
+                <div class="p-5 flex-grow flex flex-col justify-between gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-[var(--text-muted)] mb-3">Escala Exacta (Píxel Perfecto)</label>
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <button class="scale-btn active rounded-xl bg-[var(--accent-primary)] text-white py-3 text-base font-bold transition-all border border-transparent" data-scale="1">1x</button>
+                            <button class="scale-btn rounded-xl bg-[var(--bg-input)] text-white hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] py-3 text-base font-bold transition-all" data-scale="2">2x</button>
+                            <button class="scale-btn rounded-xl bg-[var(--bg-input)] text-white hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] py-3 text-base font-bold transition-all" data-scale="4">4x</button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <button id="final-export-btn" class="w-full btn-modern bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-white py-4 text-base shadow-lg shadow-[var(--accent-primary)]/20 flex items-center justify-center gap-2">
+                            Descargar Imagen Final PNG
+                        </button>
+                        <div class="flex gap-3">
+                            <button id="export-svg-btn" class="flex-1 btn-modern bg-[var(--bg-card-hover)] hover:bg-white hover:text-black border border-[var(--border-color)] text-white py-3 text-sm transition-all duration-300 flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                                Vector (SVG)
+                            </button>
+                            <button id="copy-clipboard-btn" class="flex-1 btn-modern bg-[var(--bg-input)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] text-white py-3 text-sm">
+                                Copiar al Portapapeles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bento-card flex flex-col">
+                <div class="p-4 border-b border-[var(--border-color)] bg-[var(--bg-input)]/50 flex justify-between items-center z-10">
+                    <h3 class="font-bold text-base text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        Aislamiento & Paleta (Alpha Purge)
+                    </h3>
+                    <button id="restore-isolation-btn" class="text-xs font-semibold text-[var(--text-muted)] hover:text-white px-3 py-1 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] transition-colors">Restaurar Transparencia</button>
+                </div>
+                <div class="p-5 flex-grow flex flex-col gap-4">
+                    <div>
+                        <p class="text-xs font-medium text-[var(--text-muted)] mb-3">Haz clic en un color de la paleta para aislarlo (volverlo <span class="text-white font-bold">transparente</span>). Requiere un nodo Dither o Paleta en la cadena.</p>
+                        <div class="overflow-y-auto custom-scrollbar pr-2 max-h-[120px]">
+                            <div id="isolation-squares-container" class="grid grid-cols-6 sm:grid-cols-8 gap-2">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-[var(--border-color)] mt-auto">
+                        <button id="copy-css-btn" class="w-full btn-modern bg-[var(--bg-input)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] text-white py-3 text-sm flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Exportar Paleta a Variables CSS
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- MATRICES DE DITHERING ---
+            const matricesOrdenadas = {
+                bayer2: [[0, 2], [3, 1]].map(r=>r.map(v=>(v/4)-0.5)),
+                bayer4: [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]].map(r=>r.map(v=>(v/16)-0.5)),
+                bayer8: [[0,32,8,40,2,34,10,42],[48,16,56,24,50,18,58,26],[12,44,4,36,14,46,6,38],[60,28,52,20,62,30,54,22],[3,35,11,43,1,33,9,41],[51,19,59,27,49,17,57,25],[15,47,7,39,13,45,5,37],[63,31,55,23,61,29,53,21]].map(r=>r.map(v=>(v/64)-0.5)),
+                bayer16: [[0,32,8,40,2,34,10,42],[48,16,56,24,50,18,58,26],[12,44,4,36,14,46,6,38],[60,28,52,20,62,30,54,22],[3,35,11,43,1,33,9,41],[51,19,59,27,49,17,57,25],[15,47,7,39,13,45,5,37],[63,31,55,23,61,29,53,21]].map(r=>r.map(v=>(v/64)-0.5)),
+                cluster4: [[12,5,6,13],[4,0,1,7],[11,3,2,8],[15,10,9,14]].map(r=>r.map(v=>(v/16)-0.5)),
+                cluster8: [[63,22,24,61,60,25,21,62],[20,5,7,26,27,6,4,19],[28,8,0,1,2,9,29,30],[59,25,3,10,11,4,26,58],[57,24,14,12,13,15,23,56],[31,16,17,18,19,16,32,33],[34,35,36,37,38,39,40,41],[55,54,53,52,51,50,49,48]].map(r=>r.map(v=>(v/64)-0.5))
+            };
+
+            const matricesDifusion = {
+                floydSteinberg: { m: [[1,0,7], [-1,1,3], [0,1,5], [1,1,1]], d: 16 },
+                atkinson: { m: [[1,0,1], [2,0,1], [-1,1,1], [0,1,1], [1,1,1], [0,2,1]], d: 8 },
+                jarvis: { m: [[1,0,7], [2,0,5], [-2,1,3], [-1,1,5], [0,1,7], [1,1,5], [2,1,3], [-2,2,1], [-1,2,3], [0,2,5], [1,2,3], [2,2,1]], d: 48 },
+                stucki: { m: [[1,0,8], [2,0,4], [-2,1,2], [-1,1,4], [0,1,8], [1,1,4], [2,1,2], [-2,2,1], [-1,2,2], [0,2,4], [1,2,2], [2,2,1]], d: 42 },
+                burkes: { m: [[1,0,8], [2,0,4], [-2,1,2], [-1,1,4], [0,1,8], [1,1,4], [2,1,2]], d: 32 },
+                sierra3: { m: [[1,0,5], [2,0,3], [-2,1,2], [-1,1,4], [0,1,5], [1,1,4], [2,1,2], [-1,2,2], [0,2,3], [1,2,2]], d: 32 },
+                sierra2: { m: [[1,0,4], [2,0,3], [-2,1,1], [-1,1,2], [0,1,3], [1,1,2], [2,1,1]], d: 16 },
+                sierraLite: { m: [[1,0,2], [-1,1,1], [0,1,1]], d: 4 }
+            };
+
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-emerald-500/90' : type === 'error' ? 'bg-red-500/90' : 'bg-blue-500/90';
+                toast.className = `toast ${bgColor} text-white px-4 py-3 rounded-xl shadow-lg backdrop-blur-md flex items-center gap-3 border border-white/20 text-sm font-bold pointer-events-auto min-w-[250px] animate-[slideInUp_0.3s_forwards]`;
+                toast.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span>${message}</span>`;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('animate-[fadeOutRight_0.3s_forwards]');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            const propsPanel = document.getElementById('properties-panel');
+            const togglePropsBtn = document.getElementById('toggle-props-btn');
+            const nodesPanel = document.getElementById('node-editor-panel');
+            const toggleNodesBtn = document.getElementById('toggle-nodes-btn');
+
+            let propsCollapsed = false, nodesCollapsed = false;
+            togglePropsBtn.addEventListener('click', () => {
+                propsCollapsed = !propsCollapsed;
+                propsPanel.classList.toggle('panel-collapsed-right', propsCollapsed);
+                document.getElementById('props-icon').classList.toggle('rotate-180', propsCollapsed);
+            });
+            toggleNodesBtn.addEventListener('click', () => {
+                nodesCollapsed = !nodesCollapsed;
+                nodesPanel.classList.toggle('panel-collapsed-bottom', nodesCollapsed);
+                document.getElementById('nodes-icon').classList.toggle('rotate-180', nodesCollapsed);
+            });
+
+            const palettesBase = {
+                bw: ['#000000', '#ffffff'],
+                gameboy: ['#0f380f', '#306230', '#8bac0f', '#9bbc0f'],
+                cyberpunk: ['#000000', '#ff003c', '#00f0ff', '#fcee0a'],
+                cga: ['#000000', '#55ffff', '#ff55ff', '#ffffff'],
+                c64: ['#000000', '#ffffff', '#880000', '#aaffee', '#cc44cc', '#00cc55', '#0000aa', '#eeee77', '#dd8855', '#664400', '#ff7777', '#333333', '#777777', '#aaff66', '#0088ff', '#bbbbbb'],
+                acid: ['#000000', '#ff00ff', '#00ffff', '#ccff00'],
+                amber: ['#1a1100', '#ffb000'],
+                amiga: ['#aaaaaa', '#000000', '#ffffff', '#6688bb', '#f58022', '#1144aa', '#fa3300', '#00ccef'],
+                apple2: ['#000000', '#8a213e', '#453588', '#cf4ce7', '#0e5d48', '#808080', '#1c9ef0', '#95a1f6', '#526605', '#c87910', '#eaa6bd', '#11c419', '#bdf155', '#7dcda4', '#ffffff'],
+                mac1: ['#000000', '#ffffff'],
+                artdeco: ['#2e2925', '#d2a452', '#e5d8cd', '#805b38', '#5a6b5d'],
+                atarist: ['#000000', '#ff0000', '#00ff00', '#ffff00', '#0000ff', '#ff00ff', '#00ffff', '#ffffff', '#555555', '#aa0000', '#00aa00', '#aaaa00', '#0000aa', '#aa00aa', '#00aaaa', '#aaaaaa'],
+                bauhaus: ['#1a1a1a', '#e22c2a', '#f7d438', '#185a9d', '#e8e6e1'],
+                c64subset: ['#000000', '#777777', '#cccccc', '#ffffff'],
+                db16: ['#140c1c', '#442434', '#30346d', '#4e4a4e', '#854c30', '#346524', '#d04648', '#757161', '#597dce', '#d27d2c', '#8595a1', '#6daa2c', '#d2aa99', '#6dc2ca', '#dad45e', '#deeed6'],
+                db32: ['#000000', '#222034', '#45283c', '#663931', '#8f563b', '#df7126', '#d9a066', '#eec39a', '#fbf236', '#99e550', '#6abe30', '#37946e', '#4b692f', '#524b24', '#323c39', '#3f3f74', '#306082', '#5b6ee1', '#639bff', '#5fcde4', '#cbdbfc', '#ffffff', '#9badb7', '#847e87', '#696a6a', '#595652', '#76428a', '#ac3232', '#d95763', '#d77bba', '#8f974a', '#8a6f30'],
+                deepsea: ['#000010', '#001a33', '#004080', '#0080ff', '#00ffff'],
+                ega: ['#000000', '#0000aa', '#00aa00', '#00aaaa', '#aa0000', '#aa00aa', '#aa5500', '#aaaaaa', '#555555', '#5555ff', '#55ff55', '#55ffff', '#ff5555', '#ff55ff', '#ffff55', '#ffffff'],
+                fireash: ['#111111', '#551111', '#aa3311', '#ff6600', '#ffcc00', '#ffffff'],
+                galactic: ['#0b0c10', '#1f2833', '#c5c6c7', '#66fcf1', '#45a29e'],
+                gray4: ['#000000', '#555555', '#aaaaaa', '#ffffff'],
+                gray8: ['#000000', '#242424', '#494949', '#6d6d6d', '#929292', '#b6b6b6', '#dbdbdb', '#ffffff'],
+                greenCRT: ['#001100', '#33ff00'],
+                gruvbox: ['#282828', '#cc241d', '#98971a', '#d79921', '#458588', '#b16286', '#689d6a', '#a89984', '#ebdbb2'],
+                highcontrast: ['#000000', '#ffff00', '#00ffff', '#ff00ff', '#ffffff'],
+                impressionist: ['#89a8b1', '#e3c4a6', '#c58d7c', '#6c7c64', '#444c55'],
+                material: ['#f44336', '#e91e63', '#9c27b0', '#3f51b5', '#2196f3', '#00bcd4', '#009688', '#4caf50', '#ffeb3b', '#ff9800'],
+                monokai: ['#272822', '#f92672', '#a6e22e', '#f4bf75', '#66d9ef', '#ae81ff'],
+                msx: ['#000000', '#25c525', '#3aea3a', '#5454ff', '#7171ff', '#b74242', '#3cf4f4', '#ea5f5f', '#f47171', '#c5c525', '#eaea3a', '#258c25', '#c554b7', '#cccccc', '#ffffff'],
+                neon: ['#000000', '#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'],
+                nds: ['#ffffff', '#c0c0c0', '#808080', '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00'],
+                noir: ['#000000', '#1a1a1a', '#4d4d4d', '#999999', '#e6e6e6', '#ffffff'],
+                nord: ['#2e3440', '#3b4252', '#434c5e', '#4c566a', '#88c0d0', '#81a1c1', '#5e81ac', '#bf616a', '#d08770', '#ebcb8b', '#a3be8c', '#b48ead'],
+                pastel: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'],
+                pico8: ['#000000', '#1d2b53', '#7e2553', '#008751', '#ab5236', '#5f574f', '#c2c3c7', '#fff1e8', '#ff004d', '#ffa300', '#ffec27', '#00e436', '#29adff', '#83769c', '#ff77a8', '#ffccaa'],
+                retrowave: ['#000000', '#0f0f1b', '#ff0055', '#00eeff', '#ffee00'],
+                sepia: ['#2b1a0a', '#4a3219', '#7a5a36', '#a6825c', '#d4bba0', '#fcf2e3'],
+                solarpunk: ['#2d4030', '#567d46', '#88b04b', '#e0d8b0', '#f4a460'],
+                solarized: ['#002b36', '#073642', '#586e75', '#657b83', '#839496', '#93a1a1', '#eee8d5', '#fdf6e3', '#b58900', '#cb4b16', '#dc322f', '#d33682', '#6c71c4', '#268bd2', '#2aa198', '#859900'],
+                synthwave: ['#000000', '#241734', '#2e2157', '#fd3777', '#f706cf', '#fd1d53', '#f9c80e', '#ff4365'],
+                tokyonight: ['#1a1b26', '#24283b', '#c0caf5', '#f7768e', '#9ece6a', '#e0af68', '#7aa2f7', '#bb9af7', '#7dcfff'],
+                vaporwave: ['#000000', '#ff71ce', '#01cdfe', '#05ffa1', '#b967ff', '#fffb96'],
+                websafe: ['#000000', '#333333', '#666666', '#999999', '#cccccc', '#ffffff', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'],
+                win95: ['#000000', '#800000', '#008000', '#808000', '#000080', '#800080', '#008080', '#c0c0c0', '#808080', '#ff0000', '#00ff00', '#ffff00', '#0000ff', '#ff00ff', '#00ffff', '#ffffff'],
+                zxspectrum: ['#000000', '#0000d7', '#d70000', '#d700d7', '#00d700', '#00d7d7', '#d7d700', '#d7d7d7', '#0000ff', '#ff0000', '#ff00ff', '#00ff00', '#00ffff', '#ffff00', '#ffffff']
+            };
+
+            function getNormalizedHex(c) {
+                let hex = Array.isArray(c) ? '#' + c.map(x => x.toString(16).padStart(2, '0')).join('') : c;
+                return hex.toLowerCase();
+            }
+
+            function hexToRgb(hex) {
+                if(Array.isArray(hex)) return hex;
+                let c = hex.replace('#', '');
+                if(c.length===3) c = c.split('').map(x=>x+x).join('');
+                const num = parseInt(c, 16);
+                return [num >> 16, (num >> 8) & 255, num & 255];
+            }
+
+            function rgbToHex(r,g,b) {
+                return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
+            }
+
+            function rgbToHsl(r, g, b) {
+                r /= 255; g /= 255; b /= 255;
+                let max = Math.max(r, g, b), min = Math.min(r, g, b);
+                let h, s, l = (max + min) / 2;
+                if(max === min) { h = s = 0; }
+                else {
+                    let d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch(max){
+                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / d + 2; break;
+                        case b: h = (r - g) / d + 4; break;
+                    }
+                    h /= 6;
+                }
+                return [h, s, l];
+            }
+
+            function hslToRgb(h, s, l) {
+                let r, g, b;
+                if(s === 0) { r = g = b = l; }
+                else {
+                    let hue2rgb = function(p, q, t){
+                        if(t < 0) t += 1; if(t > 1) t -= 1;
+                        if(t < 1/6) return p + (q - p) * 6 * t;
+                        if(t < 1/2) return q;
+                        if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                        return p;
+                    }
+                    let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                    let p = 2 * l - q;
+                    r = hue2rgb(p, q, h + 1/3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1/3);
+                }
+                return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+            }
+
+            function applyPostHSL(rgb, hOffset, sOffset, lOffset) {
+                let hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+                let h = hsl[0] + (hOffset / 360);
+                if (h < 0) h += 1; if (h > 1) h -= 1;
+                let s = Math.max(0, Math.min(1, hsl[1] + (sOffset / 100)));
+                let l = Math.max(0, Math.min(1, hsl[2] + (lOffset / 100)));
+                return hslToRgb(h, s, l);
+            }
+
+            function getBasePalette(p) {
+                return p.palette === 'custom' ? p.customColors : palettesBase[p.palette];
+            }
+            function getFinalPalette(p) {
+                let base = getBasePalette(p);
+                return base.map(c => {
+                    let rgb = hexToRgb(c);
+                    if (p.invertPalette) rgb = [255 - rgb[0], 255 - rgb[1], 255 - rgb[2]];
+                    return rgb;
+                });
+            }
+            function getRenderPalette(p, finalPaletteRgb) {
+                const baseHexes = getBasePalette(p);
+                return finalPaletteRgb.map((rgb, i) => {
+                    let f = [...rgb];
+                    const hex = getNormalizedHex(baseHexes[i]);
+                    const mods = p.postMod[hex];
+                    if (mods && (mods.h !== 0 || mods.s !== 0 || mods.l !== 0)) {
+                        f = applyPostHSL(f, mods.h, mods.s, mods.l);
+                    }
+                    return f;
+                });
+            }
+
+            const nodeTypes = {
+                'input': { name: 'Entrada de Imagen', color: 'var(--node-input)', inputs: 0, outputs: 1, accent: '#3b82f6' },
+                'adjust': { name: 'Ajuste de Color', color: 'var(--node-fx)', inputs: 1, outputs: 1, accent: '#eab308' },
+                'palette': { name: 'Paleta de Color', color: 'var(--node-palette)', inputs: 1, outputs: 1, accent: '#f43f5e' },
+                'glitch': { name: 'Glitch/Distorsión', color: 'var(--node-glitch)', inputs: 1, outputs: 1, accent: '#a855f7' },
+                'dither': { name: 'Motor de Dither', color: 'var(--node-dither)', inputs: 1, outputs: 1, accent: '#22c55e' },
+                'postfx': { name: 'Efectos Post', color: 'var(--node-post)', inputs: 1, outputs: 1, accent: '#ec4899' },
+                'output': { name: 'Punto de Salida', color: 'var(--node-output)', inputs: 1, outputs: 0, accent: '#64748b' }
+            };
+
+            const state = {
+                nodes: {}, links: [], nextNodeId: 1, selectedNode: null, selectedLink: null,
+                panX: 0, panY: 0, zoom: 1, isPanningNodes: false, panStartX: 0, panStartY: 0,
+                isDraggingNode: false, dragNodeId: null, dragOffX: 0, dragOffY: 0,
+                isLinking: false, linkingStart: null, mouseX: 0, mouseY: 0,
+                originalImageObj: null, globalIsolatedColors: new Set(),
+                previewZoom: 1, previewPanX: 0, previewPanY: 0, isPreviewPanning: false,
+                isComparing: false, comparePercent: 50
+            };
+
+            function getDefaultParams(type) {
+                if(type === 'input') return { scale: 25, imgDataUrl: null };
+                if(type === 'adjust') return { 
+                    opacity: 100, blendMode: 'source-over', chR: true, chG: true, chB: true, brightness: 0, contrast: 0, gamma: 1.0, 
+                    saturation: 100, bleed: 0, sharpen: 0, posterize: 255, clipping: 0,
+                    curveChannel: 'master', curves: { master: [{x:0,y:0},{x:255,y:255}], r: [{x:0,y:0},{x:255,y:255}], g: [{x:0,y:0},{x:255,y:255}], b: [{x:0,y:0},{x:255,y:255}] }
+                };
+                if(type === 'palette') return { 
+                    opacity: 100, blendMode: 'source-over', palette: 'bw', invertPalette: false, customColors: [...palettesBase.bw], 
+                    postMod: {}, selectedPostHex: palettesBase.bw[0]
+                };
+                if(type === 'glitch') return { opacity: 100, blendMode: 'source-over', underflow: 0, sortH: 0, sortV: 0, hsync: 0, chroma: 0, drift: 0, interlace: 0, bitplane: 'none' };
+                if(type === 'dither') return { 
+                    opacity: 100, blendMode: 'source-over', algorithm: 'atkinson', errstr: 100, bias: 0, patScale: 1, rotDeg: 0, errBias: 0, scanPattern: 'zigzag'
+                };
+                if(type === 'postfx') return { 
+                    opacity: 100, blendMode: 'source-over', grain: 0, vignette: 0, bloom: 0, dispersion: 0, grainAlpha: false, dotGain: false, monoTint: false, clarity: false,
+                    tintDark: '#000000', tintLight: '#ffffff'
+                };
+                if(type === 'output') return {};
+            }
+
+            const domNodeCanvas = document.getElementById('node-canvas-container');
+            const domNodeWorkspace = document.getElementById('node-workspace');
+            const domNodesList = document.getElementById('nodes-container');
+            const domSvgLinks = document.getElementById('svg-links');
+
+            function addNode(type, x, y) {
+                const id = `node_${state.nextNodeId++}`;
+                state.nodes[id] = { id, type, x, y, params: getDefaultParams(type) };
+                renderWorkspace();
+                selectNode(id);
+                triggerProcess();
+                return id;
+            }
+
+            function deleteSelected() {
+                if (state.selectedNode) {
+                    delete state.nodes[state.selectedNode];
+                    state.links = state.links.filter(l => l.from !== state.selectedNode && l.to !== state.selectedNode);
+                    state.selectedNode = null;
+                }
+                if (state.selectedLink) {
+                    state.links = state.links.filter(l => l.id !== state.selectedLink);
+                    state.selectedLink = null;
+                }
+                renderWorkspace();
+                syncInspector();
+                triggerProcess();
+            }
+
+            function renderWorkspace() {
+                domNodesList.innerHTML = '';
+                Object.values(state.nodes).forEach(node => {
+                    const info = nodeTypes[node.type];
+                    const el = document.createElement('div');
+                    el.className = `node ${state.selectedNode === node.id ? 'selected' : ''}`;
+                    el.style.left = `${node.x}px`; el.style.top = `${node.y}px`;
+                    el.dataset.id = node.id;
+                    
+                    let inPort = info.inputs > 0 ? `<div class="port port-in" data-node="${node.id}" data-type="in"></div>` : '';
+                    let outPort = info.outputs > 0 ? `<div class="port port-out" data-node="${node.id}" data-type="out"></div>` : '';
+                    
+                    let status = 'Módulo Activo';
+                    if(node.type === 'input') status = node.params.imgDataUrl ? 'Imagen Lista' : 'Esperando Imagen';
+                    
+                    el.innerHTML = `
+                        <div class="node-header text-white">
+                            <span class="w-3 h-3 rounded-full" style="background: ${info.accent}; box-shadow: 0 0 10px ${info.accent}; flex-shrink: 0"></span>
+                            ${info.name}
+                        </div>
+                        <div class="node-body">
+                            ${inPort}
+                            <span class="text-[10px] text-[var(--text-muted)] text-center w-full px-2">${status}</span>
+                            ${outPort}
+                        </div>
+                    `;
+
+                    el.addEventListener('mousedown', (e) => {
+                        if(e.target.classList.contains('port')) return;
+                        selectNode(node.id);
+                        state.isDraggingNode = true;
+                        state.dragNodeId = node.id;
+                        state.dragOffX = e.clientX / state.zoom - node.x;
+                        state.dragOffY = e.clientY / state.zoom - node.y;
+                        e.stopPropagation();
+                    });
+
+                    domNodesList.appendChild(el);
+                });
+
+                document.querySelectorAll('.port').forEach(port => {
+                    port.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const targetNode = e.target.dataset.node;
+                        const targetType = e.target.dataset.type;
+
+                        if (!state.linkingStart) {
+                            state.linkingStart = { node: targetNode, type: targetType };
+                            state.isLinking = true;
+                            document.querySelectorAll('.port').forEach(p => p.classList.remove('active-link'));
+                            e.target.classList.add('active-link');
+                            domNodeCanvas.classList.add('linking');
+                        } else {
+                            if (state.linkingStart.node !== targetNode && state.linkingStart.type !== targetType) {
+                                const from = state.linkingStart.type === 'out' ? state.linkingStart.node : targetNode;
+                                const to = state.linkingStart.type === 'in' ? state.linkingStart.node : targetNode;
+                                state.links = state.links.filter(l => l.to !== to); 
+                                state.links.push({ id: `l_${Date.now()}`, from, to });
+                                triggerProcess();
+                            }
+                            state.linkingStart = null;
+                            state.isLinking = false;
+                            document.querySelectorAll('.port').forEach(p => p.classList.remove('active-link'));
+                            domNodeCanvas.classList.remove('linking');
+                            drawLinks();
+                        }
+                    });
+
+                    port.addEventListener('dblclick', (e) => {
+                        e.stopPropagation();
+                        const targetNode = e.target.dataset.node;
+                        const targetType = e.target.dataset.type;
+                        if (targetType === 'in') {
+                            state.links = state.links.filter(l => l.to !== targetNode);
+                        } else {
+                            state.links = state.links.filter(l => l.from !== targetNode);
+                        }
+                        triggerProcess();
+                        drawLinks();
+                    });
+                });
+                drawLinks();
+            }
+
+            function getPortPos(nodeId, type) {
+                const node = state.nodes[nodeId];
+                if(!node) return {x:0, y:0};
+                const width = 220; const headerH = 40; const bodyH = 60;
+                const portY = node.y + headerH + (bodyH/2);
+                const portX = type === 'in' ? node.x : node.x + width;
+                return {x: portX, y: portY};
+            }
+
+            function getBezier(x1, y1, x2, y2) {
+                const dist = Math.abs(x2 - x1);
+                if (x1 <= x2) {
+                    const offset = Math.max(dist * 0.4, 40);
+                    return `M ${x1} ${y1} C ${x1 + offset} ${y1}, ${x2 - offset} ${y2}, ${x2} ${y2}`;
+                } else {
+                    const backOffset = Math.max(dist * 0.5, Math.abs(y2 - y1) * 0.5, 60);
+                    return `M ${x1} ${y1} C ${x1 + backOffset} ${y1}, ${x2 - backOffset} ${y2}, ${x2} ${y2}`;
+                }
+            }
+
+            function drawLinks() {
+                domSvgLinks.innerHTML = '';
+                state.links.forEach(link => {
+                    const p1 = getPortPos(link.from, 'out');
+                    const p2 = getPortPos(link.to, 'in');
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    path.setAttribute('d', getBezier(p1.x, p1.y, p2.x, p2.y));
+                    path.setAttribute('class', `node-link ${state.selectedLink === link.id ? 'selected' : ''}`);
+                    path.addEventListener('mousedown', (e) => {
+                        state.selectedLink = link.id; state.selectedNode = null;
+                        renderWorkspace(); syncInspector(); e.stopPropagation();
+                    });
+                    domSvgLinks.appendChild(path);
+                });
+
+                if (state.isLinking && state.linkingStart) {
+                    const rect = domNodeCanvas.getBoundingClientRect();
+                    const mx = (state.mouseX - rect.left - state.panX) / state.zoom;
+                    const my = (state.mouseY - rect.top - state.panY) / state.zoom;
+                    const p1 = getPortPos(state.linkingStart.node, state.linkingStart.type);
+                    let x1 = p1.x, y1 = p1.y, x2 = mx, y2 = my;
+                    if (state.linkingStart.type === 'in') { x2 = x1; y2 = y1; x1 = mx; y1 = my; }
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    path.setAttribute('d', getBezier(x1, y1, x2, y2));
+                    path.setAttribute('class', 'node-link-temp');
+                    domSvgLinks.appendChild(path);
+                }
+            }
+
+            domNodeCanvas.addEventListener('mousedown', e => {
+                if(e.target === domNodeCanvas || e.target === domNodeWorkspace || e.target === domSvgLinks || e.target.id === 'nodes-container') {
+                    state.isPanningNodes = true;
+                    domNodeCanvas.classList.add('panning');
+                    state.panStartX = e.clientX - state.panX;
+                    state.panStartY = e.clientY - state.panY;
+                    state.selectedNode = null; state.selectedLink = null;
+                    renderWorkspace(); syncInspector();
+                }
+            });
+            
+            domNodeCanvas.addEventListener('click', e => {
+                if (state.linkingStart && (e.target === domNodeCanvas || e.target === domNodeWorkspace || e.target === domSvgLinks || e.target.id === 'nodes-container')) {
+                    state.linkingStart = null;
+                    state.isLinking = false;
+                    document.querySelectorAll('.port').forEach(p => p.classList.remove('active-link'));
+                    domNodeCanvas.classList.remove('linking');
+                    drawLinks();
+                }
+            });
+
+            window.addEventListener('mousemove', e => {
+                state.mouseX = e.clientX; state.mouseY = e.clientY;
+                if(state.isPanningNodes) {
+                    state.panX = e.clientX - state.panStartX; state.panY = e.clientY - state.panStartY;
+                    domNodeWorkspace.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+                } else if (state.isDraggingNode && state.dragNodeId) {
+                    const node = state.nodes[state.dragNodeId];
+                    node.x = (e.clientX / state.zoom) - state.dragOffX;
+                    node.y = (e.clientY / state.zoom) - state.dragOffY;
+                    const el = document.querySelector(`.node[data-id="${node.id}"]`);
+                    if(el) { el.style.left = `${node.x}px`; el.style.top = `${node.y}px`; }
+                    drawLinks();
+                } else if (state.isLinking) {
+                    drawLinks();
+                }
+            });
+            
+            window.addEventListener('mouseup', () => {
+                state.isPanningNodes = false; state.isDraggingNode = false;
+                domNodeCanvas.classList.remove('panning');
+            });
+
+            domNodeCanvas.addEventListener('wheel', e => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                state.zoom = Math.max(0.3, Math.min(state.zoom * delta, 2));
+                domNodeWorkspace.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+            });
+
+            window.addEventListener('keydown', e => {
+                if ((e.key === 'Delete' || e.key === 'Backspace') && e.target.tagName !== 'INPUT') deleteSelected();
+            });
+            
+            document.querySelectorAll('.add-node-btn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    const rect = domNodeCanvas.getBoundingClientRect();
+                    const cx = ((rect.width/2) - state.panX) / state.zoom;
+                    const cy = ((rect.height/2) - state.panY) / state.zoom;
+                    addNode(e.currentTarget.dataset.type, cx - 110, cy - 40);
+                });
+            });
+
+            document.getElementById('center-nodes-btn').addEventListener('click', () => {
+                state.panX = 0; state.panY = 0; state.zoom = 1;
+                domNodeWorkspace.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+            });
+
+            const inspectorContent = document.getElementById('inspector-content');
+            let curveCtx = null;
+            let draggingCurvePt = null;
+
+            function selectNode(id) {
+                state.selectedNode = id; state.selectedLink = null;
+                renderWorkspace(); syncInspector();
+            }
+
+            function syncInspector() {
+                // Return templates to container
+                document.querySelectorAll('#inspector-content > div[id^="tpl-"]').forEach(el => {
+                    document.getElementById('ui-templates').appendChild(el);
+                });
+                
+                if (!state.selectedNode || !state.nodes[state.selectedNode]) {
+                    inspectorContent.innerHTML = `
+                        <div id="empty-inspector" class="h-full flex flex-col items-center justify-center text-center opacity-50 p-6">
+                            <svg class="w-12 h-12 mb-3 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                            <p class="text-xs font-medium text-[var(--text-main)]">Selecciona un nodo en el editor para configurar sus parámetros.</p>
+                        </div>`;
+                    return;
+                }
+                
+                const node = state.nodes[state.selectedNode];
+                const tplId = `tpl-${node.type}`;
+                const tpl = document.getElementById(tplId);
+                
+                if (tpl) {
+                    inspectorContent.innerHTML = '';
+                    inspectorContent.appendChild(tpl);
+                    
+                    // 1. SETEAR VALORES INICIALES
+                    tpl.querySelectorAll('[data-bind]').forEach(el => {
+                        const key = el.dataset.bind;
+                        if(node.params[key] !== undefined) {
+                            if(el.type === 'checkbox') el.checked = node.params[key];
+                            else el.value = node.params[key];
+                            
+                            const lbl = document.getElementById(`${el.id}-val`);
+                            if (lbl) {
+                                let suffix = '';
+                                if(['scale','saturation','errstr','opacity'].includes(key)) suffix='%';
+                                if(key==='bleed') suffix='px';
+                                if(key==='patScale') suffix='x';
+                                if(key==='rotDeg') suffix='°';
+                                lbl.textContent = node.params[key] + suffix;
+                            }
+                        }
+                    });
+
+                    // 2. REEMPLAZAR ELEMENTOS PARA BORRAR LISTENERS ANTIGUOS Y ASIGNAR NUEVOS
+                    tpl.querySelectorAll('[data-bind]').forEach(el => {
+                        const key = el.dataset.bind;
+                        const eventName = (el.tagName==='SELECT'||el.type==='checkbox'||el.type==='color')?'change':'input';
+                        
+                        const newEl = el.cloneNode(true);
+                        el.parentNode.replaceChild(newEl, el);
+                        
+                        newEl.addEventListener(eventName, e => {
+                            let val = e.target.type==='checkbox' ? e.target.checked : 
+                                      e.target.type==='range' ? parseFloat(e.target.value) : e.target.value;
+                            node.params[key] = val;
+                            
+                            const lbl = document.getElementById(`${newEl.id}-val`);
+                            if (lbl) {
+                                let suffix = '';
+                                if(['scale','saturation','errstr','opacity'].includes(key)) suffix='%';
+                                if(key==='bleed') suffix='px';
+                                if(key==='patScale') suffix='x';
+                                if(key==='rotDeg') suffix='°';
+                                lbl.textContent = val + suffix;
+                            }
+
+                            if(key === 'algorithm' || newEl.classList.contains('group-selector')) {
+                                if(newEl.classList.contains('group-selector') && val !== "") {
+                                    node.params.algorithm = val;
+                                    const algoDisplay = document.getElementById('ui-d-algo-display');
+                                    if(algoDisplay) algoDisplay.textContent = newEl.options[newEl.selectedIndex].text;
+                                    
+                                    tpl.querySelectorAll('.group-selector').forEach(sel => { if(sel !== newEl) sel.value = ""; });
+                                }
+                            }
+
+                            triggerProcess();
+                        });
+                    });
+
+                    // 3. CONFIGURACIONES ESPECIALES (Deben correr DESPUÉS del reemplazo de nodos)
+                    if (node.type === 'adjust') setupCurveEditor(node);
+                    if (node.type === 'palette') setupPaletteUI(node);
+                    
+                    if (node.type === 'dither') {
+                        // Sincronizar el display del algoritmo
+                        const algoSelects = tpl.querySelectorAll('.group-selector');
+                        const algoDisplay = document.getElementById('ui-d-algo-display');
+                        let foundText = 'Atkinson';
+
+                        algoSelects.forEach(sel => {
+                            let hasVal = Array.from(sel.options).some(opt => opt.value === node.params.algorithm);
+                            if (hasVal) {
+                                sel.value = node.params.algorithm;
+                                foundText = sel.options[sel.selectedIndex].text;
+                            } else {
+                                sel.value = "";
+                            }
+                        });
+                        if (algoDisplay) algoDisplay.textContent = foundText;
+                    }
+
+                    if (node.type === 'input') {
+                        const fileInp = document.getElementById('file-input-node');
+                        const newFileInp = fileInp.cloneNode(true);
+                        fileInp.parentNode.replaceChild(newFileInp, fileInp);
+                        newFileInp.addEventListener('change', e => {
+                            if(e.target.files[0]) handleFileForInputNode(e.target.files[0]);
+                        });
+                    }
+                }
+            }
+
+            function handleFileForInputNode(file) {
+                if (!file.type.startsWith('image/')) {
+                    showToast('Se requiere un archivo de imagen', 'error'); return;
+                }
+                const url = URL.createObjectURL(file);
+                
+                let inNode = Object.values(state.nodes).find(n => n.type === 'input');
+                if (!inNode) {
+                    const id = addNode('input', 20, 50);
+                    inNode = state.nodes[id];
+                }
+                
+                const img = new Image();
+                img.onload = () => {
+                    state.originalImageObj = img;
+                    document.getElementById('sizing-img').src = url;
+                    inNode.params.imgDataUrl = url;
+                    document.getElementById('placeholder-text').classList.add('hidden');
+                    renderWorkspace();
+                    triggerProcess();
+                };
+                img.src = url;
+            }
+
+            const previewSectionEl = document.getElementById('preview-section');
+            previewSectionEl.addEventListener('dragover', e => { e.preventDefault(); previewSectionEl.style.borderColor = "var(--accent-primary)"; });
+            previewSectionEl.addEventListener('dragleave', e => { previewSectionEl.style.borderColor = ""; });
+            previewSectionEl.addEventListener('drop', e => {
+                e.preventDefault();
+                previewSectionEl.style.borderColor = "";
+                if (e.dataTransfer.files.length > 0) handleFileForInputNode(e.dataTransfer.files[0]);
+            });
+
+            function setupCurveEditor(node) {
+                const canvas = document.getElementById('ui-curve-canvas');
+                curveCtx = canvas.getContext('2d');
+                
+                function draw() {
+                    curveCtx.clearRect(0,0,316,120);
+                    curveCtx.strokeStyle='rgba(255,255,255,0.05)'; curveCtx.lineWidth=1;
+                    for(let i=1;i<4;i++) {
+                        curveCtx.beginPath(); curveCtx.moveTo(i*79,0); curveCtx.lineTo(i*79,120); curveCtx.stroke();
+                        curveCtx.beginPath(); curveCtx.moveTo(0,i*30); curveCtx.lineTo(316,i*30); curveCtx.stroke();
+                    }
+                    const pts = node.params.curves[node.params.curveChannel];
+                    curveCtx.beginPath();
+                    curveCtx.moveTo(pts[0].x*(316/255), 120-(pts[0].y/255)*120);
+                    for(let i=0;i<256;i++) {
+                        curveCtx.lineTo(i*(316/255), 120-(getCurveY(pts, i)/255)*120);
+                    }
+                    const c = node.params.curveChannel;
+                    curveCtx.strokeStyle = c==='master'?'#f1f5f9':c==='r'?'#ef4444':c==='g'?'#10b981':'#3b82f6';
+                    curveCtx.lineWidth=2; curveCtx.stroke();
+                    curveCtx.fillStyle=curveCtx.strokeStyle;
+                    pts.forEach(p => {
+                        curveCtx.beginPath(); curveCtx.arc(p.x*(316/255), 120-(p.y/255)*120, 4, 0, Math.PI*2); curveCtx.fill();
+                    });
+                }
+                
+                const newCanvas = canvas.cloneNode(true);
+                canvas.parentNode.replaceChild(newCanvas, canvas);
+                curveCtx = newCanvas.getContext('2d');
+
+                function getEvtCoords(e) {
+                    const r = newCanvas.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return {
+                        x: Math.max(0, Math.min(255, (clientX - r.left)*(255/r.width))),
+                        y: Math.max(0, Math.min(255, 255 - ((clientY - r.top)*(255/r.height))))
+                    };
+                }
+
+                newCanvas.addEventListener('mousedown', e => {
+                    const {x, y} = getEvtCoords(e);
+                    const pts = node.params.curves[node.params.curveChannel];
+                    let found = pts.find(p => Math.abs(p.x-x)<20 && Math.abs(p.y-y)<20);
+                    if(found) draggingCurvePt = found;
+                    else {
+                        let nPt = {x, y}; pts.push(nPt); pts.sort((a,b)=>a.x-b.x); draggingCurvePt = nPt;
+                    }
+                    draw(); triggerProcess();
+                });
+                newCanvas.addEventListener('mousemove', e => {
+                    if(!draggingCurvePt) return;
+                    const {x, y} = getEvtCoords(e);
+                    const pts = node.params.curves[node.params.curveChannel];
+                    const idx = pts.indexOf(draggingCurvePt);
+                    if(idx===0) draggingCurvePt.x=0; else if(idx===pts.length-1) draggingCurvePt.x=255;
+                    else draggingCurvePt.x = Math.max(pts[idx-1].x+1, Math.min(pts[idx+1].x-1, x));
+                    draggingCurvePt.y = y; draw(); triggerProcess();
+                });
+                window.addEventListener('mouseup', () => draggingCurvePt = null);
+                newCanvas.addEventListener('dblclick', e => {
+                    const {x,y} = getEvtCoords(e);
+                    const pts = node.params.curves[node.params.curveChannel];
+                    let idx = pts.findIndex(p => Math.abs(p.x-x)<15 && Math.abs(p.y-y)<15);
+                    if(idx>0 && idx<pts.length-1) { pts.splice(idx,1); draw(); triggerProcess(); }
+                });
+
+                document.getElementById('ui-reset-curve').onclick = () => {
+                    node.params.curves[node.params.curveChannel] = [{x:0,y:0},{x:255,y:255}];
+                    draw(); triggerProcess();
+                };
+
+                draw();
+            }
+
+            function getCurveY(pts, x) {
+                if(x <= pts[0].x) return pts[0].y;
+                if(x >= pts[pts.length-1].x) return pts[pts.length-1].y;
+                for(let i=0; i<pts.length-1; i++) {
+                    if(x >= pts[i].x && x <= pts[i+1].x) {
+                        let t = (x - pts[i].x) / (pts[i+1].x - pts[i].x);
+                        return Math.max(0, Math.min(255, pts[i].y + (pts[i+1].y - pts[i].y) * (1 - Math.cos(t * Math.PI)) / 2));
+                    }
+                }
+                return x;
+            }
+
+            function setupPaletteUI(node) {
+                const renderCustom = () => {
+                    const box = document.getElementById('ui-p-custom-colors');
+                    box.innerHTML = '';
+                    node.params.customColors.forEach((col, idx) => {
+                        const wrap = document.createElement('div');
+                        wrap.className = 'relative w-8 h-8 rounded-full border border-[var(--border-color)] cursor-move flex items-center justify-center shadow-md';
+                        wrap.style.backgroundColor = col;
+                        wrap.draggable = true;
+                        
+                        const inp = document.createElement('input');
+                        inp.type = 'color'; inp.value = col;
+                        inp.className = 'absolute inset-0 w-full h-full opacity-0 cursor-pointer';
+                        inp.oninput = e => {
+                            node.params.customColors[idx] = e.target.value;
+                            wrap.style.backgroundColor = e.target.value;
+                            node.params.palette = 'custom'; document.getElementById('ui-p-palette').value = 'custom';
+                            triggerProcess(); renderPostSelectors();
+                        };
+                        wrap.appendChild(inp);
+                        
+                        if(node.params.customColors.length>2) {
+                            const del = document.createElement('div');
+                            del.className = 'color-del-btn'; del.innerHTML = '&times;';
+                            del.onclick = e => { e.stopPropagation(); node.params.customColors.splice(idx,1); renderCustom(); renderPostSelectors(); triggerProcess(); };
+                            wrap.appendChild(del);
+                        }
+                        
+                        wrap.ondragstart = e => { e.dataTransfer.setData('text', idx); wrap.style.opacity=0.5; };
+                        wrap.ondragend = () => wrap.style.opacity=1;
+                        wrap.ondragover = e => e.preventDefault();
+                        wrap.ondrop = e => {
+                            e.preventDefault(); const fIdx = parseInt(e.dataTransfer.getData('text'));
+                            if(fIdx!==idx && !isNaN(fIdx)) {
+                                const [m] = node.params.customColors.splice(fIdx, 1);
+                                node.params.customColors.splice(idx,0,m);
+                                renderCustom(); renderPostSelectors(); triggerProcess();
+                            }
+                        };
+                        box.appendChild(wrap);
+                    });
+
+                    const add = document.createElement('button');
+                    add.className = 'w-8 h-8 rounded-full border border-dashed border-[var(--text-muted)] text-[var(--text-muted)] hover:text-white flex justify-center items-center';
+                    add.innerHTML = '+';
+                    add.onclick = () => { if(node.params.customColors.length<32) { node.params.customColors.push('#888888'); renderCustom(); renderPostSelectors(); triggerProcess(); } };
+                    box.appendChild(add);
+                };
+
+                const renderPostSelectors = () => {
+                    const box = document.getElementById('ui-p-post-colors');
+                    box.innerHTML = '';
+                    const basePal = node.params.palette === 'custom' ? node.params.customColors : palettesBase[node.params.palette];
+                    
+                    if(!node.params.selectedPostHex || !basePal.includes(node.params.selectedPostHex)) {
+                        node.params.selectedPostHex = basePal[0];
+                    }
+
+                    basePal.forEach(hex => {
+                        const btn = document.createElement('button');
+                        const isSel = hex === node.params.selectedPostHex;
+                        btn.className = `w-6 h-6 rounded-full border-2 transition-all shadow-sm ${isSel?'border-white scale-125 z-10':'border-transparent opacity-60 hover:opacity-100 hover:scale-110'}`;
+                        
+                        let rgb = hexToRgb(hex);
+                        if(node.params.invertPalette) rgb = [255-rgb[0], 255-rgb[1], 255-rgb[2]];
+                        const mods = node.params.postMod[hex] || {h:0,s:0,l:0};
+                        if(mods.h!==0||mods.s!==0||mods.l!==0) rgb = applyPostHSL(rgb, mods.h, mods.s, mods.l);
+                        
+                        btn.style.backgroundColor = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+                        btn.onclick = e => { e.preventDefault(); node.params.selectedPostHex = hex; renderPostSelectors(); syncHslSliders(); };
+                        box.appendChild(btn);
+                    });
+                    syncHslSliders();
+                };
+
+                const syncHslSliders = () => {
+                    const mods = node.params.postMod[node.params.selectedPostHex] || {h:0,s:0,l:0};
+                    document.getElementById('ui-p-ph').value = mods.h; document.getElementById('ui-p-ph-val').textContent = mods.h+'°';
+                    document.getElementById('ui-p-ps').value = mods.s; document.getElementById('ui-p-ps-val').textContent = mods.s+'%';
+                    document.getElementById('ui-p-pl').value = mods.l; document.getElementById('ui-p-pl-val').textContent = mods.l+'%';
+                };
+
+                ['ui-p-ph', 'ui-p-ps', 'ui-p-pl'].forEach(id => {
+                    const el = document.getElementById(id);
+                    const nEl = el.cloneNode(true); el.parentNode.replaceChild(nEl, el);
+                    nEl.oninput = e => {
+                        const val = parseInt(e.target.value);
+                        if(!node.params.postMod[node.params.selectedPostHex]) node.params.postMod[node.params.selectedPostHex] = {h:0,s:0,l:0};
+                        if(id==='ui-p-ph') node.params.postMod[node.params.selectedPostHex].h = val;
+                        if(id==='ui-p-ps') node.params.postMod[node.params.selectedPostHex].s = val;
+                        if(id==='ui-p-pl') node.params.postMod[node.params.selectedPostHex].l = val;
+                        document.getElementById(`${id}-val`).textContent = val + (id==='ui-p-ph'?'°':'%');
+                        renderPostSelectors(); triggerProcess();
+                    };
+                });
+
+                const extBtn = document.getElementById('ui-p-extract');
+                const newExtBtn = extBtn.cloneNode(true);
+                extBtn.parentNode.replaceChild(newExtBtn, extBtn);
+                newExtBtn.onclick = () => {
+                    if(!state.originalImageObj) return showToast('Se necesita una imagen de entrada primero', 'error');
+                    const tC = document.createElement('canvas'); tC.width=200; tC.height=Math.floor(200*(state.originalImageObj.height/state.originalImageObj.width));
+                    const tCtx = tC.getContext('2d'); tCtx.drawImage(state.originalImageObj,0,0,tC.width,tC.height);
+                    const imgD = tCtx.getImageData(0,0,tC.width,tC.height).data;
+                    const counts = {};
+                    for(let i=0;i<imgD.length;i+=4) {
+                        let r = Math.round(imgD[i]/16)*16, g = Math.round(imgD[i+1]/16)*16, b = Math.round(imgD[i+2]/16)*16;
+                        const h = rgbToHex(Math.min(255,r),Math.min(255,g),Math.min(255,b));
+                        counts[h] = (counts[h]||0)+1;
+                    }
+                    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+                    const newPal = [];
+                    for(let [hex] of sorted) {
+                        let r1=hexToRgb(hex), ok=true;
+                        for(let eHex of newPal) {
+                            let r2=hexToRgb(eHex);
+                            if(Math.pow(r1[0]-r2[0],2)+Math.pow(r1[1]-r2[1],2)+Math.pow(r1[2]-r2[2],2) < 3000) { ok=false; break; }
+                        }
+                        if(ok) { newPal.push(hex); if(newPal.length>=16) break; }
+                    }
+                    if(newPal.length===0) newPal.push('#000','#fff');
+                    node.params.customColors = newPal;
+                    node.params.palette = 'custom'; document.getElementById('ui-p-palette').value = 'custom';
+                    renderCustom(); renderPostSelectors(); triggerProcess();
+                };
+
+                // LÓGICA DE ACTUALIZACIÓN DEL SELECTOR DE PALETA
+                const paletteDropdown = document.getElementById('ui-p-palette');
+                paletteDropdown.addEventListener('change', (e) => {
+                    if (node.params.palette !== 'custom') {
+                        node.params.customColors = [...palettesBase[node.params.palette]];
+                    }
+                    renderCustom(); 
+                    renderPostSelectors(); 
+                });
+
+                document.getElementById('ui-p-invert').addEventListener('change', () => { renderPostSelectors(); });
+
+                renderCustom(); renderPostSelectors();
+            }
+
+            let processTimer = null;
+            function triggerProcess() {
+                if(processTimer) clearTimeout(processTimer);
+                processTimer = setTimeout(() => executeGraph(), 50); 
+            }
+
+            const canvasOrig = document.getElementById('canvas-original');
+            const oCtx = canvasOrig.getContext('2d', {willReadFrequently:true});
+            const canvasPreview = document.getElementById('canvas-preview');
+            const pCtx = canvasPreview.getContext('2d', {willReadFrequently:true});
+
+            async function executeGraph() {
+                const outNode = Object.values(state.nodes).find(n => n.type === 'output');
+                if(!outNode) return;
+
+                const loading = document.getElementById('loading-overlay');
+                loading.classList.remove('opacity-0');
+
+                let hasPostFx = false;
+                let curr = state.nodes[outNode.id];
+                while(curr) {
+                    if(curr.type === 'postfx') hasPostFx = true;
+                    let link = state.links.find(l=>l.to===curr.id);
+                    if(link) curr = state.nodes[link.from]; else curr = null;
+                }
+                const svgBtn = document.getElementById('export-svg-btn');
+                if (hasPostFx) {
+                    svgBtn.disabled = true;
+                    svgBtn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
+                } else {
+                    svgBtn.disabled = false;
+                    svgBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale');
+                }
+
+                setTimeout(async () => {
+                    try {
+                        const finalData = await evaluateNode(outNode.id);
+                        if(finalData) {
+                            canvasPreview.width = finalData.width; canvasPreview.height = finalData.height;
+                            pCtx.putImageData(finalData, 0, 0);
+                            
+                            const inpNode = Object.values(state.nodes).find(n => n.type === 'input');
+                            if(inpNode && state.originalImageObj) {
+                                const sc = inpNode.params.scale / 100;
+                                const w = Math.max(1, Math.floor(state.originalImageObj.width * sc));
+                                const h = Math.max(1, Math.floor(state.originalImageObj.height * sc));
+                                canvasOrig.width = w; canvasOrig.height = h;
+                                oCtx.drawImage(state.originalImageObj, 0,0,w,h);
+                                
+                                document.getElementById('canvas-container').style.display = 'flex';
+                            }
+                            
+                            updateExportCenters(outNode.id);
+                        } else {
+                            pCtx.clearRect(0,0,canvasPreview.width, canvasPreview.height);
+                            oCtx.clearRect(0,0,canvasOrig.width, canvasOrig.height);
+                        }
+                    } catch (err) {
+                        console.error("Error en Grafo:", err);
+                    } finally {
+                        loading.classList.add('opacity-0');
+                    }
+                }, 5);
+            }
+
+            async function evaluateNode(nodeId) {
+                const node = state.nodes[nodeId];
+                if(!node) return null;
+
+                const link = state.links.find(l => l.to === nodeId);
+                let inputData = null;
+                if(link) inputData = await evaluateNode(link.from);
+
+                let resultData = applyNodeEffect(node, inputData, nodeId);
+                
+                // MEZCLA DE OPACIDAD GLOBAL Y MODOS DE FUSIÓN (CANVAS GLOBALCOMPOSITEOPERATION)
+                if (inputData && resultData && node.type !== 'input' && node.type !== 'output') {
+                    const mix = node.params.opacity !== undefined ? node.params.opacity / 100 : 1;
+                    const blendMode = node.params.blendMode || 'source-over';
+                    
+                    if (mix < 1 || blendMode !== 'source-over') {
+                        const w = inputData.width;
+                        const h = inputData.height;
+                        
+                        // Canvas para la imagen de entrada (base)
+                        const cBase = document.createElement('canvas');
+                        cBase.width = w; cBase.height = h;
+                        const ctxBase = cBase.getContext('2d');
+                        ctxBase.putImageData(inputData, 0, 0);
+                        
+                        // Canvas para el resultado del efecto
+                        const cEffect = document.createElement('canvas');
+                        cEffect.width = w; cEffect.height = h;
+                        const ctxEffect = cEffect.getContext('2d');
+                        ctxEffect.putImageData(resultData, 0, 0);
+                        
+                        // Canvas final donde se hace la mezcla
+                        const cFinal = document.createElement('canvas');
+                        cFinal.width = w; cFinal.height = h;
+                        const ctxFinal = cFinal.getContext('2d', { willReadFrequently: true });
+                        
+                        // 1. Dibujar imagen de entrada
+                        ctxFinal.drawImage(cBase, 0, 0);
+                        
+                        // 2. Configurar modo de fusión y opacidad
+                        ctxFinal.globalCompositeOperation = blendMode;
+                        ctxFinal.globalAlpha = mix;
+                        
+                        // 3. Dibujar efecto encima
+                        ctxFinal.drawImage(cEffect, 0, 0);
+                        
+                        // Actualizar resultData con la fusión
+                        resultData = ctxFinal.getImageData(0, 0, w, h);
+                    }
+                }
+
+                return resultData;
+            }
+
+            function applyNodeEffect(node, inData, nodeId) {
+                if(node.type === 'input') {
+                    if(!state.originalImageObj || !node.params.imgDataUrl) return null;
+                    const sc = node.params.scale / 100;
+                    const w = Math.max(1, Math.floor(state.originalImageObj.width * sc));
+                    const h = Math.max(1, Math.floor(state.originalImageObj.height * sc));
+                    const tc = document.createElement('canvas'); tc.width=w; tc.height=h;
+                    const tctx = tc.getContext('2d'); tctx.drawImage(state.originalImageObj,0,0,w,h);
+                    return tctx.getImageData(0,0,w,h);
+                }
+
+                if(!inData) return null;
+                if(node.type === 'output') {
+                    if(state.globalIsolatedColors.size > 0) {
+                        const outD = new ImageData(new Uint8ClampedArray(inData.data), inData.width, inData.height);
+                        const d = outD.data;
+                        for(let i=0; i<d.length; i+=4) {
+                            if(d[i+3]===0) continue;
+                            const h = rgbToHex(d[i],d[i+1],d[i+2]);
+                            if(state.globalIsolatedColors.has(h)) d[i+3]=0;
+                        }
+                        return outD;
+                    }
+                    return inData;
+                }
+
+                const w = inData.width; const h = inData.height;
+                const outData = new ImageData(new Uint8ClampedArray(inData.data), w, h);
+                
+                if(node.type === 'adjust') return processAdjust(outData, w, h, node.params);
+                if(node.type === 'palette') return processPalette(outData, w, h, node.params);
+                if(node.type === 'glitch') return processGlitch(outData, w, h, node.params);
+                if(node.type === 'dither') return processDither(outData, w, h, node.params, nodeId);
+                if(node.type === 'postfx') return processPostFx(outData, w, h, node.params);
+
+                return outData;
+            }
+
+            function processAdjust(imgData, w, h, p) {
+                const d = imgData.data;
+                
+                if(p.bleed > 0) {
+                    const temp = new Uint8ClampedArray(d);
+                    const s = Math.round(p.bleed); const div = ((s*2)+1)*((s*2)+1);
+                    for(let y=s; y<h-s; y++){
+                        for(let x=s; x<w-s; x++){
+                            let r=0,g=0,b=0;
+                            for(let cy=-s; cy<=s; cy++){
+                                for(let cx=-s; cx<=s; cx++){
+                                    let i=((y+cy)*w+(x+cx))*4; r+=temp[i]; g+=temp[i+1]; b+=temp[i+2];
+                                }
+                            }
+                            let i=(y*w+x)*4; d[i]=r/div; d[i+1]=g/div; d[i+2]=b/div;
+                        }
+                    }
+                }
+                
+                if(p.sharpen > 0) {
+                    const temp = new Uint8ClampedArray(d);
+                    const c = 1 + 4*p.sharpen; const e = -p.sharpen; const w4=w*4;
+                    for(let y=1; y<h-1; y++){
+                        for(let x=1; x<w-1; x++){
+                            let i=(y*w+x)*4;
+                            for(let ch=0;ch<3;ch++){
+                                let v = e*temp[i-w4+ch] + e*temp[i-4+ch] + c*temp[i+ch] + e*temp[i+4+ch] + e*temp[i+w4+ch];
+                                d[i+ch] = Math.max(0, Math.min(255, v));
+                            }
+                        }
+                    }
+                }
+
+                let lutM=new Uint8Array(256), lutR=new Uint8Array(256), lutG=new Uint8Array(256), lutB=new Uint8Array(256);
+                for(let i=0;i<256;i++) {
+                    lutM[i]=getCurveY(p.curves.master,i); lutR[i]=getCurveY(p.curves.r,i);
+                    lutG[i]=getCurveY(p.curves.g,i); lutB[i]=getCurveY(p.curves.b,i);
+                }
+
+                const cF = (259*(p.contrast+255)) / (255*(259-p.contrast));
+                const sF = p.saturation/100;
+
+                for(let i=0; i<d.length; i+=4) {
+                    let r = p.chR?d[i]:0, g = p.chG?d[i+1]:0, b = p.chB?d[i+2]:0;
+                    
+                    r=lutR[lutM[r]]; g=lutG[lutM[g]]; b=lutB[lutM[b]];
+                    
+                    r = cF*(r-128)+128+p.brightness; g = cF*(g-128)+128+p.brightness; b = cF*(b-128)+128+p.brightness;
+
+                    if(p.gamma!==1.0) {
+                        r = Math.pow(Math.max(0,Math.min(1,r/255)), 1/p.gamma)*255;
+                        g = Math.pow(Math.max(0,Math.min(1,g/255)), 1/p.gamma)*255;
+                        b = Math.pow(Math.max(0,Math.min(1,b/255)), 1/p.gamma)*255;
+                    }
+
+                    if(sF!==1.0) {
+                        let L=0.299*r+0.587*g+0.114*b;
+                        r=L+(r-L)*sF; g=L+(g-L)*sF; b=L+(b-L)*sF;
+                    }
+
+                    if(p.posterize<255) {
+                        let st=255/(p.posterize-1);
+                        r=Math.round(r/st)*st; g=Math.round(g/st)*st; b=Math.round(b/st)*st;
+                    }
+                    
+                    if(p.clipping>0) {
+                        if(r<p.clipping)r=0; else if(r>255-p.clipping)r=255;
+                        if(g<p.clipping)g=0; else if(g>255-p.clipping)g=255;
+                        if(b<p.clipping)b=0; else if(b>255-p.clipping)b=255;
+                    }
+
+                    d[i]=r; d[i+1]=g; d[i+2]=b;
+                }
+                return imgData;
+            }
+
+            function processPalette(imgData, w, h, p) {
+                const d = imgData.data;
+                const actPal = getFinalPalette(p);
+                const renPal = getRenderPalette(p, actPal);
+
+                function findCl(r,g,b) {
+                    let minD=Infinity; let cl=actPal[0]; let idx=0;
+                    for(let i=0;i<actPal.length;i++){
+                        let pt=actPal[i]; let rm=(r+pt[0])/2; let dr=r-pt[0]; let dg=g-pt[1]; let db=b-pt[2];
+                        let dst = (((512+rm)*dr*dr)>>8) + 4*dg*dg + (((767-rm)*db*db)>>8);
+                        if(dst<minD) { minD=dst; cl=pt; idx=i; }
+                    }
+                    return renPal[idx];
+                }
+
+                for(let i=0; i<d.length; i+=4) {
+                    if (d[i+3] < 128) {
+                        d[i]=0; d[i+1]=0; d[i+2]=0; d[i+3]=0;
+                        continue;
+                    }
+                    let res = findCl(d[i], d[i+1], d[i+2]);
+                    d[i]=res[0]; d[i+1]=res[1]; d[i+2]=res[2]; d[i+3]=255;
+                }
+                return imgData;
+            }
+
+            function processGlitch(imgData, w, h, p) {
+                const d = imgData.data; const tmp = new Uint8ClampedArray(d);
+                
+                if (p.bitplane === 'remove-lsb') { for(let i=0;i<d.length;i+=4){ d[i]&=0xF0; d[i+1]&=0xF0; d[i+2]&=0xF0; } }
+                else if (p.bitplane === 'remove-msb') { for(let i=0;i<d.length;i+=4){ d[i]&=0x0F; d[i+1]&=0x0F; d[i+2]&=0x0F; } }
+                else if (p.bitplane === 'swap-palette') { for(let i=0;i<d.length;i+=4){ let L=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; if(L>128){ d[i]=255-d[i];d[i+1]=255-d[i+1];d[i+2]=255-d[i+2];} } }
+
+                let uf = p.underflow/100;
+                if(uf>0) {
+                    let segs = Math.floor(uf*50);
+                    for(let s=0;s<segs;s++) {
+                        let y=Math.floor(Math.random()*h); let hh=Math.floor(Math.random()*20)+1; let sh=Math.floor((Math.random()-0.5)*w*uf);
+                        for(let r=0;r<hh&&y+r<h;r++) {
+                            for(let x=0;x<w;x++){
+                                let sx=x+sh; if(sx>=0&&sx<w) { let di=((y+r)*w+x)*4; let si=((y+r)*w+sx)*4; d[di]=tmp[si]; d[di+1]=tmp[si+1]; d[di+2]=tmp[si+2]; }
+                            }
+                        }
+                    }
+                }
+                
+                let sH = p.sortH/100;
+                if(sH>0) {
+                    for(let y=0;y<h;y++){
+                        if(Math.random()>sH) continue;
+                        let row=[]; for(let x=0;x<w;x++){ let i=(y*w+x)*4; row.push({r:d[i],g:d[i+1],b:d[i+2],l:0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]}); }
+                        let len=Math.floor(w*sH); let sX=Math.floor(Math.random()*(w-len));
+                        let sub=row.slice(sX,sX+len).sort((a,b)=>a.l-b.l);
+                        for(let x=0;x<len;x++){ let i=(y*w+sX+x)*4; d[i]=sub[x].r; d[i+1]=sub[x].g; d[i+2]=sub[x].b; }
+                    }
+                }
+
+                let sV = p.sortV/100;
+                if(sV>0) {
+                    for(let x=0;x<w;x++){
+                        if(Math.random()>sV) continue;
+                        let col=[]; for(let y=0;y<h;y++){ let i=(y*w+x)*4; col.push({r:d[i],g:d[i+1],b:d[i+2],l:0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]}); }
+                        let len=Math.floor(h*sV); let sY=Math.floor(Math.random()*(h-len));
+                        let sub=col.slice(sY,sY+len).sort((a,b)=>a.l-b.l);
+                        for(let y=0;y<len;y++){ let i=((sY+y)*w+x)*4; d[i]=sub[y].r; d[i+1]=sub[y].g; d[i+2]=sub[y].b; }
+                    }
+                }
+
+                let hs = p.hsync/100;
+                if(hs>0) {
+                    for(let y=0;y<h;y++){
+                        if(Math.random()<hs*0.3) {
+                            let sh = Math.floor((Math.random()-0.5)*w*hs*0.5);
+                            let tRow = new Uint8ClampedArray(w*4);
+                            for(let x=0;x<w;x++){ let sx=x+sh; if(sx>=0&&sx<w) { let di=x*4; let si=(y*w+sx)*4; tRow[di]=d[si]; tRow[di+1]=d[si+1]; tRow[di+2]=d[si+2]; } }
+                            for(let x=0;x<w;x++){ let i=(y*w+x)*4; d[i]=tRow[x*4]; d[i+1]=tRow[x*4+1]; d[i+2]=tRow[x*4+2]; }
+                        }
+                    }
+                }
+
+                let cr = p.chroma/100;
+                if(cr>0) {
+                    let rS=Math.floor(cr*20); let bS=-Math.floor(cr*15); const tD=new Uint8ClampedArray(d);
+                    for(let y=0;y<h;y++){
+                        for(let x=0;x<w;x++){
+                            let i=(y*w+x)*4; let rx=Math.max(0,Math.min(w-1,x+rS)); let bx=Math.max(0,Math.min(w-1,x+bS));
+                            d[i]=tD[(y*w+rx)*4]; d[i+2]=tD[(y*w+bx)*4+2];
+                        }
+                    }
+                }
+
+                let dr = p.drift/100;
+                if(dr>0) {
+                    const tD=new Uint8ClampedArray(d); let tm=Date.now()*0.001;
+                    for(let y=0;y<h;y++){
+                        for(let x=0;x<w;x++){
+                            let dx=Math.sin(y*0.05+tm)*dr*20; let dy=Math.cos(x*0.05+tm)*dr*20;
+                            let sx=Math.max(0,Math.min(w-1,Math.floor(x+dx))); let sy=Math.max(0,Math.min(h-1,Math.floor(y+dy)));
+                            let i=(y*w+x)*4; let si=(sy*w+sx)*4; d[i]=tD[si]; d[i+1]=tD[si+1]; d[i+2]=tD[si+2];
+                        }
+                    }
+                }
+
+                let int = p.interlace/100;
+                if(int>0) {
+                    const tD=new Uint8ClampedArray(d); let sh=Math.floor(int*30);
+                    for(let y=1;y<h;y+=2) {
+                        for(let x=0;x<w;x++) {
+                            let sx=Math.max(0,Math.min(w-1,x+sh)); let i=(y*w+x)*4; let si=(y*w+sx)*4;
+                            d[i]=tD[si]; d[i+1]=tD[si+1]; d[i+2]=tD[si+2];
+                        }
+                    }
+                }
+
+                return imgData;
+            }
+
+            function getUpstreamPaletteParams(nodeId) {
+                let curr = state.nodes[nodeId];
+                while(curr) {
+                    if(curr.type === 'palette') return curr.params;
+                    let link = state.links.find(l => l.to === curr.id);
+                    if(link) curr = state.nodes[link.from];
+                    else curr = null;
+                }
+                return getDefaultParams('palette'); 
+            }
+
+            function processDither(imgData, w, h, p, nodeId) {
+                const paletteParams = getUpstreamPaletteParams(nodeId);
+                const d = imgData.data;
+                const actPal = getFinalPalette(paletteParams);
+                const renPal = getRenderPalette(paletteParams, actPal);
+
+                const f32 = new Float32Array(w * h * 3);
+                for(let i=0, fi=0; i<d.length; i+=4, fi+=3) {
+                    f32[fi]=d[i]+p.bias; f32[fi+1]=d[i+1]+p.bias; f32[fi+2]=d[i+2]+p.bias;
+                }
+
+                const estGrp = ['threshold','random','blueNoise','line','circles','diamonds','squares','triangles','voronoi','crossHatch','spiralWave','hilbertPattern','dtm'];
+                
+                function findCl(r,g,b) {
+                    let minD=Infinity; let cl=actPal[0]; let idx=0;
+                    for(let i=0;i<actPal.length;i++){
+                        let pt=actPal[i]; let rm=(r+pt[0])/2; let dr=r-pt[0]; let dg=g-pt[1]; let db=b-pt[2];
+                        let dst = (((512+rm)*dr*dr)>>8) + 4*dg*dg + (((767-rm)*db*db)>>8);
+                        if(dst<minD) { minD=dst; cl=pt; idx=i; }
+                    }
+                    return {c:cl, idx:idx};
+                }
+
+                const spread = (p.errstr/100) * 128;
+
+                if (estGrp.includes(p.algorithm)) {
+                    for(let y=0;y<h;y++){
+                        for(let x=0;x<w;x++){
+                            let fi=(y*w+x)*3; let nx=x/p.patScale; let ny=y/p.patScale; let t=0;
+                            if (p.algorithm === 'random') t = Math.random() - 0.5;
+                            else if (p.algorithm === 'line') t = (Math.sin(nx * 1.5 + ny * 0.5) + 1) / 2 - 0.5;
+                            else if (p.algorithm === 'blueNoise') { let ign = 52.9829189 * ((0.06711056 * x + 0.00583715 * y) % 1); t = (ign - Math.floor(ign)) - 0.5; }
+                            else if (p.algorithm === 'circles') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) / 2;
+                            else if (p.algorithm === 'diamonds') t = (Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI)) / 4;
+                            else if (p.algorithm === 'squares') t = Math.max(Math.abs(Math.sin(nx * Math.PI)), Math.abs(Math.sin(ny * Math.PI))) - 0.5;
+                            else if (p.algorithm === 'triangles') { let sq3 = Math.sqrt(3); t = (Math.sin((nx + ny / sq3) * Math.PI) + Math.sin((nx - ny / sq3) * Math.PI) + Math.sin((ny * 2 / sq3) * Math.PI)) / 6; }
+                            else if (p.algorithm === 'crossHatch') {
+                                let luma = (0.299*f32[fi] + 0.587*f32[fi+1] + 0.114*f32[fi+2]) / 255;
+                                let ang1 = Math.sin(nx + ny); let ang2 = Math.sin(nx - ny);
+                                t = luma > 0.5 ? ang1*0.5 : (ang1+ang2)*0.25;
+                            }
+                            else if (p.algorithm === 'spiralWave') {
+                                let cx = nx - w/(2*p.patScale); let cy = ny - h/(2*p.patScale);
+                                let dist = Math.sqrt(cx*cx + cy*cy); let ang = Math.atan2(cy, cx);
+                                t = Math.sin(dist * 2.0 + ang * 8.0) * 0.5;
+                            }
+                            else if (p.algorithm === 'voronoi') {
+                                let xi = Math.floor(nx); let yi = Math.floor(ny); let xf = nx - xi; let yf = ny - yi; let minDist = 1.0;
+                                for(let j=-1; j<=1; j++) {
+                                    for(let i=-1; i<=1; i++) {
+                                        let ptX = (Math.sin((xi+i)*12.9898 + (yi+j)*78.233) * 43758.5453) % 1;
+                                        let ptY = (Math.cos((xi+i)*12.9898 + (yi+j)*78.233) * 43758.5453) % 1;
+                                        let dx = i + Math.abs(ptX) - xf; let dy = j + Math.abs(ptY) - yf;
+                                        let dist = Math.sqrt(dx*dx + dy*dy); if (dist < minDist) minDist = dist;
+                                    }
+                                }
+                                t = minDist - 0.5;
+                            }
+                            else if (p.algorithm === 'hilbertPattern') { let hX = Math.floor(nx) ^ Math.floor(ny); t = ((hX * 0.61803398875) % 1) - 0.5; }
+                            else if (p.algorithm === 'dtm') { t = (Math.random() - 0.5) * (Math.sin(nx*0.05) * Math.cos(ny*0.05)); }
+
+                            let res = findCl(f32[fi]+t*spread, f32[fi+1]+t*spread, f32[fi+2]+t*spread);
+                            let rC = renPal[res.idx]; let idx = (y*w+x)*4;
+                            d[idx]=rC[0]; d[idx+1]=rC[1]; d[idx+2]=rC[2]; d[idx+3]=255;
+                        }
+                    }
+                } 
+                else if (matricesOrdenadas[p.algorithm] || p.algorithm==='bayerProgressive') {
+                    let mat = matricesOrdenadas[p.algorithm] || matricesOrdenadas['bayer8'];
+                    let s = mat.length;
+                    for(let y=0;y<h;y++) {
+                        for(let x=0;x<w;x++) {
+                            let fi=(y*w+x)*3; let ts=p.patScale;
+                            if(p.algorithm==='bayerProgressive') { let L=(0.299*f32[fi]+0.587*f32[fi+1]+0.114*f32[fi+2])/255; ts*=(1+L*2.0); }
+                            let tpx = Math.floor(x/ts)%s; let tpy = Math.floor(y/ts)%s;
+                            let t = mat[tpy][tpx];
+                            let res = findCl(f32[fi]+t*spread, f32[fi+1]+t*spread, f32[fi+2]+t*spread);
+                            let rC = renPal[res.idx]; let idx = (y*w+x)*4;
+                            d[idx]=rC[0]; d[idx+1]=rC[1]; d[idx+2]=rC[2]; d[idx+3]=255;
+                        }
+                    }
+                }
+                else if (matricesDifusion[p.algorithm]) {
+                    const mDef = matricesDifusion[p.algorithm];
+                    
+                    const rad = p.rotDeg*(Math.PI/180); const cosR=Math.cos(rad); const sinR=Math.sin(rad);
+                    let errS = p.errstr/100;
+                    
+                    for(let y=0;y<h;y++) {
+                        let rtl = (p.scanPattern==='zigzag' && y%2!==0);
+                        for(let x0=0;x0<w;x0++) {
+                            let x = rtl ? w-1-x0 : x0;
+                            let idx = (y*w+x)*4; let fi=(y*w+x)*3;
+                            let res = findCl(f32[fi], f32[fi+1], f32[fi+2]);
+                            let rC = renPal[res.idx];
+                            d[idx]=rC[0]; d[idx+1]=rC[1]; d[idx+2]=rC[2]; d[idx+3]=255;
+                            
+                            let eR=(f32[fi]-res.c[0])*errS; let eG=(f32[fi+1]-res.c[1])*errS; let eB=(f32[fi+2]-res.c[2])*errS;
+                            if(eR===0&&eG===0&&eB===0) continue;
+
+                            for(let m of mDef.m) {
+                                let mx=rtl?-m[0]:m[0]; let my=m[1];
+                                let rotX=Math.round(mx*cosR-my*sinR); let rotY=Math.round(mx*sinR+my*cosR);
+                                let nx=x+rotX; let ny=y+rotY;
+                                if(nx>=0&&nx<w&&ny>=0&&ny<h) {
+                                    let nFi = (ny*w+nx)*3;
+                                    let bF=1.0; if(p.errBias!==0) { bF += (Math.abs(rotX)>Math.abs(rotY) ? -p.errBias/100 : p.errBias/100); }
+                                    let wt = (m[2]/mDef.d) * Math.max(0.1, bF);
+                                    f32[nFi]+=eR*wt; f32[nFi+1]+=eG*wt; f32[nFi+2]+=eB*wt;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return imgData;
+            }
+
+            function applyBoxBlur(data, width, height, radius) {
+                if(radius <= 0) return data;
+                const tempData = new Uint8ClampedArray(data);
+                const side = Math.round(radius);
+                const divisor = ((side*2)+1) * ((side*2)+1);
+                
+                for(let y=side; y<height-side; y++){
+                    for(let x=side; x<width-side; x++){
+                        let r=0, g=0, b=0;
+                        for(let cy=-side; cy<=side; cy++){
+                            for(let cx=-side; cx<=side; cx++){
+                                let i = ((y+cy)*width + (x+cx)) * 4;
+                                r+=tempData[i]; g+=tempData[i+1]; b+=tempData[i+2];
+                            }
+                        }
+                        let i = (y*width + x)*4;
+                        data[i] = r/divisor; data[i+1] = g/divisor; data[i+2] = b/divisor;
+                    }
+                }
+                return data;
+            }
+
+            function processPostFx(imgData, w, h, p) {
+                const d = imgData.data; const tmp = new Uint8ClampedArray(d);
+                let fg=p.grain/100, v=p.vignette/100, bl=p.bloom/100, di=p.dispersion/100;
+                
+                let bD=null; if(bl>0) bD = applyBoxBlur(new Uint8ClampedArray(d), w, h, bl*10);
+
+                let bleed=null;
+                if(p.dotGain) {
+                    bleed=new Uint8ClampedArray(d);
+                    for(let y=1;y<h-1;y++) {
+                        for(let x=1;x<w-1;x++) {
+                            let i=(y*w+x)*4; let L=0.299*tmp[i]+0.587*tmp[i+1]+0.114*tmp[i+2];
+                            if(L<128) { let t=i+(Math.random()>0.5?4:w*4)*(Math.random()>0.5?1:-1); bleed[t]=bleed[i]; bleed[t+1]=bleed[i+1]; bleed[t+2]=bleed[i+2]; }
+                        }
+                    }
+                    tmp.set(bleed);
+                }
+
+                const cX=w/2; const cY=h/2; const mD=Math.sqrt(cX*cX+cY*cY);
+
+                for(let y=0;y<h;y++){
+                    for(let x=0;x<w;x++){
+                        let i=(y*w+x)*4;
+                        let r=p.dotGain?tmp[i]:d[i], g=p.dotGain?tmp[i+1]:d[i+1], b=p.dotGain?tmp[i+2]:d[i+2];
+                        let luma=0.299*r+0.587*g+0.114*b;
+
+                        if(p.clarity) {
+                            let avg=(r+g+b)/3;
+                            if(avg>128) { r=Math.min(255,r*1.2); g=Math.min(255,g*1.2); b=Math.min(255,b*1.2); } else { r*=0.8; g*=0.8; b*=0.8; }
+                        }
+                        if(bl>0) {
+                            let br=bD[i], bg=bD[i+1], bb=bD[i+2];
+                            r=255-((255-r)*(255-br*bl)/255); g=255-((255-g)*(255-bg*bl)/255); b=255-((255-b)*(255-bb*bl)/255);
+                        }
+                        if(di>0) {
+                            let dx=Math.floor(di*10*((x-cX)/cX));
+                            let ri=(y*w+Math.min(w-1,Math.max(0,x+dx)))*4; let bi=(y*w+Math.min(w-1,Math.max(0,x-dx)))*4;
+                            r=r*0.5+tmp[ri]*0.5; b=b*0.5+tmp[bi+2]*0.5;
+                        }
+                        if(v>0) {
+                            let vf=Math.pow(Math.sqrt((x-cX)*(x-cX)+(y-cY)*(y-cY))/mD,2)*v;
+                            r=r*(1-vf)+(vf*40); g=g*(1-vf)+(vf*10); b=b*(1-vf)+(vf*30);
+                        }
+                        if(fg>0) {
+                            let gf=fg*(1-luma/255)*100; let gr=(Math.random()-0.5)*gf;
+                            r=Math.max(0,Math.min(255,r+gr)); g=Math.max(0,Math.min(255,g+gr)); b=Math.max(0,Math.min(255,b+gr));
+                            if(p.grainAlpha) d[i+3]=Math.max(0,Math.min(255,d[i+3]-Math.abs(gr)));
+                        }
+                        
+                        d[i]=r; d[i+1]=g; d[i+2]=b;
+                    }
+                }
+                return imgData;
+            }
+
+            function updateExportCenters(outNodeId) {
+                let lastPalette = null;
+                let curr = state.nodes[outNodeId];
+                while(curr) {
+                    if(curr.type === 'palette' || curr.type === 'dither') { 
+                        if (curr.type === 'dither') {
+                            let params = getUpstreamPaletteParams(curr.id);
+                            lastPalette = { params: params };
+                        } else {
+                            lastPalette = curr;
+                        }
+                        break; 
+                    }
+                    let link = state.links.find(l=>l.to===curr.id);
+                    if(link) curr = state.nodes[link.from]; else curr = null;
+                }
+
+                const sqContainer = document.getElementById('isolation-squares-container');
+                sqContainer.innerHTML = '';
+                
+                if(lastPalette) {
+                    const actPal = getFinalPalette(lastPalette.params);
+                    const renPal = getRenderPalette(lastPalette.params, actPal);
+                    
+                    let rPalHex = renPal.map(rgb => rgbToHex(rgb[0], rgb[1], rgb[2]));
+
+                    rPalHex.forEach(hex => {
+                        const w = document.createElement('div'); w.className = 'aspect-square rounded-lg border border-[var(--border-color)] cursor-pointer relative overflow-hidden transition-all shadow-md';
+                        w.style.backgroundColor = hex;
+                        
+                        const cross = document.createElement('div');
+                        cross.className = 'absolute inset-0 flex items-center justify-center text-red-500 drop-shadow-md transition-opacity duration-200';
+                        cross.innerHTML = '<svg class="w-2/3 h-2/3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>';
+                        
+                        if(state.globalIsolatedColors.has(hex)) { w.classList.add('opacity-30'); cross.classList.remove('opacity-0'); }
+                        else { w.classList.remove('opacity-30'); cross.classList.add('opacity-0'); }
+
+                        w.onclick = () => {
+                            if(state.globalIsolatedColors.has(hex)) state.globalIsolatedColors.delete(hex);
+                            else state.globalIsolatedColors.add(hex);
+                            triggerProcess();
+                        };
+                        w.appendChild(cross);
+                        sqContainer.appendChild(w);
+                    });
+                }
+            }
+
+            document.getElementById('restore-isolation-btn').onclick = () => { state.globalIsolatedColors.clear(); triggerProcess(); };
+            document.getElementById('btn-process').onclick = () => triggerProcess();
+
+            const previewSection = document.getElementById('preview-section');
+            const ditherLayer = document.getElementById('dither-layer');
+            const compareLine = document.getElementById('compare-line');
+            const zoomWrapper = document.getElementById('zoom-wrapper');
+
+            document.getElementById('zoom-in').onclick = () => { state.previewZoom=Math.min(10,state.previewZoom*1.3); appZ(); };
+            document.getElementById('zoom-out').onclick = () => { state.previewZoom=Math.max(0.1,state.previewZoom/1.3); appZ(); };
+            document.getElementById('zoom-reset').onclick = () => { state.previewZoom=1; state.previewPanX=0; state.previewPanY=0; appZ(); };
+            
+            function appZ() { 
+                zoomWrapper.style.transform = `translate(${state.previewPanX}px, ${state.previewPanY}px) scale(${state.previewZoom})`; 
+                document.getElementById('zoom-reset').textContent = Math.round(state.previewZoom*100)+'%';
+            }
+
+            previewSection.addEventListener('wheel', e => { e.preventDefault(); state.previewZoom = Math.max(0.1, Math.min(state.previewZoom * (e.deltaY>0?0.9:1.1), 10)); appZ(); });
+
+            let pDragX=0, pDragY=0;
+            document.getElementById('toggle-pan').onclick = (e) => { 
+                state.isPreviewPanning = !state.isPreviewPanning; 
+                e.currentTarget.classList.toggle('bg-[var(--accent-primary)]', state.isPreviewPanning);
+                e.currentTarget.classList.toggle('text-white', state.isPreviewPanning);
+                previewSection.style.cursor = state.isPreviewPanning ? 'grab' : 'default';
+            };
+            document.getElementById('toggle-compare').onclick = (e) => {
+                state.isComparing = !state.isComparing;
+                e.currentTarget.classList.toggle('bg-[var(--accent-primary)]', state.isComparing);
+                e.currentTarget.classList.toggle('text-white', state.isComparing);
+                compareLine.classList.toggle('hidden', !state.isComparing);
+                if(!state.isComparing) ditherLayer.style.clipPath = `polygon(0 0, 100% 0, 100% 100%, 0 100%)`;
+                else ditherLayer.style.clipPath = `polygon(0 0, ${state.comparePercent}% 0, ${state.comparePercent}% 100%, 0 100%)`;
+            };
+
+            previewSection.addEventListener('mousedown', e => {
+                if(e.target.closest('button')) return;
+                if(state.isComparing && !state.isPreviewPanning && state.originalImageObj) {
+                    const r = document.getElementById('canvas-container').getBoundingClientRect();
+                    state.comparePercent = Math.max(0, Math.min(100, ((e.clientX - r.left)/r.width)*100));
+                    compareLine.style.left = state.comparePercent+'%';
+                    ditherLayer.style.clipPath = `polygon(0 0, ${state.comparePercent}% 0, ${state.comparePercent}% 100%, 0 100%)`;
+                    previewSection.onmousemove = em => {
+                        state.comparePercent = Math.max(0, Math.min(100, ((em.clientX - r.left)/r.width)*100));
+                        compareLine.style.left = state.comparePercent+'%';
+                        ditherLayer.style.clipPath = `polygon(0 0, ${state.comparePercent}% 0, ${state.comparePercent}% 100%, 0 100%)`;
+                    };
+                    window.addEventListener('mouseup', () => previewSection.onmousemove=null, {once:true});
+                } else if(state.isPreviewPanning && state.originalImageObj) {
+                    pDragX = e.clientX - state.previewPanX; pDragY = e.clientY - state.previewPanY;
+                    previewSection.style.cursor = 'grabbing';
+                    previewSection.onmousemove = em => { state.previewPanX = em.clientX - pDragX; state.previewPanY = em.clientY - pDragY; appZ(); };
+                    window.addEventListener('mouseup', () => { previewSection.onmousemove=null; previewSection.style.cursor = 'grab'; }, {once:true});
+                }
+            });
+
+            let expScale = 1;
+            document.querySelectorAll('.scale-btn').forEach(btn => {
+                btn.onclick = e => {
+                    document.querySelectorAll('.scale-btn').forEach(b => { b.classList.remove('bg-[var(--accent-primary)]', 'active'); b.classList.add('bg-[var(--bg-input)]'); });
+                    e.target.classList.add('bg-[var(--accent-primary)]', 'active'); e.target.classList.remove('bg-[var(--bg-input)]');
+                    expScale = parseInt(e.target.dataset.scale);
+                };
+            });
+
+            function getExpCnv() {
+                const c = document.createElement('canvas'); c.width = canvasPreview.width*expScale; c.height = canvasPreview.height*expScale;
+                const cx = c.getContext('2d'); cx.imageSmoothingEnabled = false; cx.drawImage(canvasPreview, 0,0, c.width, c.height); return c;
+            }
+
+            document.getElementById('final-export-btn').onclick = () => {
+                if(!canvasPreview.width) return showToast('No hay resultado para exportar', 'error');
+                const a = document.createElement('a'); a.download = `dither-nodes-${expScale}x.png`;
+                a.href = getExpCnv().toDataURL(); a.click(); showToast('PNG exportado con éxito');
+            };
+
+            document.getElementById('copy-clipboard-btn').onclick = () => {
+                if(!canvasPreview.width) return showToast('No hay resultado para copiar', 'error');
+                getExpCnv().toBlob(b => {
+                    navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(()=>showToast('Copiado al portapapeles')).catch(()=>showToast('Error de copiado', 'error'));
+                });
+            };
+
+            document.getElementById('copy-css-btn').onclick = () => {
+                const hexes = Array.from(document.getElementById('isolation-squares-container').children).map(c => c.firstChild.style.backgroundColor);
+                if(!hexes.length) return showToast('No hay paleta final disponible', 'error');
+                let css = ':root {\n';
+                hexes.forEach((rgbStr, i) => {
+                    const m = rgbStr.match(/\d+/g); if(m) css += `  --dither-color-${i+1}: ${rgbToHex(m[0],m[1],m[2])};\n`;
+                });
+                css += '}';
+                navigator.clipboard.writeText(css).then(()=>showToast('Variables CSS copiadas')).catch(()=>showToast('Error CSS','error'));
+            };
+
+            document.getElementById('export-svg-btn').onclick = (e) => {
+                if(!canvasPreview.width) return showToast('Se requiere procesar una imagen','error');
+                if(e.currentTarget.disabled) return;
+                
+                const btn = e.currentTarget; const oh = btn.innerHTML; btn.innerHTML = 'Procesando SVG...';
+                
+                setTimeout(() => {
+                    const w = canvasPreview.width, h = canvasPreview.height;
+                    const id = pCtx.getImageData(0,0,w,h).data;
+                    const p = {}; let cH = null, sX = 0;
+
+                    for(let y=0;y<h;y++) {
+                        for(let x=0;x<w;x++) {
+                            let i=(y*w+x)*4;
+                            if(id[i+3]<128) {
+                                if(cH!==null) { if(!p[cH])p[cH]=[]; p[cH].push(`M${sX} ${y}h${x-sX}v1h-${x-sX}Z`); cH=null; }
+                                continue;
+                            }
+                            let hex = rgbToHex(id[i],id[i+1],id[i+2]);
+                            if(hex!==cH) {
+                                if(cH!==null) { if(!p[cH])p[cH]=[]; p[cH].push(`M${sX} ${y}h${x-sX}v1h-${x-sX}Z`); }
+                                cH=hex; sX=x;
+                            }
+                        }
+                        if(cH!==null) { if(!p[cH])p[cH]=[]; p[cH].push(`M${sX} ${y}h${w-sX}v1h-${w-sX}Z`); cH=null; }
+                    }
+                    
+                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" shape-rendering="crispEdges">`;
+                    for(let hx in p) svg += `<path fill="${hx}" d="${p[hx].join('')}"/>`;
+                    svg += `</svg>`;
+                    
+                    const bl = new Blob([svg], {type:'image/svg+xml'}); const u = URL.createObjectURL(bl);
+                    const a = document.createElement('a'); a.download = `dither-vector.svg`; a.href = u; a.click(); URL.revokeObjectURL(u);
+                    btn.innerHTML = oh; showToast('SVG exportado con éxito','success');
+                }, 50);
+            };
+
+            // Setup Inicial: Red Básica de Nodos
+            const idI = addNode('input', 50, 100);
+            const idA = addNode('adjust', 300, 100);
+            const idP = addNode('palette', 550, 100);
+            const idD = addNode('dither', 800, 100);
+            const idO = addNode('output', 1050, 100);
+            
+            state.links.push({id:'l1', from:idI, to:idA});
+            state.links.push({id:'l2', from:idA, to:idP});
+            state.links.push({id:'l3', from:idP, to:idD});
+            state.links.push({id:'l4', from:idD, to:idO});
+            
+            renderWorkspace();
+        });
+    </script>
+</body>
+</html>
