@@ -283,7 +283,7 @@
                     </button>
                 </div>
 
-                <!-- Toggle Modo Capas (Interruptor limpio aislado) -->
+<!-- Toggle Modo Capas (Centrado Absoluto con Flexbox y Selector de Hijo) -->
                 <div class="bento-card p-3 md:p-4 flex justify-between items-center bg-[var(--bg-input)]/50 border border-[var(--accent-primary)]/30 flex-shrink-0 mt-1">
                     <div class="flex flex-col">
                         <span class="text-xs md:text-sm font-bold text-white flex items-center gap-2">
@@ -292,10 +292,14 @@
                         </span>
                         <span class="text-[9px] md:text-[10px] text-[var(--text-muted)] mt-0.5">Activa parámetros independientes por capa</span>
                     </div>
-<label class="inline-flex items-center cursor-pointer">
-    <input type="checkbox" id="layers-mode-toggle" class="sr-only peer">
-    <div class="relative w-9 h-5 bg-[var(--bg-card-hover)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--accent-primary)]"></div>
-</label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="layers-mode-toggle" class="sr-only peer">
+                        <!-- El contenedor del track con Flexbox centrado y selector de transformación hacia su hijo -->
+                        <div class="w-9 h-5 bg-[var(--bg-card-hover)] rounded-full peer peer-checked:bg-[var(--accent-primary)] shadow-inner transition-colors duration-200 flex items-center px-[2px] peer-checked:[&>div]:translate-x-4">
+                            <!-- El círculo físico real -->
+                            <div class="w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform duration-200"></div>
+                        </div>
+                    </label>
                 </div>
 
                 <div id="controls" class="flex flex-col gap-3 md:gap-4 opacity-50 pointer-events-none transition-opacity duration-300">
@@ -2177,35 +2181,42 @@
             const layersModeToggle = document.getElementById('layers-mode-toggle');
             const layersBtnHeader = document.getElementById('toggle-layers-btn');
             const paletteNotice = document.getElementById('palette-disabled-notice');
+// --- Evento para abrir/cerrar el panel con el botón del header ---
+            layersBtnHeader.addEventListener('click', () => {
+                if (isLayersMode) window.toggleLayersPanel();
+            });
 
-            function updatePanelLocks() {
+// El mod para svg
+function updatePanelLocks() {
                 const isPostFxOn = postFxCheck.checked;
                 
+                // Bloqueo de Alpha Purge (Afectado por Capas y Post-FX)
                 if (isLayersMode || isPostFxOn) {
                     isolationContainer.classList.add('opacity-40', 'pointer-events-none');
                     isolationNotice.classList.remove('hidden');
-                    svgBtn.disabled = true;
-                    svgBtn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
                     
                     if (isLayersMode) {
                         isolationNotice.querySelector('p').innerHTML = '<span class="text-red-400 block mb-1">Alpha Purge Desactivado</span>El Modo Capas requiere imagen opaca completa.';
                     } else {
-                        isolationNotice.querySelector('p').innerHTML = '<span class="text-red-400 block mb-1">Aislamiento/SVG Desactivado</span>Apaga los efectos Post-FX para interactuar.';
+                        isolationNotice.querySelector('p').innerHTML = '<span class="text-red-400 block mb-1">Aislamiento Desactivado</span>Apaga los efectos Post-FX para interactuar.';
                     }
                 } else {
                     isolationContainer.classList.remove('opacity-40', 'pointer-events-none');
                     isolationNotice.classList.add('hidden');
-                    svgBtn.disabled = false;
-                    svgBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale');
                 }
 
+                // El botón SVG ahora permanece activo incondicionalmente
+                svgBtn.disabled = false;
+                svgBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale');
+
+                // Bloqueo de la Paleta Final
                 if (isLayersMode) {
                     paletteNotice.classList.remove('hidden');
                 } else {
                     paletteNotice.classList.add('hidden');
                 }
             }
-
+// El mod para svg
             layersModeToggle.addEventListener('change', (e) => {
                 isLayersMode = e.target.checked;
                 if (isLayersMode) {
@@ -3323,11 +3334,10 @@
                 return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
             }
 
-            document.getElementById('export-svg-btn').addEventListener('click', () => {
+document.getElementById('export-svg-btn').addEventListener('click', () => {
                 if(!originalImage.src) { showToast('Carga una imagen para exportar', 'error'); return; }
-                if(document.getElementById('enable-post-fx').checked || isLayersMode) { showToast('Desactiva Post-FX y Capas para usar Vector (SVG)', 'error'); return; }
 
-                showToast('Generando SVG, por favor espera...', 'info');
+                showToast('Generando SVG con Post-FX, esto tomará tiempo...', 'info');
 
                 setTimeout(() => {
                     const w = canvas.width;
