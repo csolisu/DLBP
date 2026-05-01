@@ -275,12 +275,11 @@
         .layer-item {
             background: var(--bg-card);
             border-radius: 0.5rem;
-            padding: 10px;
+            padding: 12px;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
             border: 1px solid transparent;
         }
         .layer-item:hover {
@@ -291,6 +290,9 @@
             background: var(--accent-primary);
             color: white;
             border-left: 3px solid white;
+        }
+        .layer-item.active .text-\\[var\\(--text-muted\\]\\] {
+            color: rgba(255, 255, 255, 0.8);
         }
         
     </style>
@@ -1228,7 +1230,7 @@
 <!-- Fin de Enlaces rápidos (Privacidad, Nosotros, Contacto) -->
 
     <!-- === PANEL DE CAPAS (LATERAL) === -->
-    <aside id="layers-panel" class="fixed right-0 top-24 z-50 w-[320px] bg-[var(--bg-main)] border-l border-[var(--border-color)] h-full transition-transform duration-300 transform translate-x-full shadow-2xl">
+    <aside id="layers-panel" class="fixed right-0 top-24 z-50 w-[340px] bg-[var(--bg-main)] border-l border-[var(--border-color)] h-full transition-transform duration-300 transform translate-x-full shadow-2xl">
         <!-- Header del panel -->
         <div id="layers-header" class="flex items-center justify-between p-4 border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--bg-card-hover)] transition-colors" onclick="toggleLayersPanel()">
             <h3 class="text-lg font-bold text-white">Capas de Trabajo</h3>
@@ -1334,7 +1336,7 @@
             let comparePercent = 50;
             let currentExportScale = 1; 
             
-            // ESTADO CAPAS
+            // ESTADO CAPAS (ACTUALIZADO PARA COMPOSICIÓN INDEPENDIENTE)
             let layers = [];
             let activeLayerId = null;
             let layerCounter = 0;
@@ -1345,6 +1347,83 @@
             // ESTADO: Modificadores HSL Post-Paleta Individuales
             let selectedPostColorHex = null;
             let postModifications = {};
+
+            // --- LISTADO DE IDs DE ESTADOS SIMPLES ---
+            const simpleStateIds = [
+                'scale', 'ch-r', 'ch-g', 'ch-b', 'brightness', 'contrast', 'gamma', 'saturation',
+                'bleed', 'sharpen', 'posterize', 'clipping', 'hlcomp',
+                'algorithm', 'errstr', 'bias', 'pattern-scale', 'algo-rot', 'algo-bias', 'scan-pattern',
+                'palette', 'invert-palette',
+                'glitch-underflow', 'glitch-sort', 'glitch-sort-v', 'glitch-hsync', 'glitch-chroma',
+                'glitch-drift', 'glitch-interlace', 'glitch-bitplane',
+                'enable-post-fx', 'post-grain', 'post-vignette', 'post-bloom', 'post-dispersion',
+                'post-grain-alpha', 'post-halftone-gain', 'post-mono-tint', 'post-clarity',
+                'curve-channel', 'post-hue', 'post-sat', 'post-light'
+            ];
+
+            // NUEVA FUNCIÓN: Extrae todos los ajustes del panel izquierdo
+            function getCurrentSettings() {
+                let settings = {
+                    customColors: [...customColorsArray],
+                    postMods: JSON.parse(JSON.stringify(postModifications)),
+                    curvePts: JSON.parse(JSON.stringify(curves)),
+                    isolated: new Set(isolatedColors)
+                };
+                
+                simpleStateIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        if (el.type === 'checkbox') settings[id] = el.checked;
+                        else settings[id] = el.value;
+                    }
+                });
+                
+                return settings;
+            }
+
+            // NUEVA FUNCIÓN: Inyecta los ajustes de vuelta al panel izquierdo
+            function applySettingsToUI(settings) {
+                if (!settings) return;
+                
+                simpleStateIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && settings[id] !== undefined) {
+                        if (el.type === 'checkbox') el.checked = settings[id];
+                        else el.value = settings[id];
+                        
+                        let text = el.value;
+                        if(id === 'scale' || id === 'errstr' || id === 'saturation') text += '%';
+                        if(id === 'pattern-scale') text += 'x';
+                        if(id === 'bleed') text += 'px';
+                        if(id === 'algo-rot') text += '°';
+                        
+                        const valEl = document.getElementById(`${id}-value`);
+                        if(valEl) valEl.textContent = text;
+                        if(id === 'errstr') {
+                            const errStrLbl = document.getElementById('errstr-lbl');
+                            if(errStrLbl) errStrLbl.textContent = text;
+                        }
+                    }
+                });
+
+                customColorsArray = [...(settings.customColors || palettesBase['bw'])];
+                postModifications = JSON.parse(JSON.stringify(settings.postMods || {}));
+                curves = JSON.parse(JSON.stringify(settings.curvePts || { master: [{x:0, y:0}, {x:255, y:255}], r: [{x:0, y:0}, {x:255, y:255}], g: [{x:0, y:0}, {x:255, y:255}], b: [{x:0, y:0}, {x:255, y:255}] }));
+                isolatedColors = new Set(settings.isolated || []);
+                activeCurveChannel = settings['curve-channel'] || 'master';
+
+                // Disparar eventos para actualizar subcomponentes visuales
+                const algoSelect = document.getElementById('algorithm');
+                if(algoSelect) algoSelect.dispatchEvent(new Event('change'));
+                
+                const postFxCheck = document.getElementById('enable-post-fx');
+                if(postFxCheck) postFxCheck.dispatchEvent(new Event('change'));
+                
+                renderCustomColors(); 
+                renderPostColorSelector();
+                updatePostSlidersFromState();
+                drawCurve();
+            }
 
             // --- PALETAS EXACTAS ---
             const palettesBase = {
@@ -2049,7 +2128,6 @@
                     placeholderText.classList.add('hidden');
                     
                     const container = document.getElementById('canvas-container');
-                    
                     container.style.display = 'inline-flex';
                     
                     canvas.classList.remove('hidden');
@@ -2065,7 +2143,7 @@
                     updateCursors();
                     controls.classList.remove('opacity-50', 'pointer-events-none');
                     
-                    // Iniciar el sistema de capas ahora que hay una imagen válida
+                    // Iniciar el sistema de capas de composición
                     if (window.initLayersSystem) {
                         window.initLayersSystem();
                     }
@@ -2139,17 +2217,7 @@
                 renderPostColorSelector();
             });
 
-            const simpleInputs = [
-                'algorithm', 'scale', 'bias', 'gamma', 'hlcomp', 'contrast', 'brightness', 
-                'pattern-scale', 'bleed', 'invert-palette', 'scan-pattern', 'errstr', 
-                'ch-r', 'ch-g', 'ch-b', 'sharpen', 'saturation', 'posterize', 'clipping',
-                'glitch-underflow', 'glitch-sort', 'glitch-sort-v', 'glitch-hsync', 'glitch-chroma', 'glitch-drift', 'glitch-interlace', 'glitch-bitplane',
-                'enable-post-fx', 'post-grain', 'post-vignette', 'post-bloom', 'post-dispersion',
-                'post-grain-alpha', 'post-halftone-gain', 'post-mono-tint', 'post-clarity',
-                'algo-rot', 'algo-bias'
-            ];
-            
-            simpleInputs.forEach(id => {
+            simpleStateIds.forEach(id => {
                 const el = document.getElementById(id);
                 if(!el) return;
                 const ev = (el.type === 'range' || el.type === 'number') ? 'input' : 'change';
@@ -2161,7 +2229,10 @@
                         if(id === 'bleed') text += 'px';
                         if(id === 'algo-rot') text += '°';
                         if(document.getElementById(`${id}-value`)) document.getElementById(`${id}-value`).textContent = text;
-                        if(id === 'errstr') document.getElementById('errstr-lbl').textContent = text;
+                        if(id === 'errstr') {
+                            const lbl = document.getElementById('errstr-lbl');
+                            if(lbl) lbl.textContent = text;
+                        }
                     }
                     scheduleProcess();
                 });
@@ -2258,7 +2329,10 @@
                 drawCurve();
 
                 resetVal('algorithm', 'atkinson');
-                resetVal('errstr', 100); document.getElementById('errstr-lbl').textContent = '100%';
+                resetVal('errstr', 100); 
+                const lbl = document.getElementById('errstr-lbl');
+                if(lbl) lbl.textContent = '100%';
+
                 resetVal('bias', 0); resetVal('pattern-scale', 1, 'x');
                 resetVal('scan-pattern', 'zigzag');
                 resetVal('invert-palette', false);
@@ -2684,6 +2758,12 @@
             function processMedia() {
                 if (!originalImage.src) return;
 
+                // ---> SE GUARDA EL ESTADO EN LA CAPA ACTIVA ANTES DE PROCESAR <---
+                const activeLayer = layers.find(l => l.id === activeLayerId);
+                if (activeLayer) {
+                    activeLayer.settings = getCurrentSettings();
+                }
+
                 const scale = parseFloat(document.getElementById('scale').value) / 100;
                 const w = Math.max(1, Math.floor(originalImage.width * scale));
                 const h = Math.max(1, Math.floor(originalImage.height * scale));
@@ -2732,19 +2812,26 @@
                     }
                 }
 
-                ctx.putImageData(imageData, 0, 0);
-
-                setTimeout(() => {
-                    updatePaletteSquares();
-                    updateIsolationSquares();
-                    updateEstimatedSize();
-                    
-                    // Asegurarse de que el sistema de capas procesa el thumbnail tras renderizar
-                    if(activeLayerId && window.updateLayerThumbnail) {
-                        window.updateLayerThumbnail(activeLayerId);
-                        window.renderLayersList();
+                // Escribir los datos procesados en el CACHÉ DE LA CAPA ACTIVA
+                if (activeLayer) {
+                    if (activeLayer.cachedCanvas.width !== w || activeLayer.cachedCanvas.height !== h) {
+                        activeLayer.cachedCanvas.width = w;
+                        activeLayer.cachedCanvas.height = h;
                     }
-                }, 50);
+                    const lCtx = activeLayer.cachedCanvas.getContext('2d');
+                    lCtx.putImageData(imageData, 0, 0);
+                    
+                    if(window.updateLayerThumbnail) {
+                        window.updateLayerThumbnail(activeLayerId);
+                    }
+                }
+
+                // Realizar la composición final multi-capa
+                if (window.compositeLayers) {
+                    window.compositeLayers();
+                } else {
+                    ctx.putImageData(imageData, 0, 0);
+                }
             }
 
             function getScanPath(w, h, pattern) {
@@ -3236,418 +3323,302 @@
                 container.appendChild(fragment);
             }
 
+            // --- EXPORTACIÓN ---
+            document.getElementById('final-export-btn').addEventListener('click', () => {
+                if(!originalImage.src) {
+                    showToast('Carga una imagen para exportar', 'error');
+                    return;
+                }
+                const expCanvas = generateExportCanvas();
+                const link = document.createElement('a');
+                link.download = 'dither_lab_pro_' + Date.now() + '.png';
+                link.href = expCanvas.toDataURL('image/png');
+                link.click();
+                showToast('Imagen guardada exitosamente', 'success');
+            });
+
+            document.getElementById('copy-clipboard-btn').addEventListener('click', async () => {
+                if(!originalImage.src) {
+                    showToast('Carga una imagen para copiar', 'error');
+                    return;
+                }
+                try {
+                    const expCanvas = generateExportCanvas();
+                    expCanvas.toBlob(async (blob) => {
+                        try {
+                            const item = new ClipboardItem({ 'image/png': blob });
+                            await navigator.clipboard.write([item]);
+                            showToast('Copiado al portapapeles', 'success');
+                        } catch (err) {
+                            console.error(err);
+                            showToast('Tu navegador carece de soporte para copiado directo', 'error');
+                        }
+                    }, 'image/png');
+                } catch (e) {
+                    showToast('Error al copiar al portapapeles', 'error');
+                }
+            });
+
+            // SVG EXPORT (Avanzado)
+            function rgbaToHex(r, g, b, a) {
+                if(a === 0) return 'transparent';
+                return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
+            }
+
+            document.getElementById('export-svg-btn').addEventListener('click', () => {
+                if(!originalImage.src) { showToast('Carga una imagen para exportar', 'error'); return; }
+                if(document.getElementById('enable-post-fx').checked) { showToast('Desactiva Post-FX para usar Vector (SVG)', 'error'); return; }
+
+                showToast('Generando SVG, por favor espera...', 'info');
+
+                setTimeout(() => {
+                    const w = canvas.width;
+                    const h = canvas.height;
+                    const imgData = ctx.getImageData(0, 0, w, h).data;
+
+                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" width="100%" height="100%" viewBox="0 0 ${w} ${h}">\n`;
+                    let currentHex = '';
+                    let runStart = 0;
+                    const paths = {};
+
+                    for (let y = 0; y < h; y++) {
+                        currentHex = '';
+                        runStart = 0;
+                        for (let x = 0; x < w; x++) {
+                            let idx = (y * w + x) * 4;
+                            let r = imgData[idx], g = imgData[idx+1], b = imgData[idx+2], a = imgData[idx+3];
+                            let hex = rgbaToHex(r, g, b, a);
+
+                            if (hex !== currentHex) {
+                                if (currentHex !== '' && currentHex !== 'transparent') {
+                                    if(!paths[currentHex]) paths[currentHex] = [];
+                                    paths[currentHex].push(`M${runStart} ${y}h${x - runStart}v1H${runStart}z`);
+                                }
+                                currentHex = hex;
+                                runStart = x;
+                            }
+                        }
+                        if (currentHex !== '' && currentHex !== 'transparent') {
+                            if(!paths[currentHex]) paths[currentHex] = [];
+                            paths[currentHex].push(`M${runStart} ${y}h${w - runStart}v1H${runStart}z`);
+                        }
+                    }
+
+                    for (const color in paths) {
+                        svg += `<path fill="${color}" d="${paths[color].join('')}"/>\n`;
+                    }
+                    svg += `</svg>`;
+
+                    const blob = new Blob([svg], { type: 'image/svg+xml' });
+                    const link = document.createElement('a');
+                    link.download = 'dither_lab_pro_' + Date.now() + '.svg';
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    
+                    showToast('SVG generado y descargado', 'success');
+                }, 50); 
+            });
+
             document.getElementById('restore-isolation-btn').addEventListener('click', () => {
                 isolatedColors.clear();
+                updateIsolationSquares();
                 scheduleProcess();
-                showToast('Aislamiento de tinta limpiado');
+                showToast('Aislamiento de colores restaurado', 'success');
             });
 
-            // TERMINAL PRESETS (Lógica Import/Export)
-            const getPresetData = () => {
-                return {
-                    scale: document.getElementById('scale').value,
-                    chR: document.getElementById('ch-r').checked,
-                    chG: document.getElementById('ch-g').checked,
-                    chB: document.getElementById('ch-b').checked,
-                    brightness: document.getElementById('brightness').value,
-                    contrast: document.getElementById('contrast').value,
-                    gamma: document.getElementById('gamma').value,
-                    bleed: document.getElementById('bleed').value,
-                    sharpen: document.getElementById('sharpen').value,
-                    saturation: document.getElementById('saturation').value,
-                    posterize: document.getElementById('posterize').value,
-                    clipping: document.getElementById('clipping').value,
-                    algorithm: document.getElementById('algorithm').value,
-                    errstr: document.getElementById('errstr').value,
-                    bias: document.getElementById('bias').value,
-                    patternScale: document.getElementById('pattern-scale').value,
-                    scanPattern: document.getElementById('scan-pattern').value,
-                    invertPalette: document.getElementById('invert-palette').checked,
-                    palette: document.getElementById('palette').value,
-                    
-                    // Glitch
-                    glitchUnderflow: document.getElementById('glitch-underflow').value,
-                    glitchSort: document.getElementById('glitch-sort').value,
-                    glitchSortV: document.getElementById('glitch-sort-v').value,
-                    glitchHsync: document.getElementById('glitch-hsync').value,
-                    glitchChroma: document.getElementById('glitch-chroma').value,
-                    glitchDrift: document.getElementById('glitch-drift').value,
-                    glitchInterlace: document.getElementById('glitch-interlace').value,
-                    glitchBitplane: document.getElementById('glitch-bitplane').value,
-
-                    // Post
-                    enablePostFx: document.getElementById('enable-post-fx').checked,
-                    postGrain: document.getElementById('post-grain').value,
-                    postVignette: document.getElementById('post-vignette').value,
-                    postBloom: document.getElementById('post-bloom').value,
-                    postDispersion: document.getElementById('post-dispersion').value,
-                    
-                    postGrainAlpha: document.getElementById('post-grain-alpha').checked,
-                    postHalftoneGain: document.getElementById('post-halftone-gain').checked,
-                    postMonoTint: document.getElementById('post-mono-tint').checked,
-                    postClarity: document.getElementById('post-clarity').checked,
-
-                    // Kernels
-                    algoRot: document.getElementById('algo-rot').value,
-                    algoBias: document.getElementById('algo-bias').value,
-
-                    selectedPostColorHex: selectedPostColorHex,
-                    
-                    // CLONACIÓN PROFUNDA (Evita problemas de referencia al cambiar de capa)
-                    postModifications: JSON.parse(JSON.stringify(postModifications)),
-                    curves: JSON.parse(JSON.stringify(curves)),
-                    activeCurveChannel: activeCurveChannel,
-                    customColorsArray: [...customColorsArray],
-                    isolatedColors: Array.from(isolatedColors)
-                };
-            };
-
-            const applyPresetData = (data) => {
-                if (!data) return;
-                
-                const setVal = (id, val) => { const el = document.getElementById(id); if(el && val !== undefined) el.value = val; };
-                const setChk = (id, val) => { const el = document.getElementById(id); if(el && val !== undefined) el.checked = val; };
-                const setLbl = (id, val, suffix='') => { const el = document.getElementById(id+'-value'); if(el && val !== undefined) el.textContent = val+suffix; };
-                
-                setVal('scale', data.scale); setLbl('scale', data.scale, '%');
-                setChk('ch-r', data.chR); setChk('ch-g', data.chG); setChk('ch-b', data.chB);
-                setVal('brightness', data.brightness); setLbl('brightness', data.brightness);
-                setVal('contrast', data.contrast); setLbl('contrast', data.contrast);
-                setVal('gamma', data.gamma); setLbl('gamma', Number(data.gamma).toFixed(2));
-                setVal('bleed', data.bleed); setLbl('bleed', data.bleed, 'px');
-                setVal('sharpen', data.sharpen); setLbl('sharpen', data.sharpen);
-                setVal('saturation', data.saturation); setLbl('saturation', data.saturation, '%');
-                setVal('posterize', data.posterize); setLbl('posterize', data.posterize);
-                setVal('clipping', data.clipping); setLbl('clipping', data.clipping);
-                
-                setVal('algorithm', data.algorithm);
-                setVal('errstr', data.errstr); 
-                const errLbl = document.getElementById('errstr-lbl');
-                if(errLbl && data.errstr !== undefined) errLbl.textContent = data.errstr + '%';
-                
-                setVal('bias', data.bias); setLbl('bias', data.bias);
-                setVal('pattern-scale', data.patternScale); setLbl('pattern-scale', data.patternScale, 'x');
-                setVal('scan-pattern', data.scanPattern);
-                setChk('invert-palette', data.invertPalette);
-                setVal('palette', data.palette);
-
-                 // Nuevos Glitch
-                setVal('glitch-underflow', data.glitchUnderflow); setLbl('glitch-underflow', data.glitchUnderflow);
-                setVal('glitch-sort', data.glitchSort); setLbl('glitch-sort', data.glitchSort);
-                setVal('glitch-sort-v', data.glitchSortV); setLbl('glitch-sort-v', data.glitchSortV);
-                setVal('glitch-hsync', data.glitchHsync); setLbl('glitch-hsync', data.glitchHsync);
-                setVal('glitch-chroma', data.glitchChroma); setLbl('glitch-chroma', data.glitchChroma);
-                setVal('glitch-drift', data.glitchDrift); setLbl('glitch-drift', data.glitchDrift);
-                setVal('glitch-interlace', data.glitchInterlace); setLbl('glitch-interlace', data.glitchInterlace);
-                setVal('glitch-bitplane', data.glitchBitplane);
-
-                // Nuevos Post
-                setChk('enable-post-fx', data.enablePostFx);
-                postFxCheck.dispatchEvent(new Event('change'));
-
-                setVal('post-grain', data.postGrain); setLbl('post-grain', data.postGrain);
-                setVal('post-vignette', data.postVignette); setLbl('post-vignette', data.postVignette);
-                setVal('post-bloom', data.postBloom); setLbl('post-bloom', data.postBloom);
-                setVal('post-dispersion', data.postDispersion); setLbl('post-dispersion', data.postDispersion);
-                
-                setChk('post-grain-alpha', data.postGrainAlpha);
-                setChk('post-halftone-gain', data.postHalftoneGain);
-                setChk('post-mono-tint', data.postMonoTint);
-                setChk('post-clarity', data.postClarity);
-
-                // Kernels
-                setVal('algo-rot', data.algoRot); setLbl('algo-rot', data.algoRot, '°');
-                setVal('algo-bias', data.algoBias); setLbl('algo-bias', data.algoBias);
-
-                if(data.postModifications) postModifications = JSON.parse(JSON.stringify(data.postModifications));
-                if(data.selectedPostColorHex) selectedPostColorHex = data.selectedPostColorHex;
-
-                if(data.curves) curves = JSON.parse(JSON.stringify(data.curves));
-                if(data.activeCurveChannel) {
-                    activeCurveChannel = data.activeCurveChannel;
-                    const ccEl = document.getElementById('curve-channel');
-                    if(ccEl) ccEl.value = activeCurveChannel;
-                }
-                if(data.customColorsArray) customColorsArray = [...data.customColorsArray];
-                if(data.isolatedColors) isolatedColors = new Set(data.isolatedColors);
-
-                drawCurve();
-                if(data.palette === 'custom') renderCustomColors(); else renderPostColorSelector();
-                scheduleProcess();
-            };
-
+            // PRESETS JSON (Cargar y Exportar)
             document.getElementById('export-preset-btn').addEventListener('click', () => {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getPresetData(), null, 2));
-                const downloadAnchorNode = document.createElement('a');
-                downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", "dither_pro_preset_" + Date.now() + ".json");
-                document.body.appendChild(downloadAnchorNode); 
-                downloadAnchorNode.click();
-                downloadAnchorNode.remove();
-                showToast('Preset descargado exitosamente');
+                const settings = getCurrentSettings();
+                const json = JSON.stringify(settings, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const link = document.createElement('a');
+                link.download = 'dither_preset_' + Date.now() + '.json';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                URL.revokeObjectURL(link.href);
+                showToast('Preset exportado', 'success');
             });
 
-            const handlePresetImport = (e) => {
+            function loadPresetJson(e) {
                 const file = e.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     try {
-                        const preset = JSON.parse(event.target.result);
-                        applyPresetData(preset);
-                        showToast('Preset cargado exitosamente', 'success');
-                    } catch(err) {
-                        showToast('Error Crítico: El JSON del Preset es inválido o está corrupto.', 'error');
+                        const settings = JSON.parse(event.target.result);
+                        applySettingsToUI(settings);
+                        showToast('Preset cargado correctamente', 'success');
+                    } catch (err) {
+                        showToast('Error al leer el preset', 'error');
                     }
                 };
                 reader.readAsText(file);
                 e.target.value = ''; 
-            };
+            }
 
-            document.getElementById('import-preset-input').addEventListener('change', handlePresetImport);
-            document.getElementById('import-preset-btn').addEventListener('click', () => document.getElementById('import-preset-input').click());
-            
-            document.getElementById('quick-preset-input').addEventListener('change', handlePresetImport);
-            document.getElementById('quick-load-preset').addEventListener('click', () => document.getElementById('quick-preset-input').click());
-
-
-            document.getElementById('final-export-btn').addEventListener('click', () => {
-                if (!originalImage.src) {
-                    showToast('Carga una imagen para poder exportar', 'error');
-                    return;
-                }
-                const expCanvas = generateExportCanvas();
-                const link = document.createElement('a');
-                link.download = `dither-hq-${currentExportScale}x-${Date.now()}.png`;
-                link.href = expCanvas.toDataURL('image/png');
-                link.click();
-                showToast('Imagen PNG exportada correctamente');
+            document.getElementById('import-preset-btn').addEventListener('click', () => {
+                document.getElementById('import-preset-input').click();
             });
+            document.getElementById('import-preset-input').addEventListener('change', loadPresetJson);
 
-            document.getElementById('copy-clipboard-btn').addEventListener('click', async (e) => {
-                if (!originalImage.src) {
-                    showToast('Carga una imagen para poder copiar', 'error');
-                    return;
-                }
-                const expCanvas = generateExportCanvas();
-                expCanvas.toBlob(async (blob) => {
-                    try {
-                        await navigator.clipboard.write([
-                            new ClipboardItem({ 'image/png': blob })
-                        ]);
-                        showToast('Imagen copiada al portapapeles', 'success');
-                    } catch (err) {
-                        showToast('Copiado fallido. Usa exportar PNG.', 'error');
-                    }
-                }, 'image/png');
+            document.getElementById('quick-load-preset').addEventListener('click', () => {
+                document.getElementById('quick-preset-input').click();
             });
-            
-            // --- EXPORTACIÓN A SVG (Optimizada con RLE y Paths) ---
-            document.getElementById('export-svg-btn').addEventListener('click', (e) => {
-                if (!originalImage.src || postFxCheck.checked) return;
-                
-                const btn = e.target;
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = `<svg class="animate-spin w-4 h-4 md:w-5 md:h-5 mr-1" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> Procesando...`;
-                
-                setTimeout(() => {
-                    const w = canvas.width;
-                    const h = canvas.height;
-                    const imgData = ctx.getImageData(0, 0, w, h).data;
-                    const paths = {};
-                    
-                    let currentHex = null;
-                    let startX = 0;
-                    
-                    for (let y = 0; y < h; y++) {
-                        for (let x = 0; x < w; x++) {
-                            let idx = (y * w + x) * 4;
-                            let a = imgData[idx + 3];
-                            
-                            if (a < 128) {
-                                if (currentHex !== null) {
-                                    if (!paths[currentHex]) paths[currentHex] = [];
-                                    paths[currentHex].push(`M${startX} ${y}h${x - startX}v1h-${x - startX}Z`);
-                                    currentHex = null;
-                                }
-                                continue;
-                            }
-                            
-                            let hex = '#' + ((1 << 24) + (imgData[idx] << 16) + (imgData[idx + 1] << 8) + imgData[idx + 2]).toString(16).slice(1);
-                            
-                            if (hex !== currentHex) {
-                                if (currentHex !== null) {
-                                    if (!paths[currentHex]) paths[currentHex] = [];
-                                    paths[currentHex].push(`M${startX} ${y}h${x - startX}v1h-${x - startX}Z`);
-                                }
-                                currentHex = hex;
-                                startX = x;
-                            }
-                        }
-                        if (currentHex !== null) {
-                            if (!paths[currentHex]) paths[currentHex] = [];
-                            paths[currentHex].push(`M${startX} ${y}h${w - startX}v1h-${w - startX}Z`);
-                            currentHex = null;
-                        }
-                    }
-                    
-                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" shape-rendering="crispEdges">`;
-                    for (let hex in paths) {
-                        svg += `<path fill="${hex}" d="${paths[hex].join('')}"/>`;
-                    }
-                    svg += `</svg>`;
-                    
-                    const blob = new Blob([svg], { type: 'image/svg+xml' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `dither-vector-${Date.now()}.svg`;
-                    link.href = url;
-                    link.click();
-                    URL.revokeObjectURL(url);
-                    
-                    btn.innerHTML = originalHtml;
-                    showToast('Vector SVG exportado correctamente', 'success');
-                }, 50); 
-            });
+            document.getElementById('quick-preset-input').addEventListener('change', loadPresetJson);
 
-            // ==========================================
-            // === SISTEMA DE CAPAS DE AJUSTE (NUEVO) ===
-            // ==========================================
-
-            window.toggleLayersPanel = function() {
-                const panel = document.getElementById('layers-panel');
-                panel.classList.toggle('open');
-                panel.classList.toggle('translate-x-full');
-            };
+            // --- SISTEMA DE CAPAS AVANZADAS ---
+            const blendModes = [
+                { id: 'source-over', name: 'Normal' },
+                { id: 'multiply', name: 'Multiplicar' },
+                { id: 'screen', name: 'Trama' },
+                { id: 'overlay', name: 'Superponer' },
+                { id: 'darken', name: 'Oscurecer' },
+                { id: 'lighten', name: 'Aclarar' },
+                { id: 'color-dodge', name: 'Sobreexponer color' },
+                { id: 'color-burn', name: 'Subexponer color' },
+                { id: 'hard-light', name: 'Luz fuerte' },
+                { id: 'soft-light', name: 'Luz suave' },
+                { id: 'difference', name: 'Diferencia' },
+                { id: 'exclusion', name: 'Exclusión' },
+                { id: 'hue', name: 'Tono' },
+                { id: 'saturation', name: 'Saturación' },
+                { id: 'color', name: 'Color' },
+                { id: 'luminosity', name: 'Luminosidad' }
+            ];
 
             window.initLayersSystem = function() {
                 if (layers.length === 0) {
-                    layerCounter = 1;
-                    activeLayerId = `layer-${layerCounter}`;
-                    layers.push({
-                        id: activeLayerId,
-                        name: `Ajuste ${layerCounter}`,
-                        state: getPresetData(),
-                        thumbnail: ''
-                    });
-                    renderLayersList();
+                    window.createNewLayer('Capa Base');
                 }
             };
 
-            window.createNewLayer = function() {
+            window.createNewLayer = function(name = null) {
                 if (!originalImage.src) {
-                    showToast('Sube una imagen primero para usar capas.', 'error');
+                    showToast('Carga una imagen para crear capas', 'error');
                     return;
                 }
                 
-                const activeLayer = layers.find(l => l.id === activeLayerId);
-                if (activeLayer) {
-                    activeLayer.state = getPresetData();
-                }
-
                 layerCounter++;
-                const newLayerId = `layer-${layerCounter}`;
-                layers.push({
-                    id: newLayerId,
-                    name: `Ajuste ${layerCounter}`,
-                    state: getPresetData(),
-                    thumbnail: ''
-                });
-
-                activeLayerId = newLayerId;
-                renderLayersList();
-                showToast(`Capa "${layers[layers.length-1].name}" creada`);
+                const newId = 'layer_' + Date.now() + '_' + layerCounter;
                 
-                updateLayerThumbnail(activeLayerId);
-            };
-
-            window.switchLayer = function(targetId) {
-                if (targetId === activeLayerId) return;
-
-                const currentLayer = layers.find(l => l.id === activeLayerId);
-                if (currentLayer) {
-                    currentLayer.state = getPresetData();
-                }
-
-                activeLayerId = targetId;
-
-                const targetLayer = layers.find(l => l.id === targetId);
-                if (targetLayer && targetLayer.state) {
-                    applyPresetData(targetLayer.state);
-                }
-
+                const lCanvas = document.createElement('canvas');
+                lCanvas.width = canvas.width || 1;
+                lCanvas.height = canvas.height || 1;
+                
+                layers.unshift({
+                    id: newId,
+                    name: typeof name === 'string' ? name : `Capa Ajuste ${layerCounter}`,
+                    opacity: 100,
+                    blendMode: 'source-over',
+                    cachedCanvas: lCanvas,
+                    visible: true
+                });
+                
+                activeLayerId = newId;
                 renderLayersList();
+                scheduleProcess();
             };
 
-            window.deleteLayer = function(idToDelete) {
+            window.deleteLayer = function(id) {
                 if (layers.length <= 1) {
-                    showToast('No puedes eliminar la única capa restante.', 'error');
+                    showToast('Debe haber al menos una capa', 'error');
                     return;
                 }
-
-                const index = layers.findIndex(l => l.id === idToDelete);
-                if (index === -1) return;
-
-                layers.splice(index, 1);
-
-                if (activeLayerId === idToDelete) {
-                    activeLayerId = layers[layers.length - 1].id;
-                    applyPresetData(layers[layers.length - 1].state);
+                layers = layers.filter(l => l.id !== id);
+                if (activeLayerId === id) {
+                    activeLayerId = layers[0].id;
                 }
-
                 renderLayersList();
-                showToast('Capa eliminada');
+                window.compositeLayers();
             };
 
-            window.updateLayerThumbnail = function(layerId) {
-                if (!canvas || !originalImage.src) return;
-                
-                const thumbCanvas = document.createElement('canvas');
-                const MAX_THUMB_SIZE = 64;
-                const scale = Math.min(MAX_THUMB_SIZE / canvas.width, MAX_THUMB_SIZE / canvas.height, 1);
-                
-                thumbCanvas.width = canvas.width * scale;
-                thumbCanvas.height = canvas.height * scale;
-                const tCtx = thumbCanvas.getContext('2d');
-                tCtx.imageSmoothingEnabled = false;
-                tCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
-
-                const dataURL = thumbCanvas.toDataURL('image/jpeg', 0.5);
-                
-                const layer = layers.find(l => l.id === layerId);
+            window.toggleLayerVisibility = function(id) {
+                const layer = layers.find(l => l.id === id);
                 if (layer) {
-                    layer.thumbnail = dataURL;
-                    const imgEl = document.getElementById(`thumb-${layerId}`);
-                    if (imgEl) imgEl.src = dataURL;
+                    layer.visible = !layer.visible;
+                    renderLayersList();
+                    window.compositeLayers();
                 }
             };
 
-            window.renderLayersList = function() {
-                const listContainer = document.getElementById('layers-list');
+            function selectLayer(id) {
+                activeLayerId = id;
+                renderLayersList();
+                
+                // Aplicar configuraciones guardadas de la capa seleccionada a la interfaz
+                const layer = layers.find(l => l.id === id);
+                if (layer && layer.settings) {
+                    applySettingsToUI(layer.settings);
+                }
+                
+                scheduleProcess();
+            }
+
+            window.updateLayerThumbnail = function(id) {
+                const layer = layers.find(l => l.id === id);
+                const thumb = document.getElementById(`thumb_${id}`);
+                if (layer && thumb) {
+                    thumb.src = layer.cachedCanvas.toDataURL('image/jpeg', 0.5);
+                }
+            };
+
+            function renderLayersList() {
+                const list = document.getElementById('layers-list');
+                let emptyMsg = document.getElementById('empty-layers-msg');
+                
+                if (!emptyMsg) {
+                    emptyMsg = document.createElement('p');
+                    emptyMsg.id = 'empty-layers-msg';
+                    emptyMsg.className = 'text-[var(--text-muted)] text-sm text-center italic';
+                    emptyMsg.textContent = 'Carga una imagen para habilitar las capas de estado.';
+                }
                 
                 if (layers.length === 0) {
-                    listContainer.innerHTML = '<p class="text-[var(--text-muted)] text-sm text-center italic" id="empty-layers-msg">Carga una imagen para habilitar las capas de estado.</p>';
+                    emptyMsg.style.display = 'block';
+                    list.innerHTML = '';
+                    list.appendChild(emptyMsg);
                     return;
                 }
-
-                listContainer.innerHTML = '';
                 
-                [...layers].reverse().forEach(layer => {
-                    const item = document.createElement('div');
+                list.innerHTML = '';
+                emptyMsg.style.display = 'none';
+                list.appendChild(emptyMsg);
+                
+                layers.forEach((layer) => {
                     const isActive = layer.id === activeLayerId;
                     
-                    item.className = `layer-item ${isActive ? 'active' : ''} mb-2 flex items-center justify-between p-2 rounded-lg`;
+                    const item = document.createElement('div');
+                    item.className = `layer-item ${isActive ? 'active' : ''} mb-3 relative overflow-hidden`;
+                    item.onclick = () => { if (!isActive) selectLayer(layer.id); };
                     
-                    const thumb = document.createElement('img');
-                    thumb.id = `thumb-${layer.id}`;
-                    thumb.src = layer.thumbnail || 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-                    thumb.className = 'w-10 h-10 object-cover rounded bg-black/50 flex-shrink-0 border border-white/10';
+                    // --- HEADER DE CAPA (Visibilidad, Thumbnail, Nombre, Borrar) ---
+                    const header = document.createElement('div');
+                    header.className = 'flex items-center gap-3 w-full';
                     
+                    const visBtn = document.createElement('button');
+                    visBtn.className = `w-6 h-6 flex items-center justify-center transition-colors ${isActive ? 'text-white hover:text-white/70' : 'text-[var(--text-muted)] hover:text-white'}`;
+                    
+                    visBtn.innerHTML = layer.visible 
+                        ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.772a1.2 1.2 0 01-2.4 0c-1.274-4.057-5.064-7-9.542-7z"></path></svg>`
+                        : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>`;
+                    
+                    visBtn.onclick = (e) => { e.stopPropagation(); toggleLayerVisibility(layer.id); };
+                    
+                    const thumbCont = document.createElement('div');
+                    thumbCont.className = 'w-10 h-10 rounded border border-[var(--border-color)] bg-black overflow-hidden flex-shrink-0';
+                    const thumbImg = document.createElement('img');
+                    thumbImg.id = `thumb_${layer.id}`;
+                    thumbImg.className = 'w-full h-full object-cover';
+                    if (layer.cachedCanvas && layer.cachedCanvas.width > 1) {
+                        thumbImg.src = layer.cachedCanvas.toDataURL('image/jpeg', 0.5);
+                    }
+                    thumbCont.appendChild(thumbImg);
+
                     const infoCont = document.createElement('div');
-                    infoCont.className = 'flex-grow ml-3 overflow-hidden cursor-pointer';
-                    infoCont.onclick = () => switchLayer(layer.id);
+                    infoCont.className = 'flex-grow min-w-0 flex flex-col justify-center';
                     
-                    const name = document.createElement('div');
+                    const name = document.createElement('span');
                     name.className = `text-sm font-semibold truncate ${isActive ? 'text-white' : 'text-[var(--text-muted)]'}`;
                     name.textContent = layer.name;
                     
@@ -3661,19 +3632,121 @@
                         deleteLayer(layer.id);
                     };
 
-                    item.appendChild(thumb);
-                    item.appendChild(infoCont);
-                    item.appendChild(delBtn);
+                    header.appendChild(visBtn);
+                    header.appendChild(thumbCont);
+                    header.appendChild(infoCont);
+                    header.appendChild(delBtn);
+                    
+                    item.appendChild(header);
 
-                    listContainer.appendChild(item);
+                    // --- CONTROLES DE CAPA (Modo de fusión y Opacidad) ---
+                    if (isActive) {
+                        const controlsDiv = document.createElement('div');
+                        controlsDiv.className = 'mt-3 pt-3 border-t border-[var(--border-color)] flex flex-col gap-2';
+                        
+                        // Select Modo de Fusión
+                        const blendDiv = document.createElement('div');
+                        blendDiv.className = 'flex items-center justify-between gap-2';
+                        const blendLabel = document.createElement('span');
+                        blendLabel.className = 'text-[10px] text-white/80 font-medium uppercase';
+                        blendLabel.textContent = 'Fusión:';
+                        
+                        const blendSelect = document.createElement('select');
+                        blendSelect.className = 'flex-grow bg-black/30 border border-white/20 text-white text-xs rounded-md p-1 outline-none cursor-pointer focus:border-white';
+                        blendModes.forEach(mode => {
+                            const opt = document.createElement('option');
+                            opt.value = mode.id;
+                            opt.textContent = mode.name;
+                            if (layer.blendMode === mode.id) opt.selected = true;
+                            blendSelect.appendChild(opt);
+                        });
+                        blendSelect.onchange = (e) => {
+                            layer.blendMode = e.target.value;
+                            window.compositeLayers();
+                        };
+                        blendSelect.onclick = (e) => e.stopPropagation();
+                        
+                        blendDiv.appendChild(blendLabel);
+                        blendDiv.appendChild(blendSelect);
+                        
+                        // Opacidad Slider
+                        const opacDiv = document.createElement('div');
+                        opacDiv.className = 'flex items-center gap-2 mt-1';
+                        const opacLabel = document.createElement('span');
+                        opacLabel.className = 'text-[10px] text-white/80 font-medium uppercase w-[45px]';
+                        opacLabel.textContent = 'Opac:';
+                        
+                        const opacInput = document.createElement('input');
+                        opacInput.type = 'range';
+                        opacInput.min = '0';
+                        opacInput.max = '100';
+                        opacInput.value = layer.opacity;
+                        opacInput.className = 'flex-grow h-1 bg-black/30 rounded-lg appearance-none cursor-pointer';
+                        
+                        const opacVal = document.createElement('span');
+                        opacVal.className = 'text-[10px] text-white font-bold w-7 text-right';
+                        opacVal.textContent = layer.opacity + '%';
+                        
+                        opacInput.oninput = (e) => {
+                            layer.opacity = e.target.value;
+                            opacVal.textContent = e.target.value + '%';
+                            window.compositeLayers();
+                        };
+                        opacInput.onclick = (e) => e.stopPropagation();
+                        
+                        opacDiv.appendChild(opacLabel);
+                        opacDiv.appendChild(opacInput);
+                        opacDiv.appendChild(opacVal);
+                        
+                        controlsDiv.appendChild(blendDiv);
+                        controlsDiv.appendChild(opacDiv);
+                        
+                        item.appendChild(controlsDiv);
+                    }
+
+                    list.appendChild(item);
                 });
+            }
+
+            // Compositor de capas en el canvas principal
+            window.compositeLayers = function() {
+                if (!originalImage.src || layers.length === 0) return;
+                
+                const w = canvasOrig.width;
+                const h = canvasOrig.height;
+                
+                // Limpiamos el canvas destino (main canvas que se visualiza)
+                ctx.clearRect(0, 0, w, h);
+                
+                // Dibujamos desde la capa más antigua (índice mayor) hasta la superior (índice 0)
+                // Invertimos el array para la renderización
+                const renderStack = [...layers].reverse();
+                
+                renderStack.forEach(layer => {
+                    if (!layer.visible) return;
+                    
+                    ctx.globalAlpha = layer.opacity / 100;
+                    ctx.globalCompositeOperation = layer.blendMode;
+                    
+                    // Si la capa tiene datos generados y cacheados, los dibujamos
+                    if (layer.cachedCanvas && layer.cachedCanvas.width > 1) {
+                        ctx.drawImage(layer.cachedCanvas, 0, 0, w, h);
+                    }
+                });
+                
+                // Restauramos modos globales
+                ctx.globalAlpha = 1.0;
+                ctx.globalCompositeOperation = 'source-over';
             };
 
-            // Iniciar UI vacía
-            updatePaletteSquares();
-            updateIsolationSquares();
+            // Toggle Panel de capas (abrir/cerrar sidebar)
+            window.toggleLayersPanel = function() {
+                const panel = document.getElementById('layers-panel');
+                panel.classList.toggle('translate-x-full');
+                panel.classList.toggle('open');
+            };
+
         });
     </script>
-    <script src="traducciones.js"></script>
 </body>
 </html>
