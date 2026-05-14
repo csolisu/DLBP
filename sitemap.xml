@@ -12,37 +12,37 @@
     </url>
 
     <url>
-        <loc>https://ditherlabpro.com/editor.html</loc>
+        <loc>https://ditherlabpro.com/editor</loc>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
-        <loc>https://ditherlabpro.com/nodos.html</loc>
+        <loc>https://ditherlabpro.com/nodos</loc>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
-        <loc>https://ditherlabpro.com/animation.html</loc>
+        <loc>https://ditherlabpro.com/animation</loc>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
-        <loc>https://ditherlabpro.com/nosotros.html</loc>
+        <loc>https://ditherlabpro.com/nosotros</loc>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
 
     <url>
-        <loc>https://ditherlabpro.com/contacto.html</loc>
+        <loc>https://ditherlabpro.com/contacto</loc>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
 
     <url>
-        <loc>https://ditherlabpro.com/privacidad.html</loc>
+        <loc>https://ditherlabpro.com/privacidad</loc>
         <changefreq>yearly</changefreq>
         <priority>0.3</priority>
     </url>

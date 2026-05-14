@@ -5,7 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <title>Dither Lab Pro Nodos | Dithering Avanzado</title>
-    <meta name="description" content="Dither Lab Pro Nudos: Composición visual y dithering mediante nodos independientes con modos de fusión.">
+    <meta name="description" content="Dither Lab Pro Nodos: Composición visual y dithering mediante nodos independientes con modos de fusión. Editor visual de nodos para conectar procesos de dithering en tiempo real.">
+    <meta name="keywords" content="dithering, editor nodos, composición visual, dithering por nodos, edición no destructiva, flujo de trabajo modular, SVG cables, dithering avanzado">
+    <meta name="author" content="Dither Lab Pro">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ditherlabpro.com/nodos">
+    <meta property="og:title" content="Dither Lab Pro Nodos | Editor Visual de Dithering">
+    <meta property="og:description" content="Composición visual y dithering mediante nodos. Conecta procesos en tiempo real con cables SVG. Edición no destructiva con modos de fusión.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ditherlabpro.com/nodos">
+    <meta property="og:image" content="https://ditherlabpro.com/favicon/og-image.png">
+    <meta property="og:locale" content="es_ES">
+    <meta property="og:site_name" content="Dither Lab Pro">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Dither Lab Pro Nodos | Editor Visual de Dithering">
+    <meta name="twitter:description" content="Composición visual y dithering mediante nodos. Edición no destructiva con modos de fusión.">
+    <meta name="twitter:image" content="https://ditherlabpro.com/favicon/og-image.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -719,6 +734,56 @@
                             <option value="sierra3">Sierra 3</option>
                             <option value="sierra2">Sierra 2</option>
                             <option value="sierraLite">Sierra Lite</option>
+                            <option value="difusion_ligera_1">Difusión Ligera v1</option>
+                            <option value="difusion_ligera_2">Difusión Ligera v2</option>
+                            <option value="micro_difusion_a">Micro Difusión A</option>
+                            <option value="micro_difusion_b">Micro Difusión B</option>
+                            <option value="eco_inmediato">Eco Inmediato</option>
+                            <option value="paso_corto_1">Paso Corto 1</option>
+                            <option value="paso_corto_2">Paso Corto 2</option>
+                            <option value="suavizado_express">Suavizado Express</option>
+                            <option value="difusion_puntual">Difusión Puntual</option>
+                            <option value="brisa_digital">Brisa Digital</option>
+                            <option value="horizonte_amplio">Horizonte Amplio</option>
+                            <option value="barrido_lateral">Barrido Lateral</option>
+                            <option value="difusion_panoramica">Difusión Panorámica</option>
+                            <option value="estela_ancha_1">Estela Ancha 1</option>
+                            <option value="estela_ancha_2">Estela Ancha 2</option>
+                            <option value="viento_digital">Viento Digital</option>
+                            <option value="arrastre_x">Arrastre en X</option>
+                            <option value="eco_horizontal">Eco Horizontal</option>
+                            <option value="suavizado_lateral">Suavizado Lateral</option>
+                            <option value="difusion_plana">Difusión Plana</option>
+                            <option value="caida_libre">Caída Libre</option>
+                            <option value="gravedad_digital">Gravedad Digital</option>
+                            <option value="cascada_1">Cascada de Error 1</option>
+                            <option value="cascada_2">Cascada de Error 2</option>
+                            <option value="goteo_profundo">Goteo Profundo</option>
+                            <option value="difusion_y">Difusión en Y</option>
+                            <option value="eco_vertical">Eco Vertical</option>
+                            <option value="lluvia_ligera">Lluvia Ligera</option>
+                            <option value="desplome_suave">Desplome Suave</option>
+                            <option value="hilo_vertical">Hilo Vertical</option>
+                            <option value="sesgo_derecho_1">Sesgo Derecho Fuerte</option>
+                            <option value="sesgo_izquierdo_1">Sesgo Izquierdo Fuerte</option>
+                            <option value="viento_cruzado_der">Viento Cruzado Der</option>
+                            <option value="viento_cruzado_izq">Viento Cruzado Izq</option>
+                            <option value="peso_asimetrico_a">Peso Asimétrico A</option>
+                            <option value="peso_asimetrico_b">Peso Asimétrico B</option>
+                            <option value="difusion_oblicua_1">Difusión Oblicua 1</option>
+                            <option value="difusion_oblicua_2">Difusión Oblicua 2</option>
+                            <option value="deriva_positiva">Deriva Positiva</option>
+                            <option value="deriva_negativa">Deriva Negativa</option>
+                            <option value="ruido_disperso">Ruido Disperso</option>
+                            <option value="salto_cuantico_1">Salto Cuántico 1</option>
+                            <option value="salto_cuantico_2">Salto Cuántico 2</option>
+                            <option value="difusion_hueca">Difusión Hueca</option>
+                            <option value="anillo_difuso">Anillo de Difusión</option>
+                            <option value="eco_tardio">Eco Tardío</option>
+                            <option value="difusion_fractal_mini">Difusión Fractal Mini</option>
+                            <option value="ajedrez_caotico">Ajedrez Caótico</option>
+                            <option value="salto_caballo">Salto de Caballo</option>
+                            <option value="estallido_estelar">Estallido Estelar</option>
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
@@ -743,6 +808,56 @@
                             <option value="diamonds">Rombos</option>
                             <option value="squares">Cuadrados</option>
                             <option value="triangles">Triángulos</option>
+                            <option value="ht_punto_fino">Puntos Finos</option>
+                            <option value="ht_punto_grueso">Puntos Gruesos</option>
+                            <option value="ht_punto_invertido">Círculo Invertido</option>
+                            <option value="ht_elipse_h">Elipse Horizontal</option>
+                            <option value="ht_elipse_v">Elipse Vertical</option>
+                            <option value="ht_burbujas">Burbujas</option>
+                            <option value="ht_anillos_simples">Anillos de Trama</option>
+                            <option value="ht_puntos_dobles">Puntos Dobles</option>
+                            <option value="ht_puntos_desfasados">Puntos Desfasados</option>
+                            <option value="ht_micro_circulos">Micro Círculos</option>
+                            <option value="ht_rombo_suave">Rombo Suave</option>
+                            <option value="ht_rombo_agudo">Rombo Agudo</option>
+                            <option value="ht_diamante_estrella">Diamante Estrella</option>
+                            <option value="ht_diamante_roto">Diamante Roto</option>
+                            <option value="ht_rombo_doble">Rombo Doble</option>
+                            <option value="ht_estrellas_4p">Estrellas de 4 Puntas</option>
+                            <option value="ht_estrellas_8p">Estrellas de 8 Puntas</option>
+                            <option value="ht_rombos_entrelazados">Rombos Entrelazados</option>
+                            <option value="ht_cruces_diagonales">Cruces Diagonales</option>
+                            <option value="ht_diamante_invertido">Diamante Invertido</option>
+                            <option value="ht_cuadro_suave">Cuadro Suave</option>
+                            <option value="ht_cuadro_estricto">Cuadro Estricto</option>
+                            <option value="ht_reticula_h">Retícula Horizontal</option>
+                            <option value="ht_reticula_v">Retícula Vertical</option>
+                            <option value="ht_cuadros_rotados">Cuadros Rotados</option>
+                            <option value="ht_ajedrez_suave">Ajedrez Suave</option>
+                            <option value="ht_bloques_escalonados">Bloques Escalonados</option>
+                            <option value="ht_cuadricula_doble">Cuadrícula Doble</option>
+                            <option value="ht_marcos_cuadrados">Marcos Cuadrados</option>
+                            <option value="ht_ladrillos_halftone">Ladrillos Halftone</option>
+                            <option value="ht_hex_suave">Hexágonos Suaves</option>
+                            <option value="ht_hex_estricto">Panal de Abejas</option>
+                            <option value="ht_tri_entrelazado">Triángulos Entrelazados</option>
+                            <option value="ht_piramides">Pirámides 3D</option>
+                            <option value="ht_octogonos">Octógonos</option>
+                            <option value="ht_engranajes">Engranajes</option>
+                            <option value="ht_ondas_senoidales">Ondas Senoidales</option>
+                            <option value="ht_cruces_ortogonales">Cruces Ortogonales</option>
+                            <option value="ht_asteriscos">Asteriscos</option>
+                            <option value="ht_malla_tejida">Malla Tejida</option>
+                            <option value="ht_espirales_locales">Espirales Locales</option>
+                            <option value="ht_puntos_ondulados">Puntos Ondulados</option>
+                            <option value="ht_gotas">Gotas de Tinta</option>
+                            <option value="ht_manchas">Manchas Orgánicas</option>
+                            <option value="ht_celulas">Células</option>
+                            <option value="ht_ruido_geometrico">Ruido Geométrico</option>
+                            <option value="ht_trama_acida">Trama Ácida</option>
+                            <option value="ht_puntos_derretidos">Puntos Derretidos</option>
+                            <option value="ht_distorsion_viento">Distorsión Viento</option>
+                            <option value="ht_interferencia">Interferencia de Red</option>
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
@@ -760,13 +875,63 @@
                             <option value="spiralWave">Onda Espiral</option>
                             <option value="hilbertPattern">Curva Hilbert</option>
                             <option value="dtm">Modulación DTM</option>
+                            <option value="lineas_45">Líneas Finas 45°</option>
+                            <option value="lineas_135">Líneas Finas 135°</option>
+                            <option value="lineas_v">Líneas Verticales</option>
+                            <option value="lineas_h">Líneas Horizontales</option>
+                            <option value="malla_ortogonal">Malla Ortogonal Fina</option>
+                            <option value="malla_diagonal">Malla Diagonal Fina</option>
+                            <option value="malla_hexagonal">Malla Hexagonal Fina</option>
+                            <option value="ondas_v">Ondas Verticales</option>
+                            <option value="ondas_h">Ondas Horizontales</option>
+                            <option value="ondas_cruzadas">Ondas Cruzadas</option>
+                            <option value="zigzag_v">Zig-Zag Vertical</option>
+                            <option value="zigzag_h">Zig-Zag Horizontal</option>
+                            <option value="ladrillos">Patrón de Ladrillos</option>
+                            <option value="isometria">Cuadrícula Isométrica</option>
+                            <option value="cuadricula_distorsionada">Cuadrícula Distorsionada</option>
+                            <option value="espiral_simple">Espiral Única</option>
+                            <option value="espiral_doble">Espiral Doble</option>
+                            <option value="espiral_cuadruple">Espiral Cuádruple</option>
+                            <option value="anillos_concentricos">Anillos Concéntricos</option>
+                            <option value="anillos_ondulados">Anillos Ondulados</option>
+                            <option value="rayos_solares">Rayos Solares</option>
+                            <option value="rayos_ondulados">Rayos Ondulados</option>
+                            <option value="vortice">Vórtice Dinámico</option>
+                            <option value="interferencia_ondas">Interferencia de Ondas</option>
+                            <option value="moire_lineal">Efecto Moiré Lineal</option>
+                            <option value="moire_radial">Efecto Moiré Radial</option>
+                            <option value="ondas_sismicas">Ondas Sísmicas</option>
+                            <option value="ruido_liquido">Ruido Líquido</option>
+                            <option value="espiral_cuadrada">Espiral Cuadrada</option>
+                            <option value="anillos_cuadrados">Anillos Cuadrados</option>
+                            <option value="rombos_concentricos">Rombos Concéntricos</option>
+                            <option value="espiral_poligonal">Espiral Poligonal</option>
+                            <option value="madera">Vetas de Madera</option>
+                            <option value="huella_dactilar">Huella Dactilar</option>
+                            <option value="escamas">Escamas de Pez</option>
+                            <option value="red_organica">Red Celular Orgánica</option>
+                            <option value="topografia">Mapa Topográfico</option>
+                            <option value="marmol">Textura de Mármol</option>
+                            <option value="cebra">Rayas de Cebra</option>
+                            <option value="telar">Tejido de Telar</option>
+                            <option value="malla_triangular">Malla Triangular</option>
+                            <option value="diamantes_delgados">Diamantes Geométricos</option>
+                            <option value="cruz_celta">Cruz Celta Entrelazada</option>
+                            <option value="matriz_puntos">Matriz de Puntos Finos</option>
+                            <option value="circuitos">Placa de Circuitos</option>
+                            <option value="estrellas">Estrellas Geométricas</option>
+                            <option value="telarana">Patrón de Telaraña</option>
+                            <option value="ilusiones_opticas">Ilusión Óptica Check</option>
+                            <option value="fractal_basico">Patrón Fractal Básico</option>
+                            <option value="lluvia_matrix">Lluvia Matrix Digital</option>
                         </select>
                     </div>
                 </div>
             </div>
             
             <select id="ui-d-algorithm" class="hidden" data-bind="algorithm">
-                <option value="floydSteinberg">floydSteinberg</option><option value="atkinson">atkinson</option><option value="jarvis">jarvis</option><option value="stucki">stucki</option><option value="burkes">burkes</option><option value="sierra3">sierra3</option><option value="sierra2">sierra2</option><option value="sierraLite">sierraLite</option><option value="bayer2">bayer2</option><option value="bayer4">bayer4</option><option value="bayer8">bayer8</option><option value="bayer16">bayer16</option><option value="cluster4">cluster4</option><option value="cluster8">cluster8</option><option value="circles">circles</option><option value="diamonds">diamonds</option><option value="squares">squares</option><option value="triangles">triangles</option><option value="threshold">threshold</option><option value="random">random</option><option value="blueNoise">blueNoise</option><option value="line">line</option><option value="voronoi">voronoi</option><option value="bayerProgressive">bayerProgressive</option><option value="crossHatch">crossHatch</option><option value="spiralWave">spiralWave</option><option value="hilbertPattern">hilbertPattern</option><option value="dtm">dtm</option>
+                <option value="floydSteinberg">floydSteinberg</option><option value="atkinson">atkinson</option><option value="jarvis">jarvis</option><option value="stucki">stucki</option><option value="burkes">burkes</option><option value="sierra3">sierra3</option><option value="sierra2">sierra2</option><option value="sierraLite">sierraLite</option><option value="difusion_ligera_1">difusion_ligera_1</option><option value="difusion_ligera_2">difusion_ligera_2</option><option value="micro_difusion_a">micro_difusion_a</option><option value="micro_difusion_b">micro_difusion_b</option><option value="eco_inmediato">eco_inmediato</option><option value="paso_corto_1">paso_corto_1</option><option value="paso_corto_2">paso_corto_2</option><option value="suavizado_express">suavizado_express</option><option value="difusion_puntual">difusion_puntual</option><option value="brisa_digital">brisa_digital</option><option value="horizonte_amplio">horizonte_amplio</option><option value="barrido_lateral">barrido_lateral</option><option value="difusion_panoramica">difusion_panoramica</option><option value="estela_ancha_1">estela_ancha_1</option><option value="estela_ancha_2">estela_ancha_2</option><option value="viento_digital">viento_digital</option><option value="arrastre_x">arrastre_x</option><option value="eco_horizontal">eco_horizontal</option><option value="suavizado_lateral">suavizado_lateral</option><option value="difusion_plana">difusion_plana</option><option value="caida_libre">caida_libre</option><option value="gravedad_digital">gravedad_digital</option><option value="cascada_1">cascada_1</option><option value="cascada_2">cascada_2</option><option value="goteo_profundo">goteo_profundo</option><option value="difusion_y">difusion_y</option><option value="eco_vertical">eco_vertical</option><option value="lluvia_ligera">lluvia_ligera</option><option value="desplome_suave">desplome_suave</option><option value="hilo_vertical">hilo_vertical</option><option value="sesgo_derecho_1">sesgo_derecho_1</option><option value="sesgo_izquierdo_1">sesgo_izquierdo_1</option><option value="viento_cruzado_der">viento_cruzado_der</option><option value="viento_cruzado_izq">viento_cruzado_izq</option><option value="peso_asimetrico_a">peso_asimetrico_a</option><option value="peso_asimetrico_b">peso_asimetrico_b</option><option value="difusion_oblicua_1">difusion_oblicua_1</option><option value="difusion_oblicua_2">difusion_oblicua_2</option><option value="deriva_positiva">deriva_positiva</option><option value="deriva_negativa">deriva_negativa</option><option value="ruido_disperso">ruido_disperso</option><option value="salto_cuantico_1">salto_cuantico_1</option><option value="salto_cuantico_2">salto_cuantico_2</option><option value="difusion_hueca">difusion_hueca</option><option value="anillo_difuso">anillo_difuso</option><option value="eco_tardio">eco_tardio</option><option value="difusion_fractal_mini">difusion_fractal_mini</option><option value="ajedrez_caotico">ajedrez_caotico</option><option value="salto_caballo">salto_caballo</option><option value="estallido_estelar">estallido_estelar</option><option value="bayer2">bayer2</option><option value="bayer4">bayer4</option><option value="bayer8">bayer8</option><option value="bayer16">bayer16</option><option value="cluster4">cluster4</option><option value="cluster8">cluster8</option><option value="circles">circles</option><option value="diamonds">diamonds</option><option value="squares">squares</option><option value="triangles">triangles</option><option value="ht_punto_fino">ht_punto_fino</option><option value="ht_punto_grueso">ht_punto_grueso</option><option value="ht_punto_invertido">ht_punto_invertido</option><option value="ht_elipse_h">ht_elipse_h</option><option value="ht_elipse_v">ht_elipse_v</option><option value="ht_burbujas">ht_burbujas</option><option value="ht_anillos_simples">ht_anillos_simples</option><option value="ht_puntos_dobles">ht_puntos_dobles</option><option value="ht_puntos_desfasados">ht_puntos_desfasados</option><option value="ht_micro_circulos">ht_micro_circulos</option><option value="ht_rombo_suave">ht_rombo_suave</option><option value="ht_rombo_agudo">ht_rombo_agudo</option><option value="ht_diamante_estrella">ht_diamante_estrella</option><option value="ht_diamante_roto">ht_diamante_roto</option><option value="ht_rombo_doble">ht_rombo_doble</option><option value="ht_estrellas_4p">ht_estrellas_4p</option><option value="ht_estrellas_8p">ht_estrellas_8p</option><option value="ht_rombos_entrelazados">ht_rombos_entrelazados</option><option value="ht_cruces_diagonales">ht_cruces_diagonales</option><option value="ht_diamante_invertido">ht_diamante_invertido</option><option value="ht_cuadro_suave">ht_cuadro_suave</option><option value="ht_cuadro_estricto">ht_cuadro_estricto</option><option value="ht_reticula_h">ht_reticula_h</option><option value="ht_reticula_v">ht_reticula_v</option><option value="ht_cuadros_rotados">ht_cuadros_rotados</option><option value="ht_ajedrez_suave">ht_ajedrez_suave</option><option value="ht_bloques_escalonados">ht_bloques_escalonados</option><option value="ht_cuadricula_doble">ht_cuadricula_doble</option><option value="ht_marcos_cuadrados">ht_marcos_cuadrados</option><option value="ht_ladrillos_halftone">ht_ladrillos_halftone</option><option value="ht_hex_suave">ht_hex_suave</option><option value="ht_hex_estricto">ht_hex_estricto</option><option value="ht_tri_entrelazado">ht_tri_entrelazado</option><option value="ht_piramides">ht_piramides</option><option value="ht_octogonos">ht_octogonos</option><option value="ht_engranajes">ht_engranajes</option><option value="ht_ondas_senoidales">ht_ondas_senoidales</option><option value="ht_cruces_ortogonales">ht_cruces_ortogonales</option><option value="ht_asteriscos">ht_asteriscos</option><option value="ht_malla_tejida">ht_malla_tejida</option><option value="ht_espirales_locales">ht_espirales_locales</option><option value="ht_puntos_ondulados">ht_puntos_ondulados</option><option value="ht_gotas">ht_gotas</option><option value="ht_manchas">ht_manchas</option><option value="ht_celulas">ht_celulas</option><option value="ht_ruido_geometrico">ht_ruido_geometrico</option><option value="ht_trama_acida">ht_trama_acida</option><option value="ht_puntos_derretidos">ht_puntos_derretidos</option><option value="ht_distorsion_viento">ht_distorsion_viento</option><option value="ht_interferencia">ht_interferencia</option><option value="threshold">threshold</option><option value="random">random</option><option value="blueNoise">blueNoise</option><option value="line">line</option><option value="voronoi">voronoi</option><option value="bayerProgressive">bayerProgressive</option><option value="crossHatch">crossHatch</option><option value="spiralWave">spiralWave</option><option value="hilbertPattern">hilbertPattern</option><option value="dtm">dtm</option><option value="lineas_45">lineas_45</option><option value="lineas_135">lineas_135</option><option value="lineas_v">lineas_v</option><option value="lineas_h">lineas_h</option><option value="malla_ortogonal">malla_ortogonal</option><option value="malla_diagonal">malla_diagonal</option><option value="malla_hexagonal">malla_hexagonal</option><option value="ondas_v">ondas_v</option><option value="ondas_h">ondas_h</option><option value="ondas_cruzadas">ondas_cruzadas</option><option value="zigzag_v">zigzag_v</option><option value="zigzag_h">zigzag_h</option><option value="ladrillos">ladrillos</option><option value="isometria">isometria</option><option value="cuadricula_distorsionada">cuadricula_distorsionada</option><option value="espiral_simple">espiral_simple</option><option value="espiral_doble">espiral_doble</option><option value="espiral_cuadruple">espiral_cuadruple</option><option value="anillos_concentricos">anillos_concentricos</option><option value="anillos_ondulados">anillos_ondulados</option><option value="rayos_solares">rayos_solares</option><option value="rayos_ondulados">rayos_ondulados</option><option value="vortice">vortice</option><option value="interferencia_ondas">interferencia_ondas</option><option value="moire_lineal">moire_lineal</option><option value="moire_radial">moire_radial</option><option value="ondas_sismicas">ondas_sismicas</option><option value="ruido_liquido">ruido_liquido</option><option value="espiral_cuadrada">espiral_cuadrada</option><option value="anillos_cuadrados">anillos_cuadrados</option><option value="rombos_concentricos">rombos_concentricos</option><option value="espiral_poligonal">espiral_poligonal</option><option value="madera">madera</option><option value="huella_dactilar">huella_dactilar</option><option value="escamas">escamas</option><option value="red_organica">red_organica</option><option value="topografia">topografia</option><option value="marmol">marmol</option><option value="cebra">cebra</option><option value="telar">telar</option><option value="malla_triangular">malla_triangular</option><option value="diamantes_delgados">diamantes_delgados</option><option value="cruz_celta">cruz_celta</option><option value="matriz_puntos">matriz_puntos</option><option value="circuitos">circuitos</option><option value="estrellas">estrellas</option><option value="telarana">telarana</option><option value="ilusiones_opticas">ilusiones_opticas</option><option value="fractal_basico">fractal_basico</option><option value="lluvia_matrix">lluvia_matrix</option>
             </select>
 
             <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Fuerza de Error</span><span id="ui-d-errstr-val" class="text-white font-bold">100%</span></label><input type="range" id="ui-d-errstr" min="0" max="200" data-bind="errstr"></div>
@@ -1124,7 +1289,57 @@
                 burkes: { m: [[1,0,8], [2,0,4], [-2,1,2], [-1,1,4], [0,1,8], [1,1,4], [2,1,2]], d: 32 },
                 sierra3: { m: [[1,0,5], [2,0,3], [-2,1,2], [-1,1,4], [0,1,5], [1,1,4], [2,1,2], [-1,2,2], [0,2,3], [1,2,2]], d: 32 },
                 sierra2: { m: [[1,0,4], [2,0,3], [-2,1,1], [-1,1,2], [0,1,3], [1,1,2], [2,1,1]], d: 16 },
-                sierraLite: { m: [[1,0,2], [-1,1,1], [0,1,1]], d: 4 }
+                sierraLite: { m: [[1,0,2], [-1,1,1], [0,1,1]], d: 4 },
+                difusion_ligera_1: { m: [[1,0,2], [0,1,1]], d: 3 },
+                difusion_ligera_2: { m: [[1,0,3], [-1,1,1], [0,1,1]], d: 5 },
+                micro_difusion_a: { m: [[1,0,4], [0,1,2], [1,1,1]], d: 7 },
+                micro_difusion_b: { m: [[1,0,2], [-1,1,1], [0,1,2], [1,1,1]], d: 6 },
+                eco_inmediato: { m: [[1,0,5], [2,0,1], [0,1,2]], d: 8 },
+                paso_corto_1: { m: [[1,0,1], [0,1,1], [1,1,1]], d: 3 },
+                paso_corto_2: { m: [[1,0,3], [0,1,3], [1,1,2]], d: 8 },
+                suavizado_express: { m: [[1,0,2], [2,0,1], [-1,1,1], [0,1,2], [1,1,1]], d: 7 },
+                difusion_puntual: { m: [[1,0,4], [0,1,4]], d: 8 },
+                brisa_digital: { m: [[1,0,3], [2,0,1], [0,1,2], [0,2,1]], d: 7 },
+                horizonte_amplio: { m: [[1,0,4], [2,0,2], [3,0,1], [0,1,1]], d: 8 },
+                barrido_lateral: { m: [[1,0,5], [2,0,3], [3,0,2], [4,0,1], [0,1,1]], d: 12 },
+                difusion_panoramica: { m: [[1,0,8], [2,0,4], [3,0,2], [-1,1,1], [0,1,2], [1,1,1]], d: 18 },
+                estela_ancha_1: { m: [[1,0,6], [2,0,3], [3,0,1], [0,1,2], [1,1,1]], d: 13 },
+                estela_ancha_2: { m: [[1,0,4], [2,0,4], [3,0,4], [0,1,2]], d: 14 },
+                viento_digital: { m: [[1,0,3], [2,0,2], [4,0,1], [0,1,1], [1,1,1]], d: 8 },
+                arrastre_x: { m: [[1,0,8], [2,0,6], [3,0,4], [4,0,2], [0,1,2]], d: 22 },
+                eco_horizontal: { m: [[1,0,3], [3,0,2], [5,0,1], [0,1,2]], d: 8 },
+                suavizado_lateral: { m: [[1,0,5], [2,0,3], [3,0,1], [-2,1,1], [-1,1,2], [0,1,3], [1,1,2], [2,1,1]], d: 18 },
+                difusion_plana: { m: [[1,0,6], [2,0,4], [3,0,2], [4,0,1]], d: 13 },
+                caida_libre: { m: [[1,0,1], [0,1,4], [0,2,2], [0,3,1]], d: 8 },
+                gravedad_digital: { m: [[1,0,2], [0,1,6], [0,2,4], [0,3,2], [0,4,1]], d: 15 },
+                cascada_1: { m: [[1,0,1], [-1,1,1], [0,1,4], [-1,2,1], [0,2,2], [0,3,1]], d: 10 },
+                cascada_2: { m: [[1,0,2], [0,1,8], [0,2,6], [0,3,4]], d: 20 },
+                goteo_profundo: { m: [[1,0,1], [0,1,3], [0,2,2], [0,4,1]], d: 7 },
+                difusion_y: { m: [[1,0,2], [0,1,6], [0,2,4], [0,3,2]], d: 14 },
+                eco_vertical: { m: [[1,0,1], [0,1,5], [0,3,3], [0,5,1]], d: 10 },
+                lluvia_ligera: { m: [[1,0,1], [0,1,3], [0,2,1], [0,3,1]], d: 6 },
+                desplome_suave: { m: [[1,0,2], [-1,1,1], [0,1,5], [1,1,1], [0,2,3], [0,3,1]], d: 13 },
+                hilo_vertical: { m: [[1,0,1], [0,1,8], [0,2,8], [0,3,8]], d: 25 },
+                sesgo_derecho_1: { m: [[1,0,6], [2,0,2], [0,1,1], [1,1,4], [2,1,2]], d: 15 },
+                sesgo_izquierdo_1: { m: [[1,0,2], [-2,1,2], [-1,1,4], [0,1,1], [-1,2,2]], d: 11 },
+                viento_cruzado_der: { m: [[1,0,4], [2,0,2], [1,1,4], [2,1,2], [2,2,2]], d: 14 },
+                viento_cruzado_izq: { m: [[1,0,1], [-2,1,2], [-1,1,4], [-3,2,1], [-2,2,2]], d: 10 },
+                peso_asimetrico_a: { m: [[1,0,8], [-1,1,1], [0,1,2], [1,1,6], [2,1,3]], d: 20 },
+                peso_asimetrico_b: { m: [[1,0,3], [-2,1,4], [-1,1,6], [0,1,2], [1,1,1]], d: 16 },
+                difusion_oblicua_1: { m: [[1,0,2], [1,1,4], [2,2,2], [3,3,1]], d: 9 },
+                difusion_oblicua_2: { m: [[1,0,2], [-1,1,4], [-2,2,2], [-3,3,1]], d: 9 },
+                deriva_positiva: { m: [[1,0,5], [1,1,3], [2,1,2], [1,2,1]], d: 11 },
+                deriva_negativa: { m: [[1,0,5], [-1,1,3], [-2,1,2], [-1,2,1]], d: 11 },
+                ruido_disperso: { m: [[1,0,2], [3,0,1], [-2,1,1], [2,1,1], [0,2,2]], d: 7 },
+                salto_cuantico_1: { m: [[2,0,4], [-2,1,2], [2,1,2], [0,2,4]], d: 12 },
+                salto_cuantico_2: { m: [[1,0,1], [4,0,2], [-3,1,1], [3,1,1], [0,3,2]], d: 7 },
+                difusion_hueca: { m: [[2,0,3], [3,0,2], [-2,1,2], [2,1,2], [0,2,3]], d: 12 },
+                anillo_difuso: { m: [[1,0,2], [2,0,1], [-1,1,2], [1,1,2], [0,2,2], [-1,2,1], [1,2,1]], d: 11 },
+                eco_tardio: { m: [[1,0,1], [5,0,3], [-4,1,1], [0,1,1], [4,1,2]], d: 8 },
+                difusion_fractal_mini: { m: [[1,0,4], [-1,1,2], [1,1,2], [-2,2,1], [0,2,1], [2,2,1]], d: 11 },
+                ajedrez_caotico: { m: [[2,0,3], [-1,1,2], [1,1,2], [-2,2,1], [0,2,3], [2,2,1]], d: 12 },
+                salto_caballo: { m: [[2,1,4], [-2,1,4], [1,2,2], [-1,2,2]], d: 12 },
+                estallido_estelar: { m: [[1,0,3], [2,0,1], [-1,1,3], [0,1,2], [1,1,3], [-2,2,1], [0,2,1], [2,2,1]], d: 15 }
             };
 
             function showToast(message, type = 'success') {
@@ -2317,7 +2532,22 @@
                     f32[fi]=d[i]+p.bias; f32[fi+1]=d[i+1]+p.bias; f32[fi+2]=d[i+2]+p.bias;
                 }
 
-                const estGrp = ['threshold','random','blueNoise','line','circles','diamonds','squares','triangles','voronoi','crossHatch','spiralWave','hilbertPattern','dtm'];
+                const estocasticGroup = ['threshold', 'random', 'blueNoise', 'line', 'circles', 'diamonds', 'squares', 'triangles', 'voronoi', 'crossHatch', 'spiralWave', 'hilbertPattern', 'dtm',
+                    'lineas_45', 'lineas_135', 'lineas_v', 'lineas_h', 'malla_ortogonal', 'malla_diagonal', 'malla_hexagonal',
+                    'ondas_v', 'ondas_h', 'ondas_cruzadas', 'zigzag_v', 'zigzag_h', 'ladrillos', 'isometria', 'cuadricula_distorsionada',
+                    'espiral_simple', 'espiral_doble', 'espiral_cuadruple', 'anillos_concentricos', 'anillos_ondulados',
+                    'rayos_solares', 'rayos_ondulados', 'vortice', 'interferencia_ondas', 'moire_lineal', 'moire_radial',
+                    'ondas_sismicas', 'ruido_liquido', 'espiral_cuadrada', 'anillos_cuadrados', 'rombos_concentricos', 'espiral_poligonal',
+                    'madera', 'huella_dactilar', 'escamas', 'red_organica', 'topografia', 'marmol', 'cebra',
+                    'telar', 'malla_triangular', 'diamantes_delgados', 'cruz_celta', 'matriz_puntos', 'circuitos',
+                    'estrellas', 'telarana', 'ilusiones_opticas', 'fractal_basico', 'lluvia_matrix',
+                    'ht_punto_fino', 'ht_punto_grueso', 'ht_punto_invertido', 'ht_elipse_h', 'ht_elipse_v', 'ht_burbujas', 'ht_anillos_simples', 'ht_puntos_dobles', 'ht_puntos_desfasados', 'ht_micro_circulos',
+                    'ht_rombo_suave', 'ht_rombo_agudo', 'ht_diamante_estrella', 'ht_diamante_roto', 'ht_rombo_doble', 'ht_estrellas_4p', 'ht_estrellas_8p', 'ht_rombos_entrelazados', 'ht_cruces_diagonales', 'ht_diamante_invertido',
+                    'ht_cuadro_suave', 'ht_cuadro_estricto', 'ht_reticula_h', 'ht_reticula_v', 'ht_cuadros_rotados', 'ht_ajedrez_suave', 'ht_bloques_escalonados', 'ht_cuadricula_doble', 'ht_marcos_cuadrados', 'ht_ladrillos_halftone',
+                    'ht_hex_suave', 'ht_hex_estricto', 'ht_tri_entrelazado', 'ht_piramides', 'ht_octogonos', 'ht_engranajes', 'ht_ondas_senoidales', 'ht_cruces_ortogonales', 'ht_asteriscos', 'ht_malla_tejida',
+                    'ht_espirales_locales', 'ht_puntos_ondulados', 'ht_gotas', 'ht_manchas', 'ht_celulas', 'ht_ruido_geometrico', 'ht_trama_acida', 'ht_puntos_derretidos', 'ht_distorsion_viento', 'ht_interferencia'];
+                
+                console.log('[DITH] algo='+p.algorithm, 'est='+estocasticGroup.includes(p.algorithm), 'ord='+!!matricesOrdenadas[p.algorithm], 'dif='+!!matricesDifusion[p.algorithm], 'pal='+actPal.length);
                 
                 function findCl(r,g,b) {
                     let minD=Infinity; let cl=actPal[0]; let idx=0;
@@ -2331,10 +2561,13 @@
 
                 const spread = (p.errstr/100) * 128;
 
-                if (estGrp.includes(p.algorithm)) {
+                if (estocasticGroup.includes(p.algorithm)) {
                     for(let y=0;y<h;y++){
                         for(let x=0;x<w;x++){
                             let fi=(y*w+x)*3; let nx=x/p.patScale; let ny=y/p.patScale; let t=0;
+                            let cx = nx - w/(2*p.patScale); let cy = ny - h/(2*p.patScale);
+                            let dist = Math.sqrt(cx*cx + cy*cy); let ang = Math.atan2(cy, cx);
+                            const thin = (v) => Math.pow(Math.abs(Math.sin(v)), 30);
                             if (p.algorithm === 'random') t = Math.random() - 0.5;
                             else if (p.algorithm === 'line') t = (Math.sin(nx * 1.5 + ny * 0.5) + 1) / 2 - 0.5;
                             else if (p.algorithm === 'blueNoise') { let ign = 52.9829189 * ((0.06711056 * x + 0.00583715 * y) % 1); t = (ign - Math.floor(ign)) - 0.5; }
@@ -2342,6 +2575,56 @@
                             else if (p.algorithm === 'diamonds') t = (Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI)) / 4;
                             else if (p.algorithm === 'squares') t = Math.max(Math.abs(Math.sin(nx * Math.PI)), Math.abs(Math.sin(ny * Math.PI))) - 0.5;
                             else if (p.algorithm === 'triangles') { let sq3 = Math.sqrt(3); t = (Math.sin((nx + ny / sq3) * Math.PI) + Math.sin((nx - ny / sq3) * Math.PI) + Math.sin((ny * 2 / sq3) * Math.PI)) / 6; }
+                            else if (p.algorithm === 'ht_punto_fino') t = Math.pow(Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI), 2) - 0.5;
+                            else if (p.algorithm === 'ht_punto_grueso') t = (Math.sin(nx * Math.PI * 0.5) * Math.sin(ny * Math.PI * 0.5)) - 0.25;
+                            else if (p.algorithm === 'ht_punto_invertido') t = -((Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) / 2);
+                            else if (p.algorithm === 'ht_elipse_h') t = (Math.sin(nx * Math.PI * 1.5) * Math.sin(ny * Math.PI)) / 2;
+                            else if (p.algorithm === 'ht_elipse_v') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI * 1.5)) / 2;
+                            else if (p.algorithm === 'ht_burbujas') t = Math.abs(Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) - 0.5;
+                            else if (p.algorithm === 'ht_anillos_simples') t = Math.sin(Math.sqrt(nx*nx + ny*ny) * Math.PI * 4) / 2;
+                            else if (p.algorithm === 'ht_puntos_dobles') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI) + Math.sin(nx * Math.PI * 2) * Math.sin(ny * Math.PI * 2)) / 4;
+                            else if (p.algorithm === 'ht_puntos_desfasados') t = (Math.sin(nx * Math.PI + ny) * Math.sin(ny * Math.PI - nx)) / 2;
+                            else if (p.algorithm === 'ht_micro_circulos') t = (Math.sin(nx * Math.PI * 3) * Math.sin(ny * Math.PI * 3)) / 2;
+                            else if (p.algorithm === 'ht_rombo_suave') t = (Math.cos(nx * Math.PI) + Math.cos(ny * Math.PI)) / 4;
+                            else if (p.algorithm === 'ht_rombo_agudo') t = (Math.abs(Math.cos(nx * Math.PI)) + Math.abs(Math.cos(ny * Math.PI))) / 2 - 0.5;
+                            else if (p.algorithm === 'ht_diamante_estrella') t = (Math.pow(Math.sin(nx * Math.PI), 3) + Math.pow(Math.sin(ny * Math.PI), 3)) / 4;
+                            else if (p.algorithm === 'ht_diamante_roto') t = (Math.sin(nx * Math.PI) + Math.cos(ny * Math.PI)) / 4;
+                            else if (p.algorithm === 'ht_rombo_doble') t = (Math.sin(nx * Math.PI) * Math.cos(ny * Math.PI) + Math.cos(nx * Math.PI) * Math.sin(ny * Math.PI)) / 4;
+                            else if (p.algorithm === 'ht_estrellas_4p') t = Math.pow(Math.sin(nx * Math.PI) * Math.cos(ny * Math.PI), 2) - 0.5;
+                            else if (p.algorithm === 'ht_estrellas_8p') t = (Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI) + Math.sin((nx+ny) * Math.PI)) / 6;
+                            else if (p.algorithm === 'ht_rombos_entrelazados') t = Math.sin((nx + ny) * Math.PI) * Math.sin((nx - ny) * Math.PI) / 2;
+                            else if (p.algorithm === 'ht_cruces_diagonales') t = (Math.abs(Math.sin((nx + ny) * Math.PI)) - Math.abs(Math.cos((nx - ny) * Math.PI))) / 2;
+                            else if (p.algorithm === 'ht_diamante_invertido') t = -((Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI)) / 4);
+                            else if (p.algorithm === 'ht_cuadro_suave') t = (Math.cos(nx * Math.PI * 2) * Math.cos(ny * Math.PI * 2)) / 2;
+                            else if (p.algorithm === 'ht_cuadro_estricto') t = Math.max(Math.sin(nx * Math.PI), Math.cos(ny * Math.PI)) - 0.5;
+                            else if (p.algorithm === 'ht_reticula_h') t = Math.sin(ny * Math.PI * 2) / 2;
+                            else if (p.algorithm === 'ht_reticula_v') t = Math.sin(nx * Math.PI * 2) / 2;
+                            else if (p.algorithm === 'ht_cuadros_rotados') t = Math.max(Math.abs(Math.sin((nx + ny) * Math.PI)), Math.abs(Math.sin((nx - ny) * Math.PI))) - 0.5;
+                            else if (p.algorithm === 'ht_ajedrez_suave') t = Math.sin((nx + ny) * Math.PI * 2) / 2;
+                            else if (p.algorithm === 'ht_bloques_escalonados') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI + (nx % 2))) / 2;
+                            else if (p.algorithm === 'ht_cuadricula_doble') t = (Math.sin(nx * Math.PI * 2) + Math.sin(ny * Math.PI * 2)) / 4;
+                            else if (p.algorithm === 'ht_marcos_cuadrados') t = Math.abs(Math.max(Math.sin(nx * Math.PI), Math.sin(ny * Math.PI))) - 0.5;
+                            else if (p.algorithm === 'ht_ladrillos_halftone') t = Math.sin(ny * Math.PI) * Math.sin(nx * Math.PI + (Math.floor(ny) % 2) * Math.PI/2) / 2;
+                            else if (p.algorithm === 'ht_hex_suave') t = (Math.sin(nx * Math.PI) * Math.sin((nx * 0.5 + ny * 0.866) * Math.PI) * Math.sin((nx * 0.5 - ny * 0.866) * Math.PI));
+                            else if (p.algorithm === 'ht_hex_estricto') t = Math.max(Math.sin(nx*Math.PI), Math.max(Math.sin((nx*0.5 + ny*0.866)*Math.PI), Math.sin((nx*0.5 - ny*0.866)*Math.PI))) - 0.5;
+                            else if (p.algorithm === 'ht_tri_entrelazado') t = (Math.sin(nx * Math.PI) + Math.sin((nx * 0.5 + ny * 0.866) * Math.PI)) / 4;
+                            else if (p.algorithm === 'ht_piramides') t = Math.min(Math.abs(Math.sin(nx * Math.PI)), Math.abs(Math.sin(ny * Math.PI))) - 0.5;
+                            else if (p.algorithm === 'ht_octogonos') t = Math.max(Math.abs(Math.sin(nx*Math.PI)), Math.max(Math.abs(Math.sin(ny*Math.PI)), Math.abs(Math.sin((nx+ny)*Math.PI*0.707)))) - 0.5;
+                            else if (p.algorithm === 'ht_engranajes') t = Math.sin(dist * Math.PI * 4 + Math.sin(ang * 6)) / 2;
+                            else if (p.algorithm === 'ht_ondas_senoidales') t = (Math.sin(nx * Math.PI * 2) + Math.cos(ny * Math.PI * 2 + nx)) / 4;
+                            else if (p.algorithm === 'ht_cruces_ortogonales') t = (Math.pow(Math.sin(nx * Math.PI), 4) + Math.pow(Math.sin(ny * Math.PI), 4)) / 4 - 0.25;
+                            else if (p.algorithm === 'ht_asteriscos') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI) * Math.sin((nx+ny)*Math.PI)) / 2;
+                            else if (p.algorithm === 'ht_malla_tejida') t = Math.sin((nx * Math.cos(ny) + ny * Math.sin(nx)) * Math.PI) / 2;
+                            else if (p.algorithm === 'ht_espirales_locales') t = Math.sin(Math.sqrt(nx*nx + ny*ny) * 10 + Math.atan2(ny, nx) * 3) / 2;
+                            else if (p.algorithm === 'ht_puntos_ondulados') t = (Math.sin(nx * Math.PI + Math.sin(ny)) * Math.sin(ny * Math.PI)) / 2;
+                            else if (p.algorithm === 'ht_gotas') t = Math.exp(-Math.pow(Math.sin(nx * Math.PI), 2) - Math.pow(Math.sin(ny * Math.PI), 2)) - 0.5;
+                            else if (p.algorithm === 'ht_manchas') t = (Math.sin(nx * 3 + Math.cos(ny * 2)) + Math.cos(ny * 3 + Math.sin(nx * 2))) / 4;
+                            else if (p.algorithm === 'ht_celulas') t = (Math.abs(Math.sin(nx * Math.PI * 1.5)) * Math.abs(Math.cos(ny * Math.PI * 1.5))) - 0.5;
+                            else if (p.algorithm === 'ht_ruido_geometrico') t = (Math.sin(nx * Math.PI * 2.5) * Math.sin(ny * Math.PI * 2.5) * Math.sin((nx+ny) * 10)) / 2;
+                            else if (p.algorithm === 'ht_trama_acida') t = (Math.sin(nx * Math.PI + Math.tan(ny)) * Math.cos(ny * Math.PI)) / 4;
+                            else if (p.algorithm === 'ht_puntos_derretidos') t = (Math.sin(nx * Math.PI) * Math.sin((ny + Math.sin(nx*2)) * Math.PI)) / 2;
+                            else if (p.algorithm === 'ht_distorsion_viento') t = Math.sin(nx * Math.PI * 2 + Math.cos(ny * Math.PI * 3)) / 2;
+                            else if (p.algorithm === 'ht_interferencia') t = (Math.sin(nx * Math.PI * 3) + Math.cos(ny * Math.PI * 3) + Math.sin((nx-ny) * Math.PI * 5)) / 6;
                             else if (p.algorithm === 'crossHatch') {
                                 let luma = (0.299*f32[fi] + 0.587*f32[fi+1] + 0.114*f32[fi+2]) / 255;
                                 let ang1 = Math.sin(nx + ny); let ang2 = Math.sin(nx - ny);
@@ -2366,6 +2649,56 @@
                             }
                             else if (p.algorithm === 'hilbertPattern') { let hX = Math.floor(nx) ^ Math.floor(ny); t = ((hX * 0.61803398875) % 1) - 0.5; }
                             else if (p.algorithm === 'dtm') { t = (Math.random() - 0.5) * (Math.sin(nx*0.05) * Math.cos(ny*0.05)); }
+                            else if (p.algorithm === 'lineas_45') t = thin(nx + ny) - 0.5;
+                            else if (p.algorithm === 'lineas_135') t = thin(nx - ny) - 0.5;
+                            else if (p.algorithm === 'lineas_v') t = thin(nx * 2) - 0.5;
+                            else if (p.algorithm === 'lineas_h') t = thin(ny * 2) - 0.5;
+                            else if (p.algorithm === 'malla_ortogonal') t = Math.max(thin(nx * 2), thin(ny * 2)) - 0.5;
+                            else if (p.algorithm === 'malla_diagonal') t = Math.max(thin(nx + ny), thin(nx - ny)) - 0.5;
+                            else if (p.algorithm === 'malla_hexagonal') t = Math.max(thin(nx*1.732), Math.max(thin(nx*0.866 + ny*1.5), thin(nx*0.866 - ny*1.5))) - 0.5;
+                            else if (p.algorithm === 'ondas_v') t = thin(nx * 2 + Math.sin(ny * 1.5)) - 0.5;
+                            else if (p.algorithm === 'ondas_h') t = thin(ny * 2 + Math.sin(nx * 1.5)) - 0.5;
+                            else if (p.algorithm === 'ondas_cruzadas') t = Math.max(thin(nx * 2 + Math.sin(ny)), thin(ny * 2 + Math.sin(nx))) - 0.5;
+                            else if (p.algorithm === 'zigzag_v') t = thin(nx * 2 + Math.abs(Math.sin(ny * 2))) - 0.5;
+                            else if (p.algorithm === 'zigzag_h') t = thin(ny * 2 + Math.abs(Math.sin(nx * 2))) - 0.5;
+                            else if (p.algorithm === 'ladrillos') t = Math.max(thin(ny * 2), thin(nx * 2 + Math.floor(ny / Math.PI) * Math.PI)) - 0.5;
+                            else if (p.algorithm === 'isometria') t = Math.max(thin(ny*2), Math.max(thin(nx*1.732+ny), thin(nx*1.732-ny))) - 0.5;
+                            else if (p.algorithm === 'cuadricula_distorsionada') t = Math.max(thin(nx * 2 + ny * 0.5), thin(ny * 2 - nx * 0.5)) - 0.5;
+                            else if (p.algorithm === 'espiral_simple') t = thin(dist * 2 + ang) - 0.5;
+                            else if (p.algorithm === 'espiral_doble') t = thin(dist * 2 + ang * 2) - 0.5;
+                            else if (p.algorithm === 'espiral_cuadruple') t = thin(dist * 2 + ang * 4) - 0.5;
+                            else if (p.algorithm === 'anillos_concentricos') t = thin(dist * 3) - 0.5;
+                            else if (p.algorithm === 'anillos_ondulados') t = thin(dist * 3 + Math.sin(ang * 8) * 0.5) - 0.5;
+                            else if (p.algorithm === 'rayos_solares') t = thin(ang * 8) - 0.5;
+                            else if (p.algorithm === 'rayos_ondulados') t = thin(ang * 8 + Math.sin(dist * 2)) - 0.5;
+                            else if (p.algorithm === 'vortice') t = thin(ang * 6 + Math.log(dist + 0.1) * 3) - 0.5;
+                            else if (p.algorithm === 'interferencia_ondas') t = Math.max(thin(Math.hypot(nx-5, ny)*3), thin(Math.hypot(nx+5, ny)*3)) - 0.5;
+                            else if (p.algorithm === 'moire_lineal') t = thin(nx * 3) * thin(nx * 3.2) * 2 - 0.5;
+                            else if (p.algorithm === 'moire_radial') t = thin(dist * 3) * thin(Math.hypot(cx-2, cy)*3) * 2 - 0.5;
+                            else if (p.algorithm === 'ondas_sismicas') t = thin(ny * 3 + 2 * Math.sin(nx * 1.2 + Math.sin(ny * 0.8))) - 0.5;
+                            else if (p.algorithm === 'ruido_liquido') t = thin(nx * 1.5 + Math.sin(ny * 1.5) + Math.cos(nx * 0.5)) - 0.5;
+                            else if (p.algorithm === 'espiral_cuadrada') t = thin(Math.max(Math.abs(cx), Math.abs(cy)) * 4 + ang) - 0.5;
+                            else if (p.algorithm === 'anillos_cuadrados') t = thin(Math.max(Math.abs(cx), Math.abs(cy)) * 5) - 0.5;
+                            else if (p.algorithm === 'rombos_concentricos') t = thin((Math.abs(cx) + Math.abs(cy)) * 3) - 0.5;
+                            else if (p.algorithm === 'espiral_poligonal') t = thin(dist * 3 + Math.floor(ang * 3) / 3) - 0.5;
+                            else if (p.algorithm === 'madera') t = thin(dist * 1.5 + Math.sin(nx * 0.5) * 2) - 0.5;
+                            else if (p.algorithm === 'huella_dactilar') t = thin(dist * 2 + Math.sin(ang * 5) * 2) - 0.5;
+                            else if (p.algorithm === 'escamas') t = thin(nx * 2 + Math.cos(ny * 3) * 1.5) - 0.5;
+                            else if (p.algorithm === 'red_organica') t = thin(nx * 2 + 2 * Math.sin(ny * 1.5)) * thin(ny * 2 + 2 * Math.sin(nx * 1.5)) * 2 - 0.5;
+                            else if (p.algorithm === 'topografia') t = thin(dist * 2 + 2 * Math.sin(nx * 0.5) * Math.cos(ny * 0.5)) - 0.5;
+                            else if (p.algorithm === 'marmol') t = thin(nx * 2 + 3 * Math.sin(ny * 0.5 + 2 * Math.sin(nx * 0.2))) - 0.5;
+                            else if (p.algorithm === 'cebra') t = thin(nx * 3 + 2 * Math.sin(ny * 0.8)) - 0.5;
+                            else if (p.algorithm === 'telar') t = thin(nx * 2 * Math.sin(ny * 2)) - 0.5;
+                            else if (p.algorithm === 'malla_triangular') t = (thin(nx*2) + thin(nx+ny*1.732) + thin(nx-ny*1.732)) * 0.4 - 0.5;
+                            else if (p.algorithm === 'diamantes_delgados') t = thin(Math.abs(Math.sin(nx)) + Math.abs(Math.sin(ny))) - 0.5;
+                            else if (p.algorithm === 'cruz_celta') t = Math.pow(Math.abs(Math.sin(nx*2)*Math.cos(ny*2) + Math.cos(nx*2)*Math.sin(ny*2)), 15) - 0.5;
+                            else if (p.algorithm === 'matriz_puntos') t = thin(nx * 3) * thin(ny * 3) * 2 - 0.5;
+                            else if (p.algorithm === 'circuitos') t = Math.max(thin(nx*2), thin(ny*2)) * (Math.sin(Math.floor(nx)*3.1 + Math.floor(ny)*2.7)>0?1:0) - 0.5;
+                            else if (p.algorithm === 'estrellas') t = thin(ang * 5) * thin(dist * 4) * 2 - 0.5;
+                            else if (p.algorithm === 'telarana') t = Math.max(thin(dist * 3), thin(ang * 8)) - 0.5;
+                            else if (p.algorithm === 'ilusiones_opticas') t = Math.pow(Math.abs(Math.sin(nx*2 + Math.sin(ny*2)*0.5) * Math.cos(ny*2 + Math.sin(nx*2)*0.5)), 15) - 0.5;
+                            else if (p.algorithm === 'fractal_basico') t = Math.pow(Math.abs(Math.sin(nx*2)*Math.sin(ny*2)*Math.sin(nx*4)*Math.sin(ny*4)), 8) - 0.5;
+                            else if (p.algorithm === 'lluvia_matrix') t = thin(ny * 4 + nx * 12.3) * (Math.sin(nx * 5) > 0 ? 1 : 0) - 0.5;
 
                             let res = findCl(f32[fi]+t*spread, f32[fi+1]+t*spread, f32[fi+2]+t*spread);
                             let rC = renPal[res.idx]; let idx = (y*w+x)*4;
