@@ -464,6 +464,18 @@
             <label class="text-[9px] md:text-[10px] font-semibold text-[var(--text-muted)] ml-1">Estocásticos & Experimentales</label>
             <select id="group-experimental" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-lg p-2 md:p-2.5 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector cursor-pointer"></select>
         </div>
+
+        <!-- Grupo 5: Fractales y Caos -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] md:text-[10px] font-semibold text-[var(--text-muted)] ml-1">Fractales y Caos</label>
+            <select id="group-fractal" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-lg p-2 md:p-2.5 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector cursor-pointer"></select>
+        </div>
+
+        <!-- Grupo 6: Tramados Experimentales -->
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] md:text-[10px] font-semibold text-[var(--text-muted)] ml-1">Tramados Experimentales</label>
+            <select id="group-creativo" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs md:text-sm rounded-lg p-2 md:p-2.5 text-white outline-none focus:border-[var(--accent-primary)] transition-colors group-selector cursor-pointer"></select>
+        </div>
     </div>
     
     <!-- EL CEREBRO OCULTO: Mantiene la compatibilidad -->
@@ -1129,7 +1141,9 @@
     </aside>
     <!-- === FIN PANEL DE CAPAS === -->
 
-    <script src="recursos-compartidos.js"></script>
+    <script src="algorithmGLSL.js"></script>
+<script src="recursos-compartidos.js"></script>
+<script src="webgpu-diffusion.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
@@ -1366,6 +1380,114 @@
                         { v: 'ilusiones_opticas', t: 'Ilusión Óptica Check' },
                         { v: 'fractal_basico', t: 'Patrón Fractal Básico' },
                         { v: 'lluvia_matrix', t: 'Lluvia Matrix Digital' },
+                    ]
+                },
+                {
+                    id: 'group-fractal',
+                    label: 'Fractales y Caos',
+                    options: [
+                        { v: 'frac_mandelbrot', t: 'Mandelbrot' },
+                        { v: 'frac_mandelcubic', t: 'Mandelbrot Cúbico' },
+                        { v: 'frac_mandel5', t: 'Mandelbrot 5to Orden' },
+                        { v: 'frac_julia', t: 'Julia Clásico' },
+                        { v: 'frac_juliasin', t: 'Julia Seno' },
+                        { v: 'frac_juliacos', t: 'Julia Coseno' },
+                        { v: 'frac_juliaburningship', t: 'Julia Burning Ship' },
+                        { v: 'frac_burningship', t: 'Burning Ship Clásico' },
+                        { v: 'frac_tricorn', t: 'Tricorn' },
+                        { v: 'frac_buffalo', t: 'Buffalo' },
+                        { v: 'frac_celtic', t: 'Celtic' },
+                        { v: 'frac_feather', t: 'Feather' },
+                        { v: 'frac_henon', t: 'Mapa de Hénon' },
+                        { v: 'frac_clifford', t: 'Atractor Clifford' },
+                        { v: 'frac_dejong', t: 'Atractor De Jong' },
+                        { v: 'frac_ikeda', t: 'Mapa de Ikeda' },
+                        { v: 'frac_lorenz', t: 'Atractor de Lorenz' },
+                        { v: 'frac_duffing', t: 'Atractor de Duffing' },
+                        { v: 'frac_tinkerbell', t: 'Atractor Tinkerbell' },
+                        { v: 'frac_chirikov', t: 'Mapa de Chirikov' },
+                        { v: 'frac_gumowskimira', t: 'Mapa Gumowski-Mira' },
+                        { v: 'frac_martin', t: 'Atractor de Martin' },
+                        { v: 'frac_symmetricicon', t: 'Symmetric Icon' },
+                        { v: 'frac_svensson', t: 'Atractor de Svensson' },
+                        { v: 'frac_kingsdream', t: "King's Dream" },
+                        { v: 'frac_hopalong', t: 'Atractor Hopalong' },
+                        { v: 'frac_gingerbreadman', t: 'Gingerbreadman' },
+                        { v: 'frac_rossler', t: 'Atractor de Rössler' },
+                        { v: 'frac_newton3', t: 'Newton-Raphson z³-1' },
+                        { v: 'frac_newton4', t: 'Newton-Raphson z⁴-1' },
+                        { v: 'frac_newtonsin', t: 'Newton-Raphson sin(z)-1' },
+                        { v: 'frac_novamandelbrot', t: 'Nova Mandelbrot' },
+                        { v: 'frac_novajulia', t: 'Nova Julia' },
+                        { v: 'frac_secante', t: 'Método de la Secante' },
+                        { v: 'frac_lyapunov', t: 'Fractal de Lyapunov' },
+                        { v: 'frac_popcorn', t: 'Popcorn Fractal' },
+                        { v: 'frac_fbm', t: 'Ruido Fractal FBM' },
+                        { v: 'frac_cantordust', t: 'Cantor Dust' },
+                        { v: 'frac_sierpinskicarpet', t: 'Alfombra de Sierpinski' },
+                        { v: 'frac_sierpinskingasket', t: 'Triángulo de Sierpinski' },
+                        { v: 'frac_mandelorbittrap', t: 'Mandelbrot Orbit Trap' },
+                        { v: 'frac_juliaorbittrap', t: 'Julia Orbit Trap' },
+                        { v: 'frac_cliffordorbittrap', t: 'Clifford Orbit Trap' },
+                        { v: 'frac_henonorbittrap', t: 'Henon Orbit Trap' },
+                        { v: 'frac_logistic', t: 'Mapa Logístico' },
+                        { v: 'frac_sinemap', t: 'Sine Map' },
+                        { v: 'frac_mandelbox', t: 'Corte Mandelbox' },
+                        { v: 'frac_mandelbulb', t: 'Corte Mandelbulb' },
+                        { v: 'frac_tent', t: 'Mapa Tienda' },
+                        { v: 'frac_arnoldcat', t: "Arnold's Cat Map" }
+                    ]
+                },
+                {
+                    id: 'group-creativo',
+                    label: 'Tramados Experimentales',
+                    options: [
+                        { v: 'exp_truchet', t: 'Truchet' },
+                        { v: 'exp_worley', t: 'Worley' },
+                        { v: 'exp_worley_manhattan', t: 'Worley Manhattan' },
+                        { v: 'exp_worley_chebyshev', t: 'Worley Chebyshev' },
+                        { v: 'exp_maze', t: 'Maze / Laberinto' },
+                        { v: 'exp_binary_carpet', t: 'Alfombra XOR' },
+                        { v: 'exp_binary_mod', t: 'Multiplicación Modulo' },
+                        { v: 'exp_ascii_cross', t: 'ASCII Cruz (+)' },
+                        { v: 'exp_ascii_dot', t: 'ASCII Punto Dinámico' },
+                        { v: 'exp_ascii_square', t: 'ASCII Cuadrado Concéntrico' },
+                        { v: 'exp_heart', t: 'Trama de Corazones' },
+                        { v: 'exp_star_5p', t: 'Estrellas de 5 Puntas' },
+                        { v: 'exp_glitch_v', t: 'Glitch Vertical' },
+                        { v: 'exp_glitch_h', t: 'Glitch Horizontal' },
+                        { v: 'exp_crt_scan', t: 'CRT Curvado' },
+                        { v: 'exp_voronoi_manhattan', t: 'Voronoi Manhattan' },
+                        { v: 'exp_voronoi_triangular', t: 'Voronoi Triangular' },
+                        { v: 'exp_chiral_wave', t: 'Ondas Quiral' },
+                        { v: 'exp_interlaced_cross', t: 'Cruz Entrelazada' },
+                        { v: 'exp_digit_matrix', t: 'Matrix Binaria' },
+                        { v: 'exp_letter_dither', t: 'Tipografía de Densidad' },
+                        { v: 'exp_bubble_wrap', t: 'Plástico de Burbujas' },
+                        { v: 'exp_scales_dragon', t: 'Escamas de Dragón' },
+                        { v: 'exp_weave_basket', t: 'Tejido de Cesta' },
+                        { v: 'exp_polka_dots', t: 'Lunares Retro (Polka)' },
+                        { v: 'exp_chevron', t: 'Chevron Zig-zag' },
+                        { v: 'exp_hex_lattice', t: 'Red Hexagonal' },
+                        { v: 'exp_celtic_knot', t: 'Nudo Celta' },
+                        { v: 'exp_noise_comb', t: 'Ruido Peine' },
+                        { v: 'exp_stripes_radial', t: 'Rayos Radiales' },
+                        { v: 'exp_stripes_spiral', t: 'Espirales Quiral' },
+                        { v: 'exp_halftone_sine', t: 'Halftone de Seno' },
+                        { v: 'exp_fractal_noise', t: 'Ruido Fractal Cuadrícula' },
+                        { v: 'exp_tri_grid', t: 'Rejilla Triangular' },
+                        { v: 'exp_greek_key', t: 'Greca Griega' },
+                        { v: 'exp_houndstooth', t: 'Pata de Gallo (Houndstooth)' },
+                        { v: 'exp_checkered_shift', t: 'Tablero Desplazado' },
+                        { v: 'exp_ascii_hash', t: 'ASCII Almohadilla (#)' },
+                        { v: 'exp_ascii_at', t: 'ASCII Arroba (@)' },
+                        { v: 'exp_crescent_moon', t: 'Luna Creciente' },
+                        { v: 'exp_diamond_ring', t: 'Anillos de Diamante' },
+                        { v: 'exp_honeycomb', t: 'Panal de Abeja' },
+                        { v: 'exp_dune', t: 'Dunas de Arena' },
+                        { v: 'exp_camouflage', t: 'Tramado Camuflaje' },
+                        { v: 'exp_circuit_lines', t: 'Pistas de Circuito' },
+                        { v: 'exp_crosshairs', t: 'Retícula de Enfoque' }
                     ]
                 }
             ];
@@ -2397,22 +2519,24 @@ function updatePanelLocks() {
 
                     if(originalImage.src) prog.style.width = '70%';
                     
-                    try {
-                        processMedia(); 
-                    } catch (error) {
-                        console.error('Error al procesar:', error);
-                    }
-                    
-                    if(originalImage.src) {
-                        prog.style.width = '100%';
-                        overlay.classList.add('opacity-0');
-                        setTimeout(() => {
-                            overlay.classList.add('hidden');
-                            prog.style.width = '0%';
-                        }, 250);
-                    }
-                    
-                    isRendering = false;
+                    (async () => {
+                        try {
+                            await processMedia(); 
+                        } catch (error) {
+                            console.error('Error al procesar:', error);
+                        }
+                        
+                        if(originalImage.src) {
+                            prog.style.width = '100%';
+                            overlay.classList.add('opacity-0');
+                            setTimeout(() => {
+                                overlay.classList.add('hidden');
+                                prog.style.width = '0%';
+                            }, 250);
+                        }
+                        
+                        isRendering = false;
+                    })();
                 }
             }
 
@@ -2730,7 +2854,7 @@ function updatePanelLocks() {
                 }
             }
 
-            function processMedia() {
+            async function processMedia() {
                 if (!originalImage.src) return;
 
                 // ---> SE GUARDA EL ESTADO EN LA CAPA ACTIVA ANTES DE PROCESAR (MODO CAPAS) <---
@@ -2765,8 +2889,8 @@ function updatePanelLocks() {
                 // 1. FASE DE GLITCH PRE-DITHER
                 applyGlitchEffects(imageData.data, w, h);
 
-                // 2. FASE MOTOR DITHER
-                runDitherEngine(imageData, w, h);
+                // 2. FASE MOTOR DITHER (async for worker/GPU)
+                await runDitherEngine(imageData, w, h);
 
                 const postFxEnabled = document.getElementById('enable-post-fx').checked;
                 const d = imageData.data;
@@ -2818,7 +2942,7 @@ function updatePanelLocks() {
 
 
 
-            function runDitherEngine(imageData, w, h) {
+            async function runDitherEngine(imageData, w, h) {
                 const params = {
                     algo: document.getElementById('algorithm').value,
                     brightness: parseInt(document.getElementById('brightness').value),
@@ -2844,7 +2968,7 @@ function updatePanelLocks() {
                     lutG: getLUT('g', curves),
                     lutB: getLUT('b', curves),
                 };
-                ditherEngineCore(imageData, w, h, params);
+                await acceleratedDitherEngineAsync(imageData, w, h, params);
             }
 
             // --- LÓGICA DEL CENTRO DE EXPORTACIÓN ---

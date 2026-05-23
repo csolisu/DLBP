@@ -927,18 +927,127 @@
                             <option value="lluvia_matrix">Lluvia Matrix Digital</option>
                         </select>
                     </div>
+                    
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-semibold text-[var(--text-muted)] ml-1">Fractales y Caos</label>
+                        <select id="ui-d-algo-frac" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white group-selector cursor-pointer" data-bind="algorithm">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="frac_mandelbrot">Mandelbrot</option>
+                            <option value="frac_mandelcubic">Mandelbrot Cúbico</option>
+                            <option value="frac_mandel5">Mandelbrot 5to Orden</option>
+                            <option value="frac_julia">Julia Clásico</option>
+                            <option value="frac_juliasin">Julia Seno</option>
+                            <option value="frac_juliacos">Julia Coseno</option>
+                            <option value="frac_juliaburningship">Julia Burning Ship</option>
+                            <option value="frac_burningship">Burning Ship Clásico</option>
+                            <option value="frac_tricorn">Tricorn</option>
+                            <option value="frac_buffalo">Buffalo</option>
+                            <option value="frac_celtic">Celtic</option>
+                            <option value="frac_feather">Feather</option>
+                            <option value="frac_henon">Mapa de Hénon</option>
+                            <option value="frac_clifford">Atractor Clifford</option>
+                            <option value="frac_dejong">Atractor De Jong</option>
+                            <option value="frac_ikeda">Mapa de Ikeda</option>
+                            <option value="frac_lorenz">Atractor de Lorenz</option>
+                            <option value="frac_duffing">Atractor de Duffing</option>
+                            <option value="frac_tinkerbell">Atractor Tinkerbell</option>
+                            <option value="frac_chirikov">Mapa de Chirikov</option>
+                            <option value="frac_gumowskimira">Mapa Gumowski-Mira</option>
+                            <option value="frac_martin">Atractor de Martin</option>
+                            <option value="frac_symmetricicon">Symmetric Icon</option>
+                            <option value="frac_svensson">Atractor de Svensson</option>
+                            <option value="frac_kingsdream">King's Dream</option>
+                            <option value="frac_hopalong">Atractor Hopalong</option>
+                            <option value="frac_gingerbreadman">Gingerbreadman</option>
+                            <option value="frac_rossler">Atractor de Rössler</option>
+                            <option value="frac_newton3">Newton-Raphson z³-1</option>
+                            <option value="frac_newton4">Newton-Raphson z⁴-1</option>
+                            <option value="frac_newtonsin">Newton-Raphson sin(z)-1</option>
+                            <option value="frac_novamandelbrot">Nova Mandelbrot</option>
+                            <option value="frac_novajulia">Nova Julia</option>
+                            <option value="frac_secante">Método de la Secante</option>
+                            <option value="frac_lyapunov">Fractal de Lyapunov</option>
+                            <option value="frac_popcorn">Popcorn Fractal</option>
+                            <option value="frac_fbm">Ruido Fractal FBM</option>
+                            <option value="frac_cantordust">Cantor Dust</option>
+                            <option value="frac_sierpinskicarpet">Alfombra de Sierpinski</option>
+                            <option value="frac_sierpinskingasket">Triángulo de Sierpinski</option>
+                            <option value="frac_mandelorbittrap">Mandelbrot Orbit Trap</option>
+                            <option value="frac_juliaorbittrap">Julia Orbit Trap</option>
+                            <option value="frac_cliffordorbittrap">Clifford Orbit Trap</option>
+                            <option value="frac_henonorbittrap">Henon Orbit Trap</option>
+                            <option value="frac_logistic">Mapa Logístico</option>
+                            <option value="frac_sinemap">Sine Map</option>
+                            <option value="frac_mandelbox">Corte Mandelbox</option>
+                            <option value="frac_mandelbulb">Corte Mandelbulb</option>
+                            <option value="frac_tent">Mapa Tienda</option>
+                            <option value="frac_arnoldcat">Arnold's Cat Map</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-semibold text-[var(--text-muted)] ml-1">Tramados Experimentales</label>
+                        <select id="ui-d-algo-crea" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] text-xs rounded-lg p-2 text-white group-selector cursor-pointer" data-bind="algorithm">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="exp_truchet">Truchet</option>
+                            <option value="exp_worley">Worley</option>
+                            <option value="exp_worley_manhattan">Worley Manhattan</option>
+                            <option value="exp_worley_chebyshev">Worley Chebyshev</option>
+                            <option value="exp_maze">Maze / Laberinto</option>
+                            <option value="exp_binary_carpet">Alfombra XOR</option>
+                            <option value="exp_binary_mod">Multiplicación Modulo</option>
+                            <option value="exp_ascii_cross">ASCII Cruz (+)</option>
+                            <option value="exp_ascii_dot">ASCII Punto Dinámico</option>
+                            <option value="exp_ascii_square">ASCII Cuadrado Concéntrico</option>
+                            <option value="exp_heart">Trama de Corazones</option>
+                            <option value="exp_star_5p">Estrellas de 5 Puntas</option>
+                            <option value="exp_glitch_v">Glitch Vertical</option>
+                            <option value="exp_glitch_h">Glitch Horizontal</option>
+                            <option value="exp_crt_scan">CRT Curvado</option>
+                            <option value="exp_voronoi_manhattan">Voronoi Manhattan</option>
+                            <option value="exp_voronoi_triangular">Voronoi Triangular</option>
+                            <option value="exp_chiral_wave">Ondas Quiral</option>
+                            <option value="exp_interlaced_cross">Cruz Interlacada</option>
+                            <option value="exp_digit_matrix">Lluvia Binaria Matrix</option>
+                            <option value="exp_letter_dither">ASCII Mapa de Caracteres</option>
+                            <option value="exp_bubble_wrap">Plástico de Burbujas</option>
+                            <option value="exp_scales_dragon">Escamas de Dragón</option>
+                            <option value="exp_weave_basket">Tejido de Cesta</option>
+                            <option value="exp_polka_dots">Lunares Retro</option>
+                            <option value="exp_chevron">Chevron Zig-zag</option>
+                            <option value="exp_hex_lattice">Red Hexagonal</option>
+                            <option value="exp_celtic_knot">Nudo Celta</option>
+                            <option value="exp_noise_comb">Ruido Peine</option>
+                            <option value="exp_stripes_radial">Rayos Radiales</option>
+                            <option value="exp_stripes_spiral">Espirales Quiral</option>
+                            <option value="exp_halftone_sine">Halftone de Seno</option>
+                            <option value="exp_fractal_noise">Ruido Fractal Cuadrícula</option>
+                            <option value="exp_tri_grid">Rejilla Triangular</option>
+                            <option value="exp_greek_key">Greca Griega</option>
+                            <option value="exp_houndstooth">Pata de Gallo</option>
+                            <option value="exp_checkered_shift">Tablero Desplazado</option>
+                            <option value="exp_ascii_hash">ASCII Almohadilla (#)</option>
+                            <option value="exp_ascii_at">ASCII Arroba (@)</option>
+                            <option value="exp_crescent_moon">Luna Creciente</option>
+                            <option value="exp_diamond_ring">Anillos de Diamante</option>
+                            <option value="exp_honeycomb">Panal de Abeja</option>
+                            <option value="exp_dune">Dunas de Arena</option>
+                            <option value="exp_camouflage">Camuflaje</option>
+                            <option value="exp_circuit_lines">Pistas de Circuito</option>
+                            <option value="exp_crosshairs">Retícula de Enfoque</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
             <select id="ui-d-algorithm" class="hidden" data-bind="algorithm">
-                <option value="floydSteinberg">floydSteinberg</option><option value="atkinson">atkinson</option><option value="jarvis">jarvis</option><option value="stucki">stucki</option><option value="burkes">burkes</option><option value="sierra3">sierra3</option><option value="sierra2">sierra2</option><option value="sierraLite">sierraLite</option><option value="difusion_ligera_1">difusion_ligera_1</option><option value="difusion_ligera_2">difusion_ligera_2</option><option value="micro_difusion_a">micro_difusion_a</option><option value="micro_difusion_b">micro_difusion_b</option><option value="eco_inmediato">eco_inmediato</option><option value="paso_corto_1">paso_corto_1</option><option value="paso_corto_2">paso_corto_2</option><option value="suavizado_express">suavizado_express</option><option value="difusion_puntual">difusion_puntual</option><option value="brisa_digital">brisa_digital</option><option value="horizonte_amplio">horizonte_amplio</option><option value="barrido_lateral">barrido_lateral</option><option value="difusion_panoramica">difusion_panoramica</option><option value="estela_ancha_1">estela_ancha_1</option><option value="estela_ancha_2">estela_ancha_2</option><option value="viento_digital">viento_digital</option><option value="arrastre_x">arrastre_x</option><option value="eco_horizontal">eco_horizontal</option><option value="suavizado_lateral">suavizado_lateral</option><option value="difusion_plana">difusion_plana</option><option value="caida_libre">caida_libre</option><option value="gravedad_digital">gravedad_digital</option><option value="cascada_1">cascada_1</option><option value="cascada_2">cascada_2</option><option value="goteo_profundo">goteo_profundo</option><option value="difusion_y">difusion_y</option><option value="eco_vertical">eco_vertical</option><option value="lluvia_ligera">lluvia_ligera</option><option value="desplome_suave">desplome_suave</option><option value="hilo_vertical">hilo_vertical</option><option value="sesgo_derecho_1">sesgo_derecho_1</option><option value="sesgo_izquierdo_1">sesgo_izquierdo_1</option><option value="viento_cruzado_der">viento_cruzado_der</option><option value="viento_cruzado_izq">viento_cruzado_izq</option><option value="peso_asimetrico_a">peso_asimetrico_a</option><option value="peso_asimetrico_b">peso_asimetrico_b</option><option value="difusion_oblicua_1">difusion_oblicua_1</option><option value="difusion_oblicua_2">difusion_oblicua_2</option><option value="deriva_positiva">deriva_positiva</option><option value="deriva_negativa">deriva_negativa</option><option value="ruido_disperso">ruido_disperso</option><option value="salto_cuantico_1">salto_cuantico_1</option><option value="salto_cuantico_2">salto_cuantico_2</option><option value="difusion_hueca">difusion_hueca</option><option value="anillo_difuso">anillo_difuso</option><option value="eco_tardio">eco_tardio</option><option value="difusion_fractal_mini">difusion_fractal_mini</option><option value="ajedrez_caotico">ajedrez_caotico</option><option value="salto_caballo">salto_caballo</option><option value="estallido_estelar">estallido_estelar</option><option value="bayer2">bayer2</option><option value="bayer4">bayer4</option><option value="bayer8">bayer8</option><option value="bayer16">bayer16</option><option value="cluster4">cluster4</option><option value="cluster8">cluster8</option><option value="circles">circles</option><option value="diamonds">diamonds</option><option value="squares">squares</option><option value="triangles">triangles</option><option value="ht_punto_fino">ht_punto_fino</option><option value="ht_punto_grueso">ht_punto_grueso</option><option value="ht_punto_invertido">ht_punto_invertido</option><option value="ht_elipse_h">ht_elipse_h</option><option value="ht_elipse_v">ht_elipse_v</option><option value="ht_burbujas">ht_burbujas</option><option value="ht_anillos_simples">ht_anillos_simples</option><option value="ht_puntos_dobles">ht_puntos_dobles</option><option value="ht_puntos_desfasados">ht_puntos_desfasados</option><option value="ht_micro_circulos">ht_micro_circulos</option><option value="ht_rombo_suave">ht_rombo_suave</option><option value="ht_rombo_agudo">ht_rombo_agudo</option><option value="ht_diamante_estrella">ht_diamante_estrella</option><option value="ht_diamante_roto">ht_diamante_roto</option><option value="ht_rombo_doble">ht_rombo_doble</option><option value="ht_estrellas_4p">ht_estrellas_4p</option><option value="ht_estrellas_8p">ht_estrellas_8p</option><option value="ht_rombos_entrelazados">ht_rombos_entrelazados</option><option value="ht_cruces_diagonales">ht_cruces_diagonales</option><option value="ht_diamante_invertido">ht_diamante_invertido</option><option value="ht_cuadro_suave">ht_cuadro_suave</option><option value="ht_cuadro_estricto">ht_cuadro_estricto</option><option value="ht_reticula_h">ht_reticula_h</option><option value="ht_reticula_v">ht_reticula_v</option><option value="ht_cuadros_rotados">ht_cuadros_rotados</option><option value="ht_ajedrez_suave">ht_ajedrez_suave</option><option value="ht_bloques_escalonados">ht_bloques_escalonados</option><option value="ht_cuadricula_doble">ht_cuadricula_doble</option><option value="ht_marcos_cuadrados">ht_marcos_cuadrados</option><option value="ht_ladrillos_halftone">ht_ladrillos_halftone</option><option value="ht_hex_suave">ht_hex_suave</option><option value="ht_hex_estricto">ht_hex_estricto</option><option value="ht_tri_entrelazado">ht_tri_entrelazado</option><option value="ht_piramides">ht_piramides</option><option value="ht_octogonos">ht_octogonos</option><option value="ht_engranajes">ht_engranajes</option><option value="ht_ondas_senoidales">ht_ondas_senoidales</option><option value="ht_cruces_ortogonales">ht_cruces_ortogonales</option><option value="ht_asteriscos">ht_asteriscos</option><option value="ht_malla_tejida">ht_malla_tejida</option><option value="ht_espirales_locales">ht_espirales_locales</option><option value="ht_puntos_ondulados">ht_puntos_ondulados</option><option value="ht_gotas">ht_gotas</option><option value="ht_manchas">ht_manchas</option><option value="ht_celulas">ht_celulas</option><option value="ht_ruido_geometrico">ht_ruido_geometrico</option><option value="ht_trama_acida">ht_trama_acida</option><option value="ht_puntos_derretidos">ht_puntos_derretidos</option><option value="ht_distorsion_viento">ht_distorsion_viento</option><option value="ht_interferencia">ht_interferencia</option><option value="threshold">threshold</option><option value="random">random</option><option value="blueNoise">blueNoise</option><option value="line">line</option><option value="voronoi">voronoi</option><option value="bayerProgressive">bayerProgressive</option><option value="crossHatch">crossHatch</option><option value="spiralWave">spiralWave</option><option value="hilbertPattern">hilbertPattern</option><option value="dtm">dtm</option><option value="lineas_45">lineas_45</option><option value="lineas_135">lineas_135</option><option value="lineas_v">lineas_v</option><option value="lineas_h">lineas_h</option><option value="malla_ortogonal">malla_ortogonal</option><option value="malla_diagonal">malla_diagonal</option><option value="malla_hexagonal">malla_hexagonal</option><option value="ondas_v">ondas_v</option><option value="ondas_h">ondas_h</option><option value="ondas_cruzadas">ondas_cruzadas</option><option value="zigzag_v">zigzag_v</option><option value="zigzag_h">zigzag_h</option><option value="ladrillos">ladrillos</option><option value="isometria">isometria</option><option value="cuadricula_distorsionada">cuadricula_distorsionada</option><option value="espiral_simple">espiral_simple</option><option value="espiral_doble">espiral_doble</option><option value="espiral_cuadruple">espiral_cuadruple</option><option value="anillos_concentricos">anillos_concentricos</option><option value="anillos_ondulados">anillos_ondulados</option><option value="rayos_solares">rayos_solares</option><option value="rayos_ondulados">rayos_ondulados</option><option value="vortice">vortice</option><option value="interferencia_ondas">interferencia_ondas</option><option value="moire_lineal">moire_lineal</option><option value="moire_radial">moire_radial</option><option value="ondas_sismicas">ondas_sismicas</option><option value="ruido_liquido">ruido_liquido</option><option value="espiral_cuadrada">espiral_cuadrada</option><option value="anillos_cuadrados">anillos_cuadrados</option><option value="rombos_concentricos">rombos_concentricos</option><option value="espiral_poligonal">espiral_poligonal</option><option value="madera">madera</option><option value="huella_dactilar">huella_dactilar</option><option value="escamas">escamas</option><option value="red_organica">red_organica</option><option value="topografia">topografia</option><option value="marmol">marmol</option><option value="cebra">cebra</option><option value="telar">telar</option><option value="malla_triangular">malla_triangular</option><option value="diamantes_delgados">diamantes_delgados</option><option value="cruz_celta">cruz_celta</option><option value="matriz_puntos">matriz_puntos</option><option value="circuitos">circuitos</option><option value="estrellas">estrellas</option><option value="telarana">telarana</option><option value="ilusiones_opticas">ilusiones_opticas</option><option value="fractal_basico">fractal_basico</option><option value="lluvia_matrix">lluvia_matrix</option>
+                <option value="floydSteinberg">floydSteinberg</option>...
             </select>
 
-            <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Fuerza de Error</span><span id="ui-d-errstr-val" class="text-white font-bold">100%</span></label><input type="range" id="ui-d-errstr" min="0" max="200" data-bind="errstr"></div>
-            
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-3 gap-3">
                 <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Sesgo General</span><span id="ui-d-bias-val">0</span></label><input type="range" id="ui-d-bias" min="-128" max="128" data-bind="bias"></div>
-                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Escala de Patrón</span><span id="ui-d-patscale-val">1.0x</span></label><input type="range" id="ui-d-patscale" min="1" max="20" step="0.5" data-bind="patScale"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Fuerza Error</span><span id="ui-d-errstr-val">100%</span></label><input type="range" id="ui-d-errstr" min="0" max="200" data-bind="errstr"></div>
+                <div><label class="flex justify-between text-[10px] font-medium text-[var(--text-muted)] mb-2"><span>Escala Patrón</span><span id="ui-d-patscale-val">1.0x</span></label><input type="range" id="ui-d-patscale" min="1" max="20" step="0.5" data-bind="patScale"></div>
             </div>
 
             <div class="bg-[var(--bg-input)] rounded-xl p-3 border border-[var(--border-color)]">
@@ -1268,7 +1377,9 @@
             </div>
         </div>
 
-    <script src="recursos-compartidos.js"></script>
+    <script src="algorithmGLSL.js"></script>
+<script src="recursos-compartidos.js"></script>
+<script src="webgpu-diffusion.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
@@ -1664,6 +1775,9 @@
                         newEl.addEventListener(eventName, e => {
                             let val = e.target.type==='checkbox' ? e.target.checked : 
                                       e.target.type==='range' ? parseFloat(e.target.value) : e.target.value;
+                            
+                            if ((key === 'algorithm' || newEl.classList.contains('group-selector')) && val === "") return;
+                            
                             node.params[key] = val;
                             
                             const lbl = document.getElementById(`${newEl.id}-val`);
@@ -1677,7 +1791,7 @@
                             }
 
                             if(key === 'algorithm' || newEl.classList.contains('group-selector')) {
-                                if(newEl.classList.contains('group-selector') && val !== "") {
+                                if(newEl.classList.contains('group-selector')) {
                                     node.params.algorithm = val;
                                     const algoDisplay = document.getElementById('ui-d-algo-display');
                                     if(algoDisplay) algoDisplay.textContent = newEl.options[newEl.selectedIndex].text;
@@ -2045,7 +2159,7 @@
                 let inputData = null;
                 if(link) inputData = await evaluateNode(link.from);
 
-                let resultData = applyNodeEffect(node, inputData, nodeId);
+                let resultData = await applyNodeEffect(node, inputData, nodeId);
                 
                 // MEZCLA DE OPACIDAD GLOBAL Y MODOS DE FUSIÓN (CANVAS GLOBALCOMPOSITEOPERATION)
                 if (inputData && resultData && node.type !== 'input' && node.type !== 'output') {
@@ -2091,7 +2205,7 @@
                 return resultData;
             }
 
-            function applyNodeEffect(node, inData, nodeId) {
+            async function applyNodeEffect(node, inData, nodeId) {
                 if(node.type === 'input') {
                     if(!state.originalImageObj || !node.params.imgDataUrl) return null;
                     const sc = node.params.scale / 100;
@@ -2123,7 +2237,7 @@
                 if(node.type === 'adjust') return processAdjust(outData, w, h, node.params);
                 if(node.type === 'palette') return processPalette(outData, w, h, node.params);
                 if(node.type === 'glitch') return processGlitch(outData, w, h, node.params);
-                if(node.type === 'dither') return processDither(outData, w, h, node.params, nodeId);
+                if(node.type === 'dither') return await processDither(outData, w, h, node.params, nodeId);
                 if(node.type === 'postfx') return processPostFx(outData, w, h, node.params);
 
                 return outData;
@@ -2324,7 +2438,7 @@
                 return getDefaultParams('palette'); 
             }
 
-            function processDither(imgData, w, h, p, nodeId) {
+            async function processDither(imgData, w, h, p, nodeId) {
                 const paletteParams = getUpstreamPaletteParams(nodeId);
                 const d = imgData.data;
                 const actPal = getFinalPalette(paletteParams);
@@ -2364,7 +2478,7 @@
                     origAlpha[j] = d[i + 3];
                 }
                 
-                ditherEngineCore(imgData, w, h, params);
+                await acceleratedDitherEngineAsync(imgData, w, h, params);
                 
                 // Restore original alpha values (dither core sets alpha to 255 for all pixels)
                 for (let i = 0, j = 0; i < d.length; i += 4, j++) {
@@ -2647,6 +2761,7 @@
             state.links.push({id:'l4', from:idD, to:idO});
             
             renderWorkspace();
+            triggerProcess();
         });
     </script>
 </body>
