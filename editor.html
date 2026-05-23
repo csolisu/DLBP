@@ -1583,6 +1583,9 @@
             let selectedPostColorHex = null;
             let postModifications = {};
 
+            let _dirtyPaletteSquares = true;
+            let _dirtyIsoSquares = true;
+
             // --- LISTADO DE IDs DE ESTADOS SIMPLES PARA CAPAS ---
             const simpleStateIds = [
                 'scale', 'ch-r', 'ch-g', 'ch-b', 'brightness', 'contrast', 'gamma', 'saturation',
@@ -1686,6 +1689,8 @@
                         customColorsArray[index] = e.target.value;
                         wrapper.style.backgroundColor = e.target.value;
                         document.getElementById('palette').value = 'custom';
+                        _dirtyPaletteSquares = true;
+                        _dirtyIsoSquares = true;
                         scheduleProcess();
                     });
                     
@@ -1701,6 +1706,8 @@
                             customColorsArray.splice(index, 1);
                             document.getElementById('palette').value = 'custom';
                             renderCustomColors();
+                            _dirtyPaletteSquares = true;
+                            _dirtyIsoSquares = true;
                             scheduleProcess();
                         };
                         wrapper.appendChild(delBtn);
@@ -1721,6 +1728,8 @@
                             customColorsArray.splice(toIndex, 0, movedItem);
                             document.getElementById('palette').value = 'custom';
                             renderCustomColors();
+                            _dirtyPaletteSquares = true;
+                            _dirtyIsoSquares = true;
                             scheduleProcess();
                         }
                     });
@@ -1737,6 +1746,8 @@
                         customColorsArray.push('#888888');
                         document.getElementById('palette').value = 'custom';
                         renderCustomColors();
+                        _dirtyPaletteSquares = true;
+                        _dirtyIsoSquares = true;
                         scheduleProcess();
                     }
                 };
@@ -1754,6 +1765,8 @@
                         customColorsArray = [...palettesBase['bw']];
                     }
                     renderCustomColors();
+                    _dirtyPaletteSquares = true;
+                    _dirtyIsoSquares = true;
                     scheduleProcess();
                 };
                 container.appendChild(resetBtn);
@@ -2114,12 +2127,11 @@
                 else x = Math.max(pts[idx-1].x + 1, Math.min(pts[idx+1].x - 1, x));
                 draggingPointCurve.x = x; draggingPointCurve.y = Math.max(0, Math.min(255, y));
                 drawCurve();
-                scheduleProcess();
             }
 
             curveCanvas.addEventListener('mousedown', (e) => startCurveInteraction(e.clientX, e.clientY));
             curveCanvas.addEventListener('mousemove', (e) => moveCurveInteraction(e.clientX, e.clientY));
-            window.addEventListener('mouseup', () => draggingPointCurve = null);
+            window.addEventListener('mouseup', () => { draggingPointCurve = null; scheduleProcess(); });
             curveCanvas.addEventListener('dblclick', (e) => {
                 const r = curveCanvas.getBoundingClientRect();
                 let x = (e.clientX - r.left) * (curveCanvas.width / r.width);
@@ -2194,6 +2206,7 @@
                     }
                     
                     scheduleProcess();
+                    updateEstimatedSize();
                     URL.revokeObjectURL(url);
                 };
             }
@@ -2239,12 +2252,16 @@
                 }
                 isolatedColors.clear(); 
                 renderPostColorSelector();
+                _dirtyPaletteSquares = true;
+                _dirtyIsoSquares = true;
                 scheduleProcess();
             });
 
             document.getElementById('invert-palette').addEventListener('change', () => {
                 isolatedColors.clear(); 
                 renderPostColorSelector();
+                _dirtyPaletteSquares = true;
+                _dirtyIsoSquares = true;
             });
 
             simpleStateIds.forEach(id => {
@@ -2264,7 +2281,7 @@
                             if(lbl) lbl.textContent = text;
                         }
                     }
-                    scheduleProcess();
+                    if (id !== 'scale') scheduleProcess();
                 });
             });
 
@@ -2286,6 +2303,8 @@
                     if (id === 'post-light') postModifications[selectedPostColorHex].l = val;
 
                     renderPostColorSelector();
+                    _dirtyPaletteSquares = true;
+                    _dirtyIsoSquares = true;
                     scheduleProcess();
                 });
             });
@@ -2420,6 +2439,8 @@ function updatePanelLocks() {
                 isolatedColors.clear(); 
                 
                 renderCustomColors();
+                _dirtyPaletteSquares = true;
+                _dirtyIsoSquares = true;
                 scheduleProcess();
                 
                 showToast('Ajustes restaurados a los valores por defecto', 'success');
@@ -2497,13 +2518,18 @@ function updatePanelLocks() {
                 selectedPostColorHex = null;
 
                 renderCustomColors();
+                _dirtyPaletteSquares = true;
+                _dirtyIsoSquares = true;
                 scheduleProcess();
                 
                 showToast('Paleta extraída correctamente', 'success');
             });
 
             // --- RENDERIZADO PRINCIPAL (CON BARRA DE PROGRESO) ---
+            let _processTimer = null;
             function scheduleProcess() {
+                if(_processTimer) clearTimeout(_processTimer);
+                _processTimer = setTimeout(() => {
                 if(!isRendering) {
                     isRendering = true;
                     
@@ -2538,6 +2564,7 @@ function updatePanelLocks() {
                         isRendering = false;
                     })();
                 }
+                }, 150);
             }
 
             function applyBoxBlur(data, width, height, radius) {
@@ -2759,6 +2786,14 @@ function updatePanelLocks() {
                 let doMonoTint = document.getElementById('post-mono-tint').checked;
                 let doClarity = document.getElementById('post-clarity').checked;
 
+                let mTint = null, colorDark = null, colorLight = null;
+                if (doMonoTint) {
+                    const finalPal2 = getFinalActivePalette();
+                    mTint = getRenderPalette(finalPal2);
+                    colorDark = mTint[0];
+                    colorLight = mTint[mTint.length-1] || [255,255,255];
+                }
+
                 let bloomData = null;
                 if (bloom > 0) {
                     bloomData = applyBoxBlur(new Uint8ClampedArray(data), w, h, bloom * 10);
@@ -2840,9 +2875,6 @@ function updatePanelLocks() {
                         }
 
                         if (doMonoTint) {
-                            let mTint = getRenderPalette(getFinalActivePalette());
-                            let colorDark = mTint[0];
-                            let colorLight = mTint[mTint.length-1] || [255,255,255];
                             let mix = Math.max(0, Math.min(1, (0.299*r + 0.587*g + 0.114*b) / 255));
                             r = colorDark[0] * (1-mix) + colorLight[0] * mix;
                             g = colorDark[1] * (1-mix) + colorLight[1] * mix;
@@ -2931,7 +2963,6 @@ function updatePanelLocks() {
                 setTimeout(() => {
                     updatePaletteSquares();
                     updateIsolationSquares();
-                    updateEstimatedSize();
                     
                     if(activeLayerId && window.updateLayerThumbnail && isLayersMode) {
                         window.updateLayerThumbnail(activeLayerId);
@@ -2943,6 +2974,7 @@ function updatePanelLocks() {
 
 
             async function runDitherEngine(imageData, w, h) {
+                const finalPal = getFinalActivePalette();
                 const params = {
                     algo: document.getElementById('algorithm').value,
                     brightness: parseInt(document.getElementById('brightness').value),
@@ -2961,8 +2993,8 @@ function updatePanelLocks() {
                     clipping: parseInt(document.getElementById('clipping').value),
                     rotDeg: parseInt(document.getElementById('algo-rot').value),
                     errBias: parseInt(document.getElementById('algo-bias').value) / 100,
-                    activePalette: getFinalActivePalette(),
-                    renderPalette: getRenderPalette(getFinalActivePalette()),
+                    activePalette: finalPal,
+                    renderPalette: getRenderPalette(finalPal),
                     lutM: getLUT('master', curves),
                     lutR: getLUT('r', curves),
                     lutG: getLUT('g', curves),
@@ -3015,6 +3047,7 @@ function updatePanelLocks() {
             }
 
             function updatePaletteSquares() {
+                if (!_dirtyPaletteSquares) return;
                 const finalPalette = getPostProcessedPalette();
                 const paletteToRender = finalPalette.map(rgb => '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('').toLowerCase());
 
@@ -3047,6 +3080,7 @@ function updatePanelLocks() {
                     fragment.appendChild(squareWrapper);
                 });
                 container.appendChild(fragment);
+                _dirtyPaletteSquares = false;
             }
 
             // GESTIÓN DEL BOTÓN COPIAR CSS VARIABLES
@@ -3070,6 +3104,7 @@ function updatePanelLocks() {
             });
 
             function updateIsolationSquares() {
+                if (!_dirtyIsoSquares) return;
                 const finalPalette = getPostProcessedPalette();
                 const paletteToRender = finalPalette.map(rgb => '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('').toLowerCase());
                 
@@ -3112,6 +3147,8 @@ function updatePanelLocks() {
                         } else {
                             isolatedColors.add(visualHex);
                         }
+                        _dirtyPaletteSquares = true;
+                        _dirtyIsoSquares = true;
                         scheduleProcess();
                     });
                     
@@ -3119,6 +3156,7 @@ function updatePanelLocks() {
                     fragment.appendChild(squareWrapper);
                 });
                 container.appendChild(fragment);
+                _dirtyIsoSquares = false;
             }
 
             // --- EXPORTACIÓN ---
@@ -3227,6 +3265,8 @@ document.getElementById('export-svg-btn').addEventListener('click', () => {
 
             document.getElementById('restore-isolation-btn').addEventListener('click', () => {
                 isolatedColors.clear();
+                _dirtyPaletteSquares = true;
+                _dirtyIsoSquares = true;
                 updateIsolationSquares();
                 scheduleProcess();
                 showToast('Aislamiento de colores restaurado', 'success');
@@ -3388,7 +3428,7 @@ document.getElementById('export-svg-btn').addEventListener('click', () => {
                     applySettingsToUI(layer.settings);
                 }
                 
-                scheduleProcess();
+                if (window.compositeLayers) { window.compositeLayers(); }
             }
 
             window.updateLayerThumbnail = function(id) {
@@ -3425,7 +3465,7 @@ document.getElementById('export-svg-btn').addEventListener('click', () => {
                     const isActive = layer.id === activeLayerId;
                     
                     const item = document.createElement('div');
-                    item.className = `layer-item ${isActive ? 'active' : ''} mb-3 relative overflow-hidden`;
+                    item.className = `layer-item ${isActive ? 'active' : ''} mb-3 relative`;
                     item.onclick = () => { if (!isActive) selectLayer(layer.id); };
                     
                     // --- HEADER DE CAPA (Visibilidad, Thumbnail, Nombre, Borrar) ---

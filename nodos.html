@@ -1460,6 +1460,7 @@
                 previewZoom: 1, previewPanX: 0, previewPanY: 0, isPreviewPanning: false,
                 isComparing: false, comparePercent: 50
             };
+            let _dirtyExport = true;
 
             function getDefaultParams(type) {
                 if(type === 'input') return { scale: 25, imgDataUrl: null };
@@ -1927,9 +1928,9 @@
                     const idx = pts.indexOf(draggingCurvePt);
                     if(idx===0) draggingCurvePt.x=0; else if(idx===pts.length-1) draggingCurvePt.x=255;
                     else draggingCurvePt.x = Math.max(pts[idx-1].x+1, Math.min(pts[idx+1].x-1, x));
-                    draggingCurvePt.y = y; draw(); triggerProcess();
+                    draggingCurvePt.y = y; draw();
                 });
-                window.addEventListener('mouseup', () => draggingCurvePt = null);
+                window.addEventListener('mouseup', () => { draggingCurvePt = null; triggerProcess(); });
                 newCanvas.addEventListener('dblclick', e => {
                     const {x,y} = getEvtCoords(e);
                     const pts = node.params.curves[node.params.curveChannel];
@@ -1962,14 +1963,14 @@
                             node.params.customColors[idx] = e.target.value;
                             wrap.style.backgroundColor = e.target.value;
                             node.params.palette = 'custom'; document.getElementById('ui-p-palette').value = 'custom';
-                            triggerProcess(); renderPostSelectors();
+                            triggerProcess(); renderPostSelectors(); _dirtyExport = true;
                         };
                         wrap.appendChild(inp);
                         
                         if(node.params.customColors.length>2) {
                             const del = document.createElement('div');
                             del.className = 'color-del-btn'; del.innerHTML = '&times;';
-                            del.onclick = e => { e.stopPropagation(); node.params.customColors.splice(idx,1); renderCustom(); renderPostSelectors(); triggerProcess(); };
+                            del.onclick = e => { e.stopPropagation(); node.params.customColors.splice(idx,1); renderCustom(); renderPostSelectors(); _dirtyExport = true; triggerProcess(); };
                             wrap.appendChild(del);
                         }
                         
@@ -1981,7 +1982,7 @@
                             if(fIdx!==idx && !isNaN(fIdx)) {
                                 const [m] = node.params.customColors.splice(fIdx, 1);
                                 node.params.customColors.splice(idx,0,m);
-                                renderCustom(); renderPostSelectors(); triggerProcess();
+                                renderCustom(); renderPostSelectors(); _dirtyExport = true; triggerProcess();
                             }
                         };
                         box.appendChild(wrap);
@@ -1990,7 +1991,7 @@
                     const add = document.createElement('button');
                     add.className = 'w-8 h-8 rounded-full border border-dashed border-[var(--text-muted)] text-[var(--text-muted)] hover:text-white flex justify-center items-center';
                     add.innerHTML = '+';
-                    add.onclick = () => { if(node.params.customColors.length<32) { node.params.customColors.push('#888888'); renderCustom(); renderPostSelectors(); triggerProcess(); } };
+                    add.onclick = () => { if(node.params.customColors.length<32) { node.params.customColors.push('#888888'); renderCustom(); renderPostSelectors(); _dirtyExport = true; triggerProcess(); } };
                     box.appendChild(add);
                 };
 
@@ -2037,7 +2038,7 @@
                         if(id==='ui-p-ps') node.params.postMod[node.params.selectedPostHex].s = val;
                         if(id==='ui-p-pl') node.params.postMod[node.params.selectedPostHex].l = val;
                         document.getElementById(`${id}-val`).textContent = val + (id==='ui-p-ph'?'°':'%');
-                        renderPostSelectors(); triggerProcess();
+                        renderPostSelectors(); _dirtyExport = true; triggerProcess();
                     };
                 });
 
@@ -2079,6 +2080,7 @@
                     }
                     renderCustom(); 
                     renderPostSelectors(); 
+                    _dirtyExport = true;
                 });
 
                 document.getElementById('ui-p-invert').addEventListener('change', () => { renderPostSelectors(); });
@@ -2089,7 +2091,7 @@
             let processTimer = null;
             function triggerProcess() {
                 if(processTimer) clearTimeout(processTimer);
-                processTimer = setTimeout(() => executeGraph(), 50); 
+                processTimer = setTimeout(() => executeGraph(), 150); 
             }
 
             const canvasOrig = document.getElementById('canvas-original');
@@ -2570,6 +2572,7 @@
             }
 
             function updateExportCenters(outNodeId) {
+                if (!_dirtyExport) return;
                 let lastPalette = null;
                 let curr = state.nodes[outNodeId];
                 while(curr) {
@@ -2609,15 +2612,16 @@
                         w.onclick = () => {
                             if(state.globalIsolatedColors.has(hex)) state.globalIsolatedColors.delete(hex);
                             else state.globalIsolatedColors.add(hex);
-                            triggerProcess();
+                            _dirtyExport = true; triggerProcess();
                         };
                         w.appendChild(cross);
                         sqContainer.appendChild(w);
                     });
                 }
+                _dirtyExport = false;
             }
 
-            document.getElementById('restore-isolation-btn').onclick = () => { state.globalIsolatedColors.clear(); triggerProcess(); };
+            document.getElementById('restore-isolation-btn').onclick = () => { state.globalIsolatedColors.clear(); _dirtyExport = true; triggerProcess(); };
             document.getElementById('btn-process').onclick = () => triggerProcess();
 
             const previewSection = document.getElementById('preview-section');
