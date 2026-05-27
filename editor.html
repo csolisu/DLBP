@@ -2119,7 +2119,18 @@
 
             curveCanvas.addEventListener('mousedown', (e) => startCurveInteraction(e.clientX, e.clientY));
             curveCanvas.addEventListener('mousemove', (e) => moveCurveInteraction(e.clientX, e.clientY));
-            window.addEventListener('mouseup', () => { draggingPointCurve = null; scheduleProcess(); });
+            window.addEventListener('mouseup', () => {
+                if (draggingPointCurve) {
+                    draggingPointCurve = null;
+                    scheduleProcess();
+                }
+            });
+            window.addEventListener('touchend', () => {
+                if (draggingPointCurve) {
+                    draggingPointCurve = null;
+                    scheduleProcess();
+                }
+            });
             curveCanvas.addEventListener('dblclick', (e) => {
                 const r = curveCanvas.getBoundingClientRect();
                 let x = (e.clientX - r.left) * (curveCanvas.width / r.width);
@@ -2942,7 +2953,11 @@ function updatePanelLocks() {
                     document.getElementById('glitch-bitplane').value,
                     document.getElementById('glitch-underflow').value,
                     document.getElementById('glitch-sort').value,
-                    document.getElementById('glitch-sort-v').value
+                    document.getElementById('glitch-sort-v').value,
+                    document.getElementById('glitch-hsync').value,
+                    document.getElementById('glitch-chroma').value,
+                    document.getElementById('glitch-drift').value,
+                    document.getElementById('glitch-interlace').value
                 ].join('|');
 
                 const currentDitherHash = [
@@ -2964,7 +2979,8 @@ function updatePanelLocks() {
                     document.getElementById('clipping').value,
                     document.getElementById('algo-rot').value,
                     document.getElementById('algo-bias').value,
-                    getFinalActivePalette().map(c => c.join(',')).join('|')
+                    getFinalActivePalette().map(c => c.join(',')).join('|'),
+                    JSON.stringify(curves)
                 ].join(';');
 
                 let imageData;
