@@ -423,6 +423,10 @@ function ditherEngineCore(imageData, w, h, params) {
     if (estocasticGroup.includes(algo)) {
         let spread = errStrength * 128;
         const thin = (v) => Math.pow(Math.abs(Math.sin(v)), 30);
+        const wHalfPatScale = w / (2 * patScale);
+        const hHalfPatScale = h / (2 * patScale);
+        const useCircleMath = ['ht_engranajes', 'spiralWave', 'espiral_simple', 'espiral_doble', 'espiral_cuadruple', 'anillos_concentricos', 'anillos_ondulados', 'rayos_solares', 'rayos_ondulados', 'vortice', 'moire_radial', 'espiral_cuadrada', 'anillos_cuadrados', 'rombos_concentricos', 'espiral_poligonal', 'madera', 'huella_dactilar', 'topografia', 'estrellas', 'telarana', 'exp_chiral_wave', 'exp_interlaced_cross', 'exp_stripes_radial', 'exp_stripes_spiral', 'frac_mandelbrot', 'frac_mandelcubic', 'frac_mandel5', 'frac_julia', 'frac_juliasin', 'frac_juliacos', 'frac_juliaburningship', 'frac_burningship', 'frac_tricorn', 'frac_buffalo', 'frac_celtic', 'frac_feather', 'frac_henon', 'frac_clifford', 'frac_dejong', 'frac_ikeda', 'frac_lorenz', 'frac_duffing', 'frac_tinkerbell', 'frac_chirikov', 'frac_gumowskimira', 'frac_martin', 'frac_symmetricicon', 'frac_svensson', 'frac_kingsdream', 'frac_hopalong', 'frac_gingerbreadman', 'frac_rossler', 'frac_newton3', 'frac_newton4', 'frac_newtonsin', 'frac_novamandelbrot', 'frac_novajulia', 'frac_secante', 'frac_lyapunov', 'frac_popcorn', 'frac_cantordust', 'frac_mandelorbittrap', 'frac_juliaorbittrap', 'frac_cliffordorbittrap', 'frac_henonorbittrap', 'frac_logistic', 'frac_sinemap', 'frac_mandelbox', 'frac_mandelbulb', 'frac_tent', 'frac_arnoldcat'].includes(algo);
+        const useLuma = ['crossHatch', 'exp_truchet', 'exp_worley', 'exp_worley_manhattan', 'exp_worley_chebyshev', 'exp_maze', 'exp_binary_carpet', 'exp_binary_mod', 'exp_ascii_cross', 'exp_ascii_dot', 'exp_ascii_square', 'exp_heart', 'exp_star_5p', 'exp_glitch_v', 'exp_glitch_h', 'exp_crt_scan', 'exp_halftone_cmyk', 'exp_digit_matrix', 'exp_letter_dither', 'exp_scales_dragon', 'exp_weave_basket', 'exp_polka_dots', 'exp_stripes_radial', 'exp_stripes_spiral', 'exp_dune', 'exp_camouflage'].includes(algo);
         for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
                 let idx = (y * w + x) * 4;
@@ -436,91 +440,104 @@ function ditherEngineCore(imageData, w, h, params) {
                 let nx = x / patScale; let ny = y / patScale;
                 let t = 0;
                 let tr = null, tg = null, tb = null;
-                let luma = (0.299*f32[fi] + 0.587*f32[fi+1] + 0.114*f32[fi+2]) / 255;
-                if (luma < 0) luma = 0; else if (luma > 1) luma = 1;
-                let cx = nx - w/(2*patScale); 
-                let cy = ny - h/(2*patScale);
-                let dist = Math.sqrt(cx*cx + cy*cy);
-                let ang = Math.atan2(cy, cx);
-                if (algo === 'random') t = Math.random() - 0.5;
-                else if (algo === 'line') t = (Math.sin(nx * 1.5 + ny * 0.5) + 1) / 2 - 0.5;
-                else if (algo === 'blueNoise') { let ign = 52.9829189 * ((0.06711056 * x + 0.00583715 * y) % 1); t = (ign - Math.floor(ign)) - 0.5; }
-                else if (algo === 'circles') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) / 2;
-                else if (algo === 'diamonds') t = (Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI)) / 4;
-                else if (algo === 'squares') t = Math.max(Math.abs(Math.sin(nx * Math.PI)), Math.abs(Math.sin(ny * Math.PI))) - 0.5;
-                else if (algo === 'triangles') { let sq3 = Math.sqrt(3); t = (Math.sin((nx + ny / sq3) * Math.PI) + Math.sin((nx - ny / sq3) * Math.PI) + Math.sin((ny * 2 / sq3) * Math.PI)) / 6; }
-                // --- HALFTONE: Puntos y Círculos ---
-                else if (algo === 'ht_punto_fino') t = Math.pow(Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI), 2) - 0.5;
-                else if (algo === 'ht_punto_grueso') t = (Math.sin(nx * Math.PI * 0.5) * Math.sin(ny * Math.PI * 0.5)) - 0.25;
-                else if (algo === 'ht_punto_invertido') t = -((Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) / 2);
-                else if (algo === 'ht_elipse_h') t = (Math.sin(nx * Math.PI * 1.5) * Math.sin(ny * Math.PI)) / 2;
-                else if (algo === 'ht_elipse_v') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI * 1.5)) / 2;
-                else if (algo === 'ht_burbujas') t = Math.abs(Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) - 0.5;
-                else if (algo === 'ht_anillos_simples') t = Math.sin(Math.sqrt(nx*nx + ny*ny) * Math.PI * 4) / 2;
-                else if (algo === 'ht_puntos_dobles') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI) + Math.sin(nx * Math.PI * 2) * Math.sin(ny * Math.PI * 2)) / 4;
-                else if (algo === 'ht_puntos_desfasados') t = (Math.sin(nx * Math.PI + ny) * Math.sin(ny * Math.PI - nx)) / 2;
-                else if (algo === 'ht_micro_circulos') t = (Math.sin(nx * Math.PI * 3) * Math.sin(ny * Math.PI * 3)) / 2;
+                let cx = 0, cy = 0, dist = 0, ang = 0;
+                if (useCircleMath) {
+                    cx = nx - wHalfPatScale;
+                    cy = ny - hHalfPatScale;
+                    dist = Math.sqrt(cx*cx + cy*cy);
+                    ang = Math.atan2(cy, cx);
+                }
+                let luma = 0;
+                if (useLuma) {
+                    luma = (0.299*f32[fi] + 0.587*f32[fi+1] + 0.114*f32[fi+2]) / 255;
+                    if (luma < 0) luma = 0; else if (luma > 1) luma = 1;
+                }
+                switch (algo) {
+                    case 'random': t = Math.random() - 0.5; break;
+                    case 'line': t = (Math.sin(nx * 1.5 + ny * 0.5) + 1) / 2 - 0.5; break;
+                    case 'blueNoise':
+                        { let ign = 52.9829189 * ((0.06711056 * x + 0.00583715 * y) % 1); t = (ign - Math.floor(ign)) - 0.5; }
+                        break;
+                    case 'circles': t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) / 2; break;
+                    case 'diamonds': t = (Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI)) / 4; break;
+                    case 'squares': t = Math.max(Math.abs(Math.sin(nx * Math.PI)), Math.abs(Math.sin(ny * Math.PI))) - 0.5; break;
+                    case 'triangles': { let sq3 = Math.sqrt(3); t = (Math.sin((nx + ny / sq3) * Math.PI) + Math.sin((nx - ny / sq3) * Math.PI) + Math.sin((ny * 2 / sq3) * Math.PI)) / 6; }
+                // --- HALFTONE: Puntos y Círculos --- break;
+                    case 'ht_punto_fino': t = Math.pow(Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI), 2) - 0.5; break;
+                    case 'ht_punto_grueso': t = (Math.sin(nx * Math.PI * 0.5) * Math.sin(ny * Math.PI * 0.5)) - 0.25; break;
+                    case 'ht_punto_invertido': t = -((Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) / 2); break;
+                    case 'ht_elipse_h': t = (Math.sin(nx * Math.PI * 1.5) * Math.sin(ny * Math.PI)) / 2; break;
+                    case 'ht_elipse_v': t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI * 1.5)) / 2; break;
+                    case 'ht_burbujas': t = Math.abs(Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI)) - 0.5; break;
+                    case 'ht_anillos_simples': t = Math.sin(Math.sqrt(nx*nx + ny*ny) * Math.PI * 4) / 2; break;
+                    case 'ht_puntos_dobles': t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI) + Math.sin(nx * Math.PI * 2) * Math.sin(ny * Math.PI * 2)) / 4; break;
+                    case 'ht_puntos_desfasados': t = (Math.sin(nx * Math.PI + ny) * Math.sin(ny * Math.PI - nx)) / 2; break;
+                    case 'ht_micro_circulos': t = (Math.sin(nx * Math.PI * 3) * Math.sin(ny * Math.PI * 3)) / 2;
 
-                // --- HALFTONE: Rombos y Diamantes ---
-                else if (algo === 'ht_rombo_suave') t = (Math.cos(nx * Math.PI) + Math.cos(ny * Math.PI)) / 4;
-                else if (algo === 'ht_rombo_agudo') t = (Math.abs(Math.cos(nx * Math.PI)) + Math.abs(Math.cos(ny * Math.PI))) / 2 - 0.5;
-                else if (algo === 'ht_diamante_estrella') t = (Math.pow(Math.sin(nx * Math.PI), 3) + Math.pow(Math.sin(ny * Math.PI), 3)) / 4;
-                else if (algo === 'ht_diamante_roto') t = (Math.sin(nx * Math.PI) + Math.cos(ny * Math.PI)) / 4;
-                else if (algo === 'ht_rombo_doble') t = (Math.sin(nx * Math.PI) * Math.cos(ny * Math.PI) + Math.cos(nx * Math.PI) * Math.sin(ny * Math.PI)) / 4;
-                else if (algo === 'ht_estrellas_4p') t = Math.pow(Math.sin(nx * Math.PI) * Math.cos(ny * Math.PI), 2) - 0.5;
-                else if (algo === 'ht_estrellas_8p') t = (Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI) + Math.sin((nx+ny) * Math.PI)) / 6;
-                else if (algo === 'ht_rombos_entrelazados') t = Math.sin((nx + ny) * Math.PI) * Math.sin((nx - ny) * Math.PI) / 2;
-                else if (algo === 'ht_cruces_diagonales') t = (Math.abs(Math.sin((nx + ny) * Math.PI)) - Math.abs(Math.cos((nx - ny) * Math.PI))) / 2;
-                else if (algo === 'ht_diamante_invertido') t = -((Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI)) / 4);
+                // --- HALFTONE: Rombos y Diamantes --- break;
+                    case 'ht_rombo_suave': t = (Math.cos(nx * Math.PI) + Math.cos(ny * Math.PI)) / 4; break;
+                    case 'ht_rombo_agudo': t = (Math.abs(Math.cos(nx * Math.PI)) + Math.abs(Math.cos(ny * Math.PI))) / 2 - 0.5; break;
+                    case 'ht_diamante_estrella': t = (Math.pow(Math.sin(nx * Math.PI), 3) + Math.pow(Math.sin(ny * Math.PI), 3)) / 4; break;
+                    case 'ht_diamante_roto': t = (Math.sin(nx * Math.PI) + Math.cos(ny * Math.PI)) / 4; break;
+                    case 'ht_rombo_doble': t = (Math.sin(nx * Math.PI) * Math.cos(ny * Math.PI) + Math.cos(nx * Math.PI) * Math.sin(ny * Math.PI)) / 4; break;
+                    case 'ht_estrellas_4p': t = Math.pow(Math.sin(nx * Math.PI) * Math.cos(ny * Math.PI), 2) - 0.5; break;
+                    case 'ht_estrellas_8p': t = (Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI) + Math.sin((nx+ny) * Math.PI)) / 6; break;
+                    case 'ht_rombos_entrelazados': t = Math.sin((nx + ny) * Math.PI) * Math.sin((nx - ny) * Math.PI) / 2; break;
+                    case 'ht_cruces_diagonales': t = (Math.abs(Math.sin((nx + ny) * Math.PI)) - Math.abs(Math.cos((nx - ny) * Math.PI))) / 2; break;
+                    case 'ht_diamante_invertido': t = -((Math.sin(nx * Math.PI) + Math.sin(ny * Math.PI)) / 4);
 
-                // --- HALFTONE: Cuadrados y Retículas ---
-                else if (algo === 'ht_cuadro_suave') t = (Math.cos(nx * Math.PI * 2) * Math.cos(ny * Math.PI * 2)) / 2;
-                else if (algo === 'ht_cuadro_estricto') t = Math.max(Math.sin(nx * Math.PI), Math.cos(ny * Math.PI)) - 0.5;
-                else if (algo === 'ht_reticula_h') t = Math.sin(ny * Math.PI * 2) / 2;
-                else if (algo === 'ht_reticula_v') t = Math.sin(nx * Math.PI * 2) / 2;
-                else if (algo === 'ht_cuadros_rotados') t = Math.max(Math.abs(Math.sin((nx + ny) * Math.PI)), Math.abs(Math.sin((nx - ny) * Math.PI))) - 0.5;
-                else if (algo === 'ht_ajedrez_suave') t = Math.sin((nx + ny) * Math.PI * 2) / 2;
-                else if (algo === 'ht_bloques_escalonados') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI + (nx % 2))) / 2;
-                else if (algo === 'ht_cuadricula_doble') t = (Math.sin(nx * Math.PI * 2) + Math.sin(ny * Math.PI * 2)) / 4;
-                else if (algo === 'ht_marcos_cuadrados') t = Math.abs(Math.max(Math.sin(nx * Math.PI), Math.sin(ny * Math.PI))) - 0.5;
-                else if (algo === 'ht_ladrillos_halftone') t = Math.sin(ny * Math.PI) * Math.sin(nx * Math.PI + (Math.floor(ny) % 2) * Math.PI/2) / 2;
+                // --- HALFTONE: Cuadrados y Retículas --- break;
+                    case 'ht_cuadro_suave': t = (Math.cos(nx * Math.PI * 2) * Math.cos(ny * Math.PI * 2)) / 2; break;
+                    case 'ht_cuadro_estricto': t = Math.max(Math.sin(nx * Math.PI), Math.cos(ny * Math.PI)) - 0.5; break;
+                    case 'ht_reticula_h': t = Math.sin(ny * Math.PI * 2) / 2; break;
+                    case 'ht_reticula_v': t = Math.sin(nx * Math.PI * 2) / 2; break;
+                    case 'ht_cuadros_rotados': t = Math.max(Math.abs(Math.sin((nx + ny) * Math.PI)), Math.abs(Math.sin((nx - ny) * Math.PI))) - 0.5; break;
+                    case 'ht_ajedrez_suave': t = Math.sin((nx + ny) * Math.PI * 2) / 2; break;
+                    case 'ht_bloques_escalonados': t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI + (nx % 2))) / 2; break;
+                    case 'ht_cuadricula_doble': t = (Math.sin(nx * Math.PI * 2) + Math.sin(ny * Math.PI * 2)) / 4; break;
+                    case 'ht_marcos_cuadrados': t = Math.abs(Math.max(Math.sin(nx * Math.PI), Math.sin(ny * Math.PI))) - 0.5; break;
+                    case 'ht_ladrillos_halftone': t = Math.sin(ny * Math.PI) * Math.sin(nx * Math.PI + (Math.floor(ny) % 2) * Math.PI/2) / 2;
 
-                // --- HALFTONE: Geometría Compleja ---
-                else if (algo === 'ht_hex_suave') t = (Math.sin(nx * Math.PI) * Math.sin((nx * 0.5 + ny * 0.866) * Math.PI) * Math.sin((nx * 0.5 - ny * 0.866) * Math.PI));
-                else if (algo === 'ht_hex_estricto') t = Math.max(Math.sin(nx*Math.PI), Math.max(Math.sin((nx*0.5 + ny*0.866)*Math.PI), Math.sin((nx*0.5 - ny*0.866)*Math.PI))) - 0.5;
-                else if (algo === 'ht_tri_entrelazado') t = (Math.sin(nx * Math.PI) + Math.sin((nx * 0.5 + ny * 0.866) * Math.PI)) / 4;
-                else if (algo === 'ht_piramides') t = Math.min(Math.abs(Math.sin(nx * Math.PI)), Math.abs(Math.sin(ny * Math.PI))) - 0.5;
-                else if (algo === 'ht_octogonos') t = Math.max(Math.abs(Math.sin(nx*Math.PI)), Math.max(Math.abs(Math.sin(ny*Math.PI)), Math.abs(Math.sin((nx+ny)*Math.PI*0.707)))) - 0.5;
-                else if (algo === 'ht_engranajes') t = Math.sin(dist * Math.PI * 4 + Math.sin(ang * 6)) / 2;
-                else if (algo === 'ht_ondas_senoidales') t = (Math.sin(nx * Math.PI * 2) + Math.cos(ny * Math.PI * 2 + nx)) / 4;
-                else if (algo === 'ht_cruces_ortogonales') t = (Math.pow(Math.sin(nx * Math.PI), 4) + Math.pow(Math.sin(ny * Math.PI), 4)) / 4 - 0.25;
-                else if (algo === 'ht_asteriscos') t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI) * Math.sin((nx+ny)*Math.PI)) / 2;
-                else if (algo === 'ht_malla_tejida') t = Math.sin((nx * Math.cos(ny) + ny * Math.sin(nx)) * Math.PI) / 2;
+                // --- HALFTONE: Geometría Compleja --- break;
+                    case 'ht_hex_suave': t = (Math.sin(nx * Math.PI) * Math.sin((nx * 0.5 + ny * 0.866) * Math.PI) * Math.sin((nx * 0.5 - ny * 0.866) * Math.PI)); break;
+                    case 'ht_hex_estricto': t = Math.max(Math.sin(nx*Math.PI), Math.max(Math.sin((nx*0.5 + ny*0.866)*Math.PI), Math.sin((nx*0.5 - ny*0.866)*Math.PI))) - 0.5; break;
+                    case 'ht_tri_entrelazado': t = (Math.sin(nx * Math.PI) + Math.sin((nx * 0.5 + ny * 0.866) * Math.PI)) / 4; break;
+                    case 'ht_piramides': t = Math.min(Math.abs(Math.sin(nx * Math.PI)), Math.abs(Math.sin(ny * Math.PI))) - 0.5; break;
+                    case 'ht_octogonos': t = Math.max(Math.abs(Math.sin(nx*Math.PI)), Math.max(Math.abs(Math.sin(ny*Math.PI)), Math.abs(Math.sin((nx+ny)*Math.PI*0.707)))) - 0.5; break;
+                    case 'ht_engranajes': t = Math.sin(dist * Math.PI * 4 + Math.sin(ang * 6)) / 2; break;
+                    case 'ht_ondas_senoidales': t = (Math.sin(nx * Math.PI * 2) + Math.cos(ny * Math.PI * 2 + nx)) / 4; break;
+                    case 'ht_cruces_ortogonales': t = (Math.pow(Math.sin(nx * Math.PI), 4) + Math.pow(Math.sin(ny * Math.PI), 4)) / 4 - 0.25; break;
+                    case 'ht_asteriscos': t = (Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI) * Math.sin((nx+ny)*Math.PI)) / 2; break;
+                    case 'ht_malla_tejida': t = Math.sin((nx * Math.cos(ny) + ny * Math.sin(nx)) * Math.PI) / 2;
 
-                // --- HALFTONE: Distorsiones y Orgánicos ---
-                else if (algo === 'ht_espirales_locales') t = Math.sin(Math.sqrt(nx*nx + ny*ny) * 10 + Math.atan2(ny, nx) * 3) / 2;
-                else if (algo === 'ht_puntos_ondulados') t = (Math.sin(nx * Math.PI + Math.sin(ny)) * Math.sin(ny * Math.PI)) / 2;
-                else if (algo === 'ht_gotas') t = Math.exp(-Math.pow(Math.sin(nx * Math.PI), 2) - Math.pow(Math.sin(ny * Math.PI), 2)) - 0.5;
-                else if (algo === 'ht_manchas') t = (Math.sin(nx * 3 + Math.cos(ny * 2)) + Math.cos(ny * 3 + Math.sin(nx * 2))) / 4;
-                else if (algo === 'ht_celulas') t = (Math.abs(Math.sin(nx * Math.PI * 1.5)) * Math.abs(Math.cos(ny * Math.PI * 1.5))) - 0.5;
-                else if (algo === 'ht_ruido_geometrico') t = (Math.sin(nx * Math.PI * 2.5) * Math.sin(ny * Math.PI * 2.5) * Math.sin((nx+ny) * 10)) / 2;
-                else if (algo === 'ht_trama_acida') t = (Math.sin(nx * Math.PI + Math.tan(ny)) * Math.cos(ny * Math.PI)) / 4;
-                else if (algo === 'ht_puntos_derretidos') t = (Math.sin(nx * Math.PI) * Math.sin((ny + Math.sin(nx*2)) * Math.PI)) / 2;
-                else if (algo === 'ht_distorsion_viento') t = Math.sin(nx * Math.PI * 2 + Math.cos(ny * Math.PI * 3)) / 2;
-                else if (algo === 'ht_interferencia') t = (Math.sin(nx * Math.PI * 3) + Math.cos(ny * Math.PI * 3) + Math.sin((nx-ny) * Math.PI * 5)) / 6;
-
-                else if (algo === 'crossHatch') {
+                // --- HALFTONE: Distorsiones y Orgánicos --- break;
+                    case 'ht_espirales_locales': t = Math.sin(Math.sqrt(nx*nx + ny*ny) * 10 + Math.atan2(ny, nx) * 3) / 2; break;
+                    case 'ht_puntos_ondulados': t = (Math.sin(nx * Math.PI + Math.sin(ny)) * Math.sin(ny * Math.PI)) / 2; break;
+                    case 'ht_gotas': t = Math.exp(-Math.pow(Math.sin(nx * Math.PI), 2) - Math.pow(Math.sin(ny * Math.PI), 2)) - 0.5; break;
+                    case 'ht_manchas': t = (Math.sin(nx * 3 + Math.cos(ny * 2)) + Math.cos(ny * 3 + Math.sin(nx * 2))) / 4; break;
+                    case 'ht_celulas': t = (Math.abs(Math.sin(nx * Math.PI * 1.5)) * Math.abs(Math.cos(ny * Math.PI * 1.5))) - 0.5; break;
+                    case 'ht_ruido_geometrico': t = (Math.sin(nx * Math.PI * 2.5) * Math.sin(ny * Math.PI * 2.5) * Math.sin((nx+ny) * 10)) / 2; break;
+                    case 'ht_trama_acida': t = (Math.sin(nx * Math.PI + Math.tan(ny)) * Math.cos(ny * Math.PI)) / 4; break;
+                    case 'ht_puntos_derretidos': t = (Math.sin(nx * Math.PI) * Math.sin((ny + Math.sin(nx*2)) * Math.PI)) / 2; break;
+                    case 'ht_distorsion_viento': t = Math.sin(nx * Math.PI * 2 + Math.cos(ny * Math.PI * 3)) / 2; break;
+                    case 'ht_interferencia': t = (Math.sin(nx * Math.PI * 3) + Math.cos(ny * Math.PI * 3) + Math.sin((nx-ny) * Math.PI * 5)) / 6; break;
+                    case 'crossHatch':
+                        {
                     let luma = (0.299*f32[fi] + 0.587*f32[fi+1] + 0.114*f32[fi+2]) / 255;
                     let ang1 = Math.sin(nx + ny); let ang2 = Math.sin(nx - ny);
                     t = luma > 0.5 ? ang1*0.5 : (ang1+ang2)*0.25;
                 }
-                else if (algo === 'spiralWave') {
+                        break;
+                    case 'spiralWave':
+                        {
                     let cx = nx - w/(2*patScale); let cy = ny - h/(2*patScale);
                     let dist = Math.sqrt(cx*cx + cy*cy);
                     let ang = Math.atan2(cy, cx);
                     t = Math.sin(dist * 2.0 + ang * 8.0) * 0.5;
                 }
-                else if (algo === 'voronoi') {
+                        break;
+                    case 'voronoi':
+                        {
                     let xi = Math.floor(nx); let yi = Math.floor(ny);
                     let xf = nx - xi; let yf = ny - yi;
                     let minDist = 1.0;
@@ -536,74 +553,78 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = minDist - 0.5;
                 }
-                else if (algo === 'hilbertPattern') {
+                        break;
+                    case 'hilbertPattern':
+                        {
                     let hX = Math.floor(nx) ^ Math.floor(ny);
                     t = ((hX * 0.61803398875) % 1) - 0.5;
                 }
-                else if (algo === 'dtm') {
+                        break;
+                    case 'dtm': {
                     let mod = Math.sin(nx*0.05) * Math.cos(ny*0.05);
                     t = (Math.random() - 0.5) * mod;
                 }
-// --- LÍNEAS Y TRAMAS ---
-                else if (algo === 'lineas_45') t = thin(nx + ny) - 0.5;
-                else if (algo === 'lineas_135') t = thin(nx - ny) - 0.5;
-                else if (algo === 'lineas_v') t = thin(nx * 2) - 0.5;
-                else if (algo === 'lineas_h') t = thin(ny * 2) - 0.5;
-                else if (algo === 'malla_ortogonal') t = Math.max(thin(nx * 2), thin(ny * 2)) - 0.5;
-                else if (algo === 'malla_diagonal') t = Math.max(thin(nx + ny), thin(nx - ny)) - 0.5;
-                else if (algo === 'malla_hexagonal') t = Math.max(thin(nx*1.732), Math.max(thin(nx*0.866 + ny*1.5), thin(nx*0.866 - ny*1.5))) - 0.5;
-                else if (algo === 'ondas_v') t = thin(nx * 2 + Math.sin(ny * 1.5)) - 0.5;
-                else if (algo === 'ondas_h') t = thin(ny * 2 + Math.sin(nx * 1.5)) - 0.5;
-                else if (algo === 'ondas_cruzadas') t = Math.max(thin(nx * 2 + Math.sin(ny)), thin(ny * 2 + Math.sin(nx))) - 0.5;
-                else if (algo === 'zigzag_v') t = thin(nx * 2 + Math.abs(Math.sin(ny * 2))) - 0.5;
-                else if (algo === 'zigzag_h') t = thin(ny * 2 + Math.abs(Math.sin(nx * 2))) - 0.5;
-                else if (algo === 'ladrillos') t = Math.max(thin(ny * 2), thin(nx * 2 + Math.floor(ny / Math.PI) * Math.PI)) - 0.5;
-                else if (algo === 'isometria') t = Math.max(thin(ny*2), Math.max(thin(nx*1.732+ny), thin(nx*1.732-ny))) - 0.5;
-                else if (algo === 'cuadricula_distorsionada') t = Math.max(thin(nx * 2 + ny * 0.5), thin(ny * 2 - nx * 0.5)) - 0.5;
+// --- LÍNEAS Y TRAMAS --- break;
+                    case 'lineas_45': t = thin(nx + ny) - 0.5; break;
+                    case 'lineas_135': t = thin(nx - ny) - 0.5; break;
+                    case 'lineas_v': t = thin(nx * 2) - 0.5; break;
+                    case 'lineas_h': t = thin(ny * 2) - 0.5; break;
+                    case 'malla_ortogonal': t = Math.max(thin(nx * 2), thin(ny * 2)) - 0.5; break;
+                    case 'malla_diagonal': t = Math.max(thin(nx + ny), thin(nx - ny)) - 0.5; break;
+                    case 'malla_hexagonal': t = Math.max(thin(nx*1.732), Math.max(thin(nx*0.866 + ny*1.5), thin(nx*0.866 - ny*1.5))) - 0.5; break;
+                    case 'ondas_v': t = thin(nx * 2 + Math.sin(ny * 1.5)) - 0.5; break;
+                    case 'ondas_h': t = thin(ny * 2 + Math.sin(nx * 1.5)) - 0.5; break;
+                    case 'ondas_cruzadas': t = Math.max(thin(nx * 2 + Math.sin(ny)), thin(ny * 2 + Math.sin(nx))) - 0.5; break;
+                    case 'zigzag_v': t = thin(nx * 2 + Math.abs(Math.sin(ny * 2))) - 0.5; break;
+                    case 'zigzag_h': t = thin(ny * 2 + Math.abs(Math.sin(nx * 2))) - 0.5; break;
+                    case 'ladrillos': t = Math.max(thin(ny * 2), thin(nx * 2 + Math.floor(ny / Math.PI) * Math.PI)) - 0.5; break;
+                    case 'isometria': t = Math.max(thin(ny*2), Math.max(thin(nx*1.732+ny), thin(nx*1.732-ny))) - 0.5; break;
+                    case 'cuadricula_distorsionada': t = Math.max(thin(nx * 2 + ny * 0.5), thin(ny * 2 - nx * 0.5)) - 0.5;
 
-                // --- ONDAS, ESPIRALES Y ANILLOS ---
-                else if (algo === 'espiral_simple') t = thin(dist * 2 + ang) - 0.5;
-                else if (algo === 'espiral_doble') t = thin(dist * 2 + ang * 2) - 0.5;
-                else if (algo === 'espiral_cuadruple') t = thin(dist * 2 + ang * 4) - 0.5;
-                else if (algo === 'anillos_concentricos') t = thin(dist * 3) - 0.5;
-                else if (algo === 'anillos_ondulados') t = thin(dist * 3 + Math.sin(ang * 8) * 0.5) - 0.5;
-                else if (algo === 'rayos_solares') t = thin(ang * 8) - 0.5;
-                else if (algo === 'rayos_ondulados') t = thin(ang * 8 + Math.sin(dist * 2)) - 0.5;
-                else if (algo === 'vortice') t = thin(ang * 6 + Math.log(dist + 0.1) * 3) - 0.5;
-                else if (algo === 'interferencia_ondas') t = Math.max(thin(Math.hypot(nx-5, ny)*3), thin(Math.hypot(nx+5, ny)*3)) - 0.5;
-                else if (algo === 'moire_lineal') t = thin(nx * 3) * thin(nx * 3.2) * 2 - 0.5;
-                else if (algo === 'moire_radial') t = thin(dist * 3) * thin(Math.hypot(cx-2, cy)*3) * 2 - 0.5;
-                else if (algo === 'ondas_sismicas') t = thin(ny * 3 + 2 * Math.sin(nx * 1.2 + Math.sin(ny * 0.8))) - 0.5;
-                else if (algo === 'ruido_liquido') t = thin(nx * 1.5 + Math.sin(ny * 1.5) + Math.cos(nx * 0.5)) - 0.5;
-                else if (algo === 'espiral_cuadrada') t = thin(Math.max(Math.abs(cx), Math.abs(cy)) * 4 + ang) - 0.5;
-                else if (algo === 'anillos_cuadrados') t = thin(Math.max(Math.abs(cx), Math.abs(cy)) * 5) - 0.5;
-                else if (algo === 'rombos_concentricos') t = thin((Math.abs(cx) + Math.abs(cy)) * 3) - 0.5;
-                else if (algo === 'espiral_poligonal') t = thin(dist * 3 + Math.floor(ang * 3) / 3) - 0.5;
+                // --- ONDAS, ESPIRALES Y ANILLOS --- break;
+                    case 'espiral_simple': t = thin(dist * 2 + ang) - 0.5; break;
+                    case 'espiral_doble': t = thin(dist * 2 + ang * 2) - 0.5; break;
+                    case 'espiral_cuadruple': t = thin(dist * 2 + ang * 4) - 0.5; break;
+                    case 'anillos_concentricos': t = thin(dist * 3) - 0.5; break;
+                    case 'anillos_ondulados': t = thin(dist * 3 + Math.sin(ang * 8) * 0.5) - 0.5; break;
+                    case 'rayos_solares': t = thin(ang * 8) - 0.5; break;
+                    case 'rayos_ondulados': t = thin(ang * 8 + Math.sin(dist * 2)) - 0.5; break;
+                    case 'vortice': t = thin(ang * 6 + Math.log(dist + 0.1) * 3) - 0.5; break;
+                    case 'interferencia_ondas': t = Math.max(thin(Math.hypot(nx-5, ny)*3), thin(Math.hypot(nx+5, ny)*3)) - 0.5; break;
+                    case 'moire_lineal': t = thin(nx * 3) * thin(nx * 3.2) * 2 - 0.5; break;
+                    case 'moire_radial': t = thin(dist * 3) * thin(Math.hypot(cx-2, cy)*3) * 2 - 0.5; break;
+                    case 'ondas_sismicas': t = thin(ny * 3 + 2 * Math.sin(nx * 1.2 + Math.sin(ny * 0.8))) - 0.5; break;
+                    case 'ruido_liquido': t = thin(nx * 1.5 + Math.sin(ny * 1.5) + Math.cos(nx * 0.5)) - 0.5; break;
+                    case 'espiral_cuadrada': t = thin(Math.max(Math.abs(cx), Math.abs(cy)) * 4 + ang) - 0.5; break;
+                    case 'anillos_cuadrados': t = thin(Math.max(Math.abs(cx), Math.abs(cy)) * 5) - 0.5; break;
+                    case 'rombos_concentricos': t = thin((Math.abs(cx) + Math.abs(cy)) * 3) - 0.5; break;
+                    case 'espiral_poligonal': t = thin(dist * 3 + Math.floor(ang * 3) / 3) - 0.5;
 
-                // --- ORGÁNICOS Y MATERIALES ---
-                else if (algo === 'madera') t = thin(dist * 1.5 + Math.sin(nx * 0.5) * 2) - 0.5;
-                else if (algo === 'huella_dactilar') t = thin(dist * 2 + Math.sin(ang * 5) * 2) - 0.5;
-                else if (algo === 'escamas') t = thin(nx * 2 + Math.cos(ny * 3) * 1.5) - 0.5;
-                else if (algo === 'red_organica') t = thin(nx * 2 + 2 * Math.sin(ny * 1.5)) * thin(ny * 2 + 2 * Math.sin(nx * 1.5)) * 2 - 0.5;
-                else if (algo === 'topografia') t = thin(dist * 2 + 2 * Math.sin(nx * 0.5) * Math.cos(ny * 0.5)) - 0.5;
-                else if (algo === 'marmol') t = thin(nx * 2 + 3 * Math.sin(ny * 0.5 + 2 * Math.sin(nx * 0.2))) - 0.5;
-                else if (algo === 'cebra') t = thin(nx * 3 + 2 * Math.sin(ny * 0.8)) - 0.5;
+                // --- ORGÁNICOS Y MATERIALES --- break;
+                    case 'madera': t = thin(dist * 1.5 + Math.sin(nx * 0.5) * 2) - 0.5; break;
+                    case 'huella_dactilar': t = thin(dist * 2 + Math.sin(ang * 5) * 2) - 0.5; break;
+                    case 'escamas': t = thin(nx * 2 + Math.cos(ny * 3) * 1.5) - 0.5; break;
+                    case 'red_organica': t = thin(nx * 2 + 2 * Math.sin(ny * 1.5)) * thin(ny * 2 + 2 * Math.sin(nx * 1.5)) * 2 - 0.5; break;
+                    case 'topografia': t = thin(dist * 2 + 2 * Math.sin(nx * 0.5) * Math.cos(ny * 0.5)) - 0.5; break;
+                    case 'marmol': t = thin(nx * 2 + 3 * Math.sin(ny * 0.5 + 2 * Math.sin(nx * 0.2))) - 0.5; break;
+                    case 'cebra': t = thin(nx * 3 + 2 * Math.sin(ny * 0.8)) - 0.5;
 
-                // --- GEOMÉTRICOS Y ÓPTICOS ---
-                else if (algo === 'telar') t = thin(nx * 2 * Math.sin(ny * 2)) - 0.5;
-                else if (algo === 'malla_triangular') t = (thin(nx*2) + thin(nx+ny*1.732) + thin(nx-ny*1.732)) * 0.4 - 0.5;
-                else if (algo === 'diamantes_delgados') t = thin(Math.abs(Math.sin(nx)) + Math.abs(Math.sin(ny))) - 0.5;
-                else if (algo === 'cruz_celta') t = Math.pow(Math.abs(Math.sin(nx*2)*Math.cos(ny*2) + Math.cos(nx*2)*Math.sin(ny*2)), 15) - 0.5;
-                else if (algo === 'matriz_puntos') t = thin(nx * 3) * thin(ny * 3) * 2 - 0.5;
-                else if (algo === 'circuitos') t = Math.max(thin(nx*2), thin(ny*2)) * (Math.sin(Math.floor(nx)*3.1 + Math.floor(ny)*2.7)>0?1:0) - 0.5;
-                else if (algo === 'estrellas') t = thin(ang * 5) * thin(dist * 4) * 2 - 0.5;
-                else if (algo === 'telarana') t = Math.max(thin(dist * 3), thin(ang * 8)) - 0.5;
-                else if (algo === 'ilusiones_opticas') t = Math.pow(Math.abs(Math.sin(nx*2 + Math.sin(ny*2)*0.5) * Math.cos(ny*2 + Math.sin(nx*2)*0.5)), 15) - 0.5;
-                else if (algo === 'fractal_basico') t = Math.pow(Math.abs(Math.sin(nx*2)*Math.sin(ny*2)*Math.sin(nx*4)*Math.sin(ny*4)), 8) - 0.5;
-                else if (algo === 'lluvia_matrix') t = thin(ny * 4 + nx * 12.3) * (Math.sin(nx * 5) > 0 ? 1 : 0) - 0.5;
+                // --- GEOMÉTRICOS Y ÓPTICOS --- break;
+                    case 'telar': t = thin(nx * 2 * Math.sin(ny * 2)) - 0.5; break;
+                    case 'malla_triangular': t = (thin(nx*2) + thin(nx+ny*1.732) + thin(nx-ny*1.732)) * 0.4 - 0.5; break;
+                    case 'diamantes_delgados': t = thin(Math.abs(Math.sin(nx)) + Math.abs(Math.sin(ny))) - 0.5; break;
+                    case 'cruz_celta': t = Math.pow(Math.abs(Math.sin(nx*2)*Math.cos(ny*2) + Math.cos(nx*2)*Math.sin(ny*2)), 15) - 0.5; break;
+                    case 'matriz_puntos': t = thin(nx * 3) * thin(ny * 3) * 2 - 0.5; break;
+                    case 'circuitos': t = Math.max(thin(nx*2), thin(ny*2)) * (Math.sin(Math.floor(nx)*3.1 + Math.floor(ny)*2.7)>0?1:0) - 0.5; break;
+                    case 'estrellas': t = thin(ang * 5) * thin(dist * 4) * 2 - 0.5; break;
+                    case 'telarana': t = Math.max(thin(dist * 3), thin(ang * 8)) - 0.5; break;
+                    case 'ilusiones_opticas': t = Math.pow(Math.abs(Math.sin(nx*2 + Math.sin(ny*2)*0.5) * Math.cos(ny*2 + Math.sin(nx*2)*0.5)), 15) - 0.5; break;
+                    case 'fractal_basico': t = Math.pow(Math.abs(Math.sin(nx*2)*Math.sin(ny*2)*Math.sin(nx*4)*Math.sin(ny*4)), 8) - 0.5; break;
+                    case 'lluvia_matrix': t = thin(ny * 4 + nx * 12.3) * (Math.sin(nx * 5) > 0 ? 1 : 0) - 0.5;
 
-                // --- TRAMADOS EXPERIMENTALES ---
-                else if (algo === 'exp_truchet') {
+                // --- TRAMADOS EXPERIMENTALES --- break;
+                    case 'exp_truchet':
+                        {
                     let tx = Math.floor(nx); let ty = Math.floor(ny);
                     let fx = nx - tx; let fy = ny - ty;
                     let val = Math.sin(tx * 12.9898 + ty * 78.233) * 43758.5453;
@@ -612,7 +633,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     let width = 0.05 + 0.3 * luma;
                     t = (Math.abs(dTruchet) < width) ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_worley') {
+                        break;
+                    case 'exp_worley':
+                        {
                     let xi = Math.floor(nx); let yi = Math.floor(ny);
                     let xf = nx - xi; let yf = ny - yi;
                     let minDist = 9.0;
@@ -629,7 +652,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sqrt(minDist) > luma) ? 0.35 : -0.35;
                 }
-                else if (algo === 'exp_worley_manhattan') {
+                        break;
+                    case 'exp_worley_manhattan':
+                        {
                     let xi = Math.floor(nx); let yi = Math.floor(ny);
                     let xf = nx - xi; let yf = ny - yi;
                     let minDist = 9.0;
@@ -646,7 +671,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (minDist > luma * 1.4) ? 0.35 : -0.35;
                 }
-                else if (algo === 'exp_worley_chebyshev') {
+                        break;
+                    case 'exp_worley_chebyshev':
+                        {
                     let xi = Math.floor(nx); let yi = Math.floor(ny);
                     let xf = nx - xi; let yf = ny - yi;
                     let minDist = 9.0;
@@ -663,7 +690,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (minDist > luma) ? 0.35 : -0.35;
                 }
-                else if (algo === 'exp_maze') {
+                        break;
+                    case 'exp_maze':
+                        {
                     let tx = Math.floor(nx * 0.8); let ty = Math.floor(ny * 0.8);
                     let fx = nx * 0.8 - tx; let fy = ny * 0.8 - ty;
                     let seed = tx * 15.23 + ty * 34.12;
@@ -675,38 +704,50 @@ function ditherEngineCore(imageData, w, h, params) {
                     else dLine = fx + fy - 1.0;
                     t = (Math.abs(dLine) < 0.05 + 0.2 * luma) ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_binary_carpet') {
+                        break;
+                    case 'exp_binary_carpet':
+                        {
                     let bx = Math.floor(nx * 2.0);
                     let by = Math.floor(ny * 2.0);
                     let xval = (bx ^ by) % 12;
                     t = ((xval / 12) < luma) ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_binary_mod') {
+                        break;
+                    case 'exp_binary_mod':
+                        {
                     let bx = Math.floor(nx * 2.0);
                     let by = Math.floor(ny * 2.0);
                     let xval = (bx * by) % 17;
                     t = ((xval / 17) < luma) ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_ascii_cross') {
+                        break;
+                    case 'exp_ascii_cross':
+                        {
                     let fx = nx % 1.0 - 0.5; let fy = ny % 1.0 - 0.5;
                     let crossSize = 0.05 + 0.45 * (1.0 - luma);
                     let insideCross = (Math.abs(fx) < 0.1 && Math.abs(fy) < crossSize) || (Math.abs(fy) < 0.1 && Math.abs(fx) < crossSize);
                     t = insideCross ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_ascii_dot') {
+                        break;
+                    case 'exp_ascii_dot':
+                        {
                     let fx = nx % 1.0 - 0.5; let fy = ny % 1.0 - 0.5;
                     let rad = Math.sqrt(fx*fx + fy*fy);
                     let maxRad = 0.5 * (1.0 - luma);
                     t = (rad < maxRad) ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_ascii_square') {
+                        break;
+                    case 'exp_ascii_square':
+                        {
                     let fx = Math.abs(nx % 1.0 - 0.5);
                     let fy = Math.abs(ny % 1.0 - 0.5);
                     let maxSide = Math.max(fx, fy);
                     let target = 0.5 * (1.0 - luma);
                     t = (Math.abs(maxSide - target) < 0.08) ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_heart') {
+                        break;
+                    case 'exp_heart':
+                        {
                     let fx = (nx % 1.0 - 0.5) * 2.5;
                     let fy = -(ny % 1.0 - 0.5) * 2.5 - 0.25;
                     let hEq = (fx*fx + fy*fy - 1.0);
@@ -714,14 +755,18 @@ function ditherEngineCore(imageData, w, h, params) {
                     let hThresh = 0.25 * (1.0 - luma);
                     t = (heartVal < hThresh) ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_star_5p') {
+                        break;
+                    case 'exp_star_5p':
+                        {
                     let fx = nx % 1.0 - 0.5; let fy = ny % 1.0 - 0.5;
                     let rVal = Math.sqrt(fx*fx + fy*fy);
                     let aVal = Math.atan2(fy, fx);
                     let starR = 0.1 + 0.35 * (1.0 - luma) * (Math.cos(aVal * 5) * 0.3 + 0.7);
                     t = (rVal < starR) ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_chromatic_halftone') {
+                        break;
+                    case 'exp_chromatic_halftone':
+                        {
                     let nxR = (x + 3) / patScale; let nyR = (y + 1) / patScale;
                     let nxG = x / patScale; let nyG = (y + 4) / patScale;
                     let nxB = (x - 3) / patScale; let nyB = (y - 2) / patScale;
@@ -730,25 +775,33 @@ function ditherEngineCore(imageData, w, h, params) {
                     let tB = (Math.sin(nxB * Math.PI) * Math.sin(nyB * Math.PI)) / 2;
                     tr = tR; tg = tG; tb = tB;
                 }
-                else if (algo === 'exp_chromatic_wave') {
+                        break;
+                    case 'exp_chromatic_wave':
+                        {
                     let trWave = Math.sin(nx * 1.8) * 0.4;
                     let tgWave = Math.sin(nx * 1.8 + 2.0) * 0.4;
                     let tbWave = Math.sin(nx * 1.8 + 4.0) * 0.4;
                     tr = trWave; tg = tgWave; tb = tbWave;
                 }
-                else if (algo === 'exp_glitch_v') {
+                        break;
+                    case 'exp_glitch_v':
+                        {
                     let strip = Math.floor(nx / 3.0);
                     let rand = Math.sin(strip * 45.12) * 43758.5453;
                     let offset = (rand - Math.floor(rand)) - 0.5;
                     t = (Math.sin((ny + offset * 5.0 * luma) * Math.PI)) / 2;
                 }
-                else if (algo === 'exp_glitch_h') {
+                        break;
+                    case 'exp_glitch_h':
+                        {
                     let strip = Math.floor(ny / 3.0);
                     let rand = Math.sin(strip * 78.43) * 43758.5453;
                     let offset = (rand - Math.floor(rand)) - 0.5;
                     t = (Math.sin((nx + offset * 5.0 * luma) * Math.PI)) / 2;
                 }
-                else if (algo === 'exp_crt_scan') {
+                        break;
+                    case 'exp_crt_scan':
+                        {
                     let normY = (y / h) - 0.5;
                     let normX = (x / w) - 0.5;
                     let dist2 = normX*normX + normY*normY;
@@ -757,14 +810,18 @@ function ditherEngineCore(imageData, w, h, params) {
                     let sc = Math.sin((cury / patScale) * Math.PI * 2.0);
                     t = sc * 0.35 + 0.1 * (luma - 0.5);
                 }
-                else if (algo === 'exp_lcd_triad') {
+                        break;
+                    case 'exp_lcd_triad':
+                        {
                     let subpixel = Math.floor(x) % 3;
                     let wave = Math.sin(y * Math.PI / 1.5) * 0.15;
                     tr = (subpixel === 0) ? -0.45 + wave : 0.45;
                     tg = (subpixel === 1) ? -0.45 + wave : 0.45;
                     tb = (subpixel === 2) ? -0.45 + wave : 0.45;
                 }
-                else if (algo === 'exp_halftone_cmyk') {
+                        break;
+                    case 'exp_halftone_cmyk':
+                        {
                     let rotScale = patScale;
                     let lC = (0.299 * (255 - f32[fi])) / 255;
                     let lM = (0.587 * (255 - f32[fi+1])) / 255;
@@ -800,7 +857,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     tg = dk + dm;
                     tb = dk + dy;
                 }
-                else if (algo === 'exp_voronoi_manhattan') {
+                        break;
+                    case 'exp_voronoi_manhattan':
+                        {
                     let xi = Math.floor(nx); let yi = Math.floor(ny);
                     let xf = nx - xi; let yf = ny - yi;
                     let minDist1 = 9.0; let minDist2 = 9.0;
@@ -818,7 +877,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (minDist2 - minDist1) - 0.5;
                 }
-                else if (algo === 'exp_voronoi_triangular') {
+                        break;
+                    case 'exp_voronoi_triangular':
+                        {
                     let row = Math.floor(ny * 1.1547);
                     let colShift = (row % 2) * 0.5;
                     let xi = Math.floor(nx + colShift);
@@ -839,17 +900,23 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = Math.sqrt(minDist) - 0.4;
                 }
-                else if (algo === 'exp_chiral_wave') {
+                        break;
+                    case 'exp_chiral_wave':
+                        {
                     let w1 = Math.sin(dist * 2.0 + ang * 5.0);
                     let w2 = Math.sin(dist * 2.0 - ang * 5.0);
                     t = (w1 + w2) * 0.25;
                 }
-                else if (algo === 'exp_interlaced_cross') {
+                        break;
+                    case 'exp_interlaced_cross':
+                        {
                     let cross = Math.sin(nx * 1.5) * Math.sin(ny * 1.5);
                     let ring = Math.sin(dist * 4.0);
                     t = (cross * ring) * 0.4;
                 }
-                else if (algo === 'exp_digit_matrix') {
+                        break;
+                    case 'exp_digit_matrix':
+                        {
                     let cellX = Math.floor(nx * 1.5);
                     let cellY = Math.floor(ny * 1.5);
                     let localX = nx * 1.5 - cellX;
@@ -869,7 +936,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (pixelVal > 0.5) ? -0.45 * luma : 0.45 * (1.0 - luma);
                 }
-                else if (algo === 'exp_letter_dither') {
+                        break;
+                    case 'exp_letter_dither':
+                        {
                     let lx = nx * 2.0; let ly = ny * 2.0;
                     let cellX = Math.floor(lx); let cellY = Math.floor(ly);
                     let fx = lx - cellX; let fy = ly - cellY;
@@ -884,14 +953,18 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = activeChar ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_bubble_wrap') {
+                        break;
+                    case 'exp_bubble_wrap':
+                        {
                     let fx = nx % 1.0 - 0.5; let fy = ny % 1.0 - 0.5;
                     let rad = Math.sqrt(fx*fx + fy*fy);
                     let highlight = (fx < 0.0 && fy < 0.0) ? (0.2 * (0.5 - rad)) : 0.0;
                     let border = (rad > 0.4 && rad < 0.45) ? 0.3 : 0.0;
                     t = (rad < 0.4) ? -0.3 + highlight : 0.3 + border;
                 }
-                else if (algo === 'exp_scales_dragon') {
+                        break;
+                    case 'exp_scales_dragon':
+                        {
                     let sy = ny * 1.5;
                     let row = Math.floor(sy);
                     let colShift = (row % 2) * 0.5;
@@ -902,7 +975,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     let scaleVal = (rad < 0.5) ? -0.35 : 0.35;
                     t = scaleVal + (luma - 0.5) * 0.2;
                 }
-                else if (algo === 'exp_weave_basket') {
+                        break;
+                    case 'exp_weave_basket':
+                        {
                     let tx = Math.floor(nx / 2.0);
                     let ty = Math.floor(ny / 2.0);
                     let fx = (nx / 2.0) - tx;
@@ -911,17 +986,23 @@ function ditherEngineCore(imageData, w, h, params) {
                     let band = isVert ? Math.sin(fx * Math.PI) : Math.sin(fy * Math.PI);
                     t = band * 0.4 + 0.1 * (luma - 0.5);
                 }
-                else if (algo === 'exp_polka_dots') {
+                        break;
+                    case 'exp_polka_dots':
+                        {
                     let fx = nx % 1.0 - 0.5; let fy = ny % 1.0 - 0.5;
                     let rad = Math.sqrt(fx*fx + fy*fy);
                     let dotRadius = 0.25;
                     t = (rad < dotRadius) ? -0.45 + luma * 0.2 : 0.45 - (1.0 - luma) * 0.2;
                 }
-                else if (algo === 'exp_chevron') {
+                        break;
+                    case 'exp_chevron':
+                        {
                     let zig = Math.abs((nx + Math.abs(ny % 2.0 - 1.0)) % 1.0 - 0.5);
                     t = (zig < 0.15) ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_hex_lattice') {
+                        break;
+                    case 'exp_hex_lattice':
+                        {
                     let hx = nx * 1.5;
                     let hy = ny * 0.866;
                     let tx = Math.floor(hx);
@@ -936,98 +1017,134 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (border < 0.08) ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_celtic_knot') {
+                        break;
+                    case 'exp_celtic_knot':
+                        {
                     let k1 = Math.sin(nx * 1.5) * Math.cos(ny * 1.5);
                     let k2 = Math.sin(ny * 1.5) * Math.cos(nx * 1.5);
                     t = Math.abs(k1 - k2) - 0.4;
                 }
-                else if (algo === 'exp_noise_comb') {
+                        break;
+                    case 'exp_noise_comb':
+                        {
                     let nVal = Math.sin(nx * 12.9898 + ny * 78.233) * 43758.5453;
                     let noise = nVal - Math.floor(nVal);
                     let comb = Math.sin(nx * 10.0) * Math.cos(ny * 10.0);
                     t = (noise * comb) * 0.5;
                 }
-                else if (algo === 'exp_stripes_radial') {
+                        break;
+                    case 'exp_stripes_radial':
+                        {
                     let rays = Math.sin(ang * 12.0);
                     t = rays * 0.4 + 0.1 * (luma - 0.5);
                 }
-                else if (algo === 'exp_stripes_spiral') {
+                        break;
+                    case 'exp_stripes_spiral':
+                        {
                     let spiral = Math.sin(dist * 3.0 + ang * 4.0);
                     t = spiral * 0.4 + 0.1 * (luma - 0.5);
                 }
-                else if (algo === 'exp_halftone_sine') {
+                        break;
+                    case 'exp_halftone_sine':
+                        {
                     t = (Math.sin(nx * Math.PI) * Math.cos(ny * Math.PI)) * 0.5;
                 }
-                else if (algo === 'exp_fractal_noise') {
+                        break;
+                    case 'exp_fractal_noise':
+                        {
                     let n1 = Math.sin(nx * 1.0) * Math.cos(ny * 1.0);
                     let n2 = Math.sin(nx * 2.0) * Math.cos(ny * 2.0);
                     let n3 = Math.sin(nx * 4.0) * Math.cos(ny * 4.0);
                     t = (n1 * 0.5 + n2 * 0.3 + n3 * 0.2) * 0.5;
                 }
-                else if (algo === 'exp_tri_grid') {
+                        break;
+                    case 'exp_tri_grid':
+                        {
                     let g1 = Math.sin(nx * 2.0);
                     let g2 = Math.sin((nx * 0.5 + ny * 0.866) * 2.0);
                     let g3 = Math.sin((nx * 0.5 - ny * 0.866) * 2.0);
                     t = Math.max(g1, Math.max(g2, g3)) * 0.4;
                 }
-                else if (algo === 'exp_greek_key') {
+                        break;
+                    case 'exp_greek_key':
+                        {
                     let tx = Math.floor(nx); let ty = Math.floor(ny);
                     let fx = nx - tx; let fy = ny - ty;
                     let key = (fx > 0.2 && fx < 0.8 && fy > 0.2 && fy < 0.8) && !(fx > 0.4 && fx < 0.6 && fy > 0.4 && fy < 0.6);
                     t = key ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_houndstooth') {
+                        break;
+                    case 'exp_houndstooth':
+                        {
                     let hx = Math.floor(nx * 1.5) % 4;
                     let hy = Math.floor(ny * 1.5) % 4;
                     let inHound = ((hx < 2 && hy < 2) || (hx >= 2 && hy >= 2 && (hx - 2 === hy - 2 || hx === 3 || hy === 3)));
                     t = inHound ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_checkered_shift') {
+                        break;
+                    case 'exp_checkered_shift':
+                        {
                     let shift = Math.sin(ny * 0.5) * 1.5;
                     let check = (Math.floor(nx + shift) + Math.floor(ny)) % 2 === 0;
                     t = check ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_ascii_hash') {
+                        break;
+                    case 'exp_ascii_hash':
+                        {
                     let fx = nx % 1.0; let fy = ny % 1.0;
                     let isHash = (Math.abs(fx - 0.3) < 0.08 || Math.abs(fx - 0.7) < 0.08 || Math.abs(fy - 0.3) < 0.08 || Math.abs(fy - 0.7) < 0.08);
                     t = isHash ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_ascii_at') {
+                        break;
+                    case 'exp_ascii_at':
+                        {
                     let fx = nx % 1.0 - 0.5; let fy = ny % 1.0 - 0.5;
                     let rad = Math.sqrt(fx*fx + fy*fy);
                     let isAt = (rad > 0.3 && rad < 0.45) || (rad < 0.15) || (Math.abs(fx) < 0.05 && fy > 0.0);
                     t = isAt ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_crescent_moon') {
+                        break;
+                    case 'exp_crescent_moon':
+                        {
                     let fx = nx % 1.0 - 0.5; let fy = ny % 1.0 - 0.5;
                     let r1 = Math.sqrt(fx*fx + fy*fy);
                     let r2 = Math.sqrt((fx - 0.15)*(fx - 0.15) + fy*fy);
                     t = (r1 < 0.35 && r2 > 0.3) ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_diamond_ring') {
+                        break;
+                    case 'exp_diamond_ring':
+                        {
                     let fx = nx % 1.0 - 0.5; let fy = ny % 1.0 - 0.5;
                     let diamond = Math.abs(fx) + Math.abs(fy);
                     let circle = Math.sqrt(fx*fx + fy*fy);
                     t = (diamond < 0.4 && circle > 0.2) ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_honeycomb') {
+                        break;
+                    case 'exp_honeycomb':
+                        {
                     let hx = nx * 1.5; let hy = ny * 0.866;
                     let tx = Math.floor(hx); let ty = Math.floor(hy);
                     let fx = hx - tx; let fy = hy - ty;
                     let distHex = ((tx + ty) % 2 === 0) ? Math.abs(fx - fy) : Math.abs(fx + fy - 1.0);
                     t = (distHex < 0.05 || (distHex > 0.3 && distHex < 0.35)) ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_dune') {
+                        break;
+                    case 'exp_dune':
+                        {
                     let dVal = Math.sin(nx * 0.8 + Math.sin(ny * 0.5) * 3.0);
                     t = dVal * 0.4 + 0.1 * (luma - 0.5);
                 }
-                else if (algo === 'exp_camouflage') {
+                        break;
+                    case 'exp_camouflage':
+                        {
                     let c1 = Math.sin(nx * 0.5) * Math.sin(ny * 0.5);
                     let c2 = Math.sin(nx * 0.2 + 1.0) * Math.cos(ny * 0.3);
                     let mix = c1 + c2;
                     t = (mix > luma - 0.5) ? -0.4 : 0.4;
                 }
-                else if (algo === 'exp_circuit_lines') {
+                        break;
+                    case 'exp_circuit_lines':
+                        {
                     let cx2 = Math.floor(nx); let cy2 = Math.floor(ny);
                     let fx = nx - cx2; let fy = ny - cy2;
                     let seed = cx2 * 19.31 + cy2 * 7.19;
@@ -1038,15 +1155,17 @@ function ditherEngineCore(imageData, w, h, params) {
                     else inLine = (Math.sqrt((fx-0.5)*(fx-0.5) + (fy-0.5)*(fy-0.5)) < 0.15);
                     t = inLine ? -0.45 : 0.45;
                 }
-                else if (algo === 'exp_crosshairs') {
+                        break;
+                    case 'exp_crosshairs': {
                     let fx = nx % 2.0 - 1.0; let fy = ny % 2.0 - 1.0;
                     let rad = Math.sqrt(fx*fx + fy*fy);
                     let isCross = (Math.abs(fx) < 0.02 && Math.abs(fy) < 0.8) || (Math.abs(fy) < 0.02 && Math.abs(fx) < 0.8) || (Math.abs(rad - 0.6) < 0.03);
                     t = isCross ? -0.45 : 0.45;
                 }
 
-                // --- FRACTALES Y CAOS ---
-                else if (algo === 'frac_mandelbrot') {
+                // --- FRACTALES Y CAOS --- break;
+                    case 'frac_mandelbrot':
+                        {
                     let zx = 0, zy = 0;
                     let cr = Math.sin(cx) * 1.3, ci = Math.sin(cy) * 1.3;
                     let i = 0;
@@ -1058,7 +1177,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 10) - 0.5;
                 }
-                else if (algo === 'frac_mandelcubic') {
+                        break;
+                    case 'frac_mandelcubic':
+                        {
                     let zx = 0, zy = 0;
                     let cr = Math.sin(cx * 0.9) * 1.4, ci = Math.cos(cy * 0.9) * 1.4;
                     let i = 0;
@@ -1070,7 +1191,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 10) - 0.5;
                 }
-                else if (algo === 'frac_mandel5') {
+                        break;
+                    case 'frac_mandel5':
+                        {
                     let zx = 0, zy = 0;
                     let cr = Math.cos(cx * 1.1) * 1.2, ci = Math.sin(cy * 1.1) * 1.2;
                     let i = 0;
@@ -1083,7 +1206,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 8) - 0.5;
                 }
-                else if (algo === 'frac_julia') {
+                        break;
+                    case 'frac_julia':
+                        {
                     let zx = Math.sin(cx) * 1.5, zy = Math.cos(cy) * 1.5;
                     let cr = -0.7, ci = 0.27015;
                     let i = 0;
@@ -1095,7 +1220,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 10) - 0.5;
                 }
-                else if (algo === 'frac_juliasin') {
+                        break;
+                    case 'frac_juliasin':
+                        {
                     let zx = Math.sin(cx * 0.8) * 2.0, zy = Math.sin(cy * 0.8) * 2.0;
                     let cr = 1.0, ci = 0.3;
                     let i = 0;
@@ -1113,7 +1240,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 8) - 0.5;
                 }
-                else if (algo === 'frac_juliacos') {
+                        break;
+                    case 'frac_juliacos':
+                        {
                     let zx = Math.cos(cx * 0.7) * 1.8, zy = Math.cos(cy * 0.7) * 1.8;
                     let cr = 1.0, ci = 0.2;
                     let i = 0;
@@ -1131,7 +1260,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 8) - 0.5;
                 }
-                else if (algo === 'frac_juliaburningship') {
+                        break;
+                    case 'frac_juliaburningship':
+                        {
                     let zx = Math.sin(cx) * 1.3, zy = Math.cos(cy) * 1.3;
                     let cr = -0.45, ci = 0.56;
                     let i = 0;
@@ -1145,7 +1276,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 10) - 0.5;
                 }
-                else if (algo === 'frac_burningship') {
+                        break;
+                    case 'frac_burningship':
+                        {
                     let zx = 0, zy = 0;
                     let cr = Math.sin(cx) * 1.5 - 0.45, ci = Math.cos(cy) * 1.5 + 0.50;
                     let i = 0;
@@ -1159,7 +1292,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 10) - 0.5;
                 }
-                else if (algo === 'frac_tricorn') {
+                        break;
+                    case 'frac_tricorn':
+                        {
                     let zx = 0, zy = 0;
                     let cr = Math.sin(cx * 1.2) * 1.3, ci = Math.cos(cy * 1.2) * 1.3;
                     let i = 0;
@@ -1171,7 +1306,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 10) - 0.5;
                 }
-                else if (algo === 'frac_buffalo') {
+                        break;
+                    case 'frac_buffalo':
+                        {
                     let zx = 0, zy = 0;
                     let cr = Math.abs(Math.sin(cx)) * 1.4, ci = Math.abs(Math.cos(cy)) * 1.4;
                     let i = 0;
@@ -1185,7 +1322,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 8) - 0.5;
                 }
-                else if (algo === 'frac_celtic') {
+                        break;
+                    case 'frac_celtic':
+                        {
                     let zx = 0, zy = 0;
                     let cr = Math.sin(cx) * 1.4, ci = Math.sin(cy) * 1.4;
                     let i = 0;
@@ -1197,7 +1336,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 10) - 0.5;
                 }
-                else if (algo === 'frac_feather') {
+                        break;
+                    case 'frac_feather':
+                        {
                     let zx = Math.sin(cx * 1.3) * 1.8, zy = Math.cos(cy * 1.3) * 1.8;
                     let cr = -0.8, ci = 0.2;
                     let i = 0;
@@ -1216,7 +1357,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 8) - 0.5;
                 }
-                else if (algo === 'frac_henon') {
+                        break;
+                    case 'frac_henon':
+                        {
                     let xk = Math.sin(cx) * 1.2, yk = Math.cos(cy) * 1.2;
                     for (let i = 0; i < 8; i++) {
                         let nextX = 1.0 - 1.4*xk*xk + yk;
@@ -1225,7 +1368,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 5) * Math.cos(yk * 5)) * 0.5;
                 }
-                else if (algo === 'frac_clifford') {
+                        break;
+                    case 'frac_clifford':
+                        {
                     let xk = Math.sin(cx) * 2.0, yk = Math.cos(cy) * 2.0;
                     for (let i = 0; i < 8; i++) {
                         let nextX = Math.sin(-1.4*yk) + Math.cos(-1.4*xk);
@@ -1234,7 +1379,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 4) * Math.cos(yk * 4)) * 0.5;
                 }
-                else if (algo === 'frac_dejong') {
+                        break;
+                    case 'frac_dejong':
+                        {
                     let xk = Math.sin(cx * 1.5) * 2.0, yk = Math.cos(cy * 1.5) * 2.0;
                     for (let i = 0; i < 8; i++) {
                         let nextX = Math.sin(1.4*yk) - Math.cos(-2.3*xk);
@@ -1243,7 +1390,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 3) + Math.cos(yk * 3)) * 0.25;
                 }
-                else if (algo === 'frac_ikeda') {
+                        break;
+                    case 'frac_ikeda':
+                        {
                     let xk = Math.sin(cx) * 1.5, yk = Math.cos(cy) * 1.5;
                     for (let i = 0; i < 6; i++) {
                         let d = 1.0 + xk*xk + yk*yk;
@@ -1256,7 +1405,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 2.5) * Math.cos(yk * 2.5)) * 0.5;
                 }
-                else if (algo === 'frac_lorenz') {
+                        break;
+                    case 'frac_lorenz':
+                        {
                     let xk = Math.sin(cx) * 10.0, yk = Math.cos(cy) * 10.0, zk = 10.0 + Math.sin(cx + cy) * 5.0;
                     let dt = 0.02;
                     for (let i = 0; i < 8; i++) {
@@ -1269,7 +1420,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 0.4) * Math.cos(yk * 0.4)) * 0.5;
                 }
-                else if (algo === 'frac_duffing') {
+                        break;
+                    case 'frac_duffing':
+                        {
                     let xk = Math.sin(cx) * 2.0, yk = Math.cos(cy) * 2.0;
                     for (let i = 0; i < 8; i++) {
                         let nextX = yk;
@@ -1278,7 +1431,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 2.5) * Math.cos(yk * 2.5)) * 0.5;
                 }
-                else if (algo === 'frac_tinkerbell') {
+                        break;
+                    case 'frac_tinkerbell':
+                        {
                     let xk = Math.sin(cx) * 1.0, yk = Math.cos(cy) * 1.0;
                     for (let i = 0; i < 8; i++) {
                         let nextX = xk*xk - yk*yk + 0.9*xk - 0.6013*yk;
@@ -1287,7 +1442,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 3) * Math.cos(yk * 3)) * 0.5;
                 }
-                else if (algo === 'frac_chirikov') {
+                        break;
+                    case 'frac_chirikov':
+                        {
                     let theta = (cx % (2 * Math.PI)), p = (cy % (2 * Math.PI));
                     if (theta < 0) theta += 2 * Math.PI;
                     if (p < 0) p += 2 * Math.PI;
@@ -1297,7 +1454,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = Math.max(-0.5, Math.min(0.5, (theta / Math.PI - 1.0) * 0.5));
                 }
-                else if (algo === 'frac_gumowskimira') {
+                        break;
+                    case 'frac_gumowskimira':
+                        {
                     let xk = Math.sin(cx) * 1.5, yk = Math.cos(cy) * 1.5;
                     for (let i = 0; i < 6; i++) {
                         let den = 1.0 + xk*xk;
@@ -1310,7 +1469,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 2.8) * Math.cos(yk * 2.8)) * 0.5;
                 }
-                else if (algo === 'frac_martin') {
+                        break;
+                    case 'frac_martin':
+                        {
                     let xk = Math.sin(cx) * 3.0, yk = Math.cos(cy) * 3.0;
                     for (let i = 0; i < 8; i++) {
                         let nextX = yk - Math.sin(xk);
@@ -1319,7 +1480,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 1.5) * Math.cos(yk * 1.5)) * 0.5;
                 }
-                else if (algo === 'frac_symmetricicon') {
+                        break;
+                    case 'frac_symmetricicon':
+                        {
                     let xk = Math.sin(cx) * 2.5, yk = Math.cos(cy) * 2.5;
                     for (let i = 0; i < 8; i++) {
                         let r2 = xk*xk + yk*yk;
@@ -1331,7 +1494,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 1.8) * Math.cos(yk * 1.8)) * 0.5;
                 }
-                else if (algo === 'frac_svensson') {
+                        break;
+                    case 'frac_svensson':
+                        {
                     let xk = Math.sin(cx) * 1.5, yk = Math.cos(cy) * 1.5;
                     for (let i = 0; i < 8; i++) {
                         let nextX = -1.2 * Math.sin(1.4 * xk) - Math.sin(1.56 * yk);
@@ -1340,7 +1505,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 2.5) * Math.cos(yk * 2.5)) * 0.5;
                 }
-                else if (algo === 'frac_kingsdream') {
+                        break;
+                    case 'frac_kingsdream':
+                        {
                     let xk = Math.sin(cx * 1.2) * 1.5, yk = Math.cos(cy * 1.2) * 1.5;
                     for (let i = 0; i < 8; i++) {
                         let nextX = Math.sin(-2.0 * yk) + 1.2 * Math.sin(-2.0 * xk);
@@ -1349,7 +1516,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 2.2) * Math.cos(yk * 2.2)) * 0.5;
                 }
-                else if (algo === 'frac_hopalong') {
+                        break;
+                    case 'frac_hopalong':
+                        {
                     let xk = Math.sin(cx) * 4.0, yk = Math.cos(cy) * 4.0;
                     for (let i = 0; i < 8; i++) {
                         let nextX = yk - Math.sign(xk) * Math.sqrt(Math.abs(xk));
@@ -1358,7 +1527,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 1.2) * Math.cos(yk * 1.2)) * 0.5;
                 }
-                else if (algo === 'frac_gingerbreadman') {
+                        break;
+                    case 'frac_gingerbreadman':
+                        {
                     let xk = Math.sin(cx) * 3.0, yk = Math.cos(cy) * 3.0;
                     for (let i = 0; i < 8; i++) {
                         let nextX = 1.0 - yk + Math.abs(xk);
@@ -1367,7 +1538,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 0.8) * Math.cos(yk * 0.8)) * 0.5;
                 }
-                else if (algo === 'frac_rossler') {
+                        break;
+                    case 'frac_rossler':
+                        {
                     let xk = Math.sin(cx) * 5.0, yk = Math.cos(cy) * 5.0, zk = 0.2;
                     let dt = 0.05;
                     for (let i = 0; i < 8; i++) {
@@ -1380,7 +1553,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(xk * 1.5) * Math.cos(yk * 1.5)) * 0.5;
                 }
-                else if (algo === 'frac_newton3') {
+                        break;
+                    case 'frac_newton3':
+                        {
                     let zx = Math.sin(cx * 1.2) * 2.0, zy = Math.cos(cy * 1.2) * 2.0;
                     for (let i = 0; i < 8; i++) {
                         let x2 = zx*zx; let y2 = zy*zy;
@@ -1396,7 +1571,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.atan2(zy, zx) / Math.PI) * 0.5;
                 }
-                else if (algo === 'frac_newton4') {
+                        break;
+                    case 'frac_newton4':
+                        {
                     let zx = Math.sin(cx * 1.1) * 1.8, zy = Math.cos(cy * 1.1) * 1.8;
                     for (let i = 0; i < 8; i++) {
                         let x2 = zx*zx; let y2 = zy*zy;
@@ -1415,7 +1592,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.atan2(zy, zx) / Math.PI) * 0.5;
                 }
-                else if (algo === 'frac_newtonsin') {
+                        break;
+                    case 'frac_newtonsin':
+                        {
                     let zx = Math.sin(cx * 0.9) * 2.5, zy = Math.cos(cy * 0.9) * 2.5;
                     for (let i = 0; i < 6; i++) {
                         let ey = Math.exp(zy);
@@ -1435,7 +1614,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(zx) * Math.cos(zy)) * 0.5;
                 }
-                else if (algo === 'frac_novamandelbrot') {
+                        break;
+                    case 'frac_novamandelbrot':
+                        {
                     let zx = 1.0, zy = 0.0;
                     let cr = Math.sin(cx) * 1.5, ci = Math.cos(cy) * 1.5;
                     let i = 0;
@@ -1454,7 +1635,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 8) - 0.5;
                 }
-                else if (algo === 'frac_novajulia') {
+                        break;
+                    case 'frac_novajulia':
+                        {
                     let zx = Math.sin(cx) * 1.5, zy = Math.cos(cy) * 1.5;
                     let cr = -0.2, ci = 0.65;
                     let i = 0;
@@ -1473,7 +1656,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 8) - 0.5;
                 }
-                else if (algo === 'frac_secante') {
+                        break;
+                    case 'frac_secante':
+                        {
                     let zx = Math.sin(cx) * 1.5, zy = Math.cos(cy) * 1.5;
                     let px = zx + 0.05, py = zy + 0.05;
                     for (let i = 0; i < 6; i++) {
@@ -1496,7 +1681,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.atan2(zy, zx) / Math.PI) * 0.5;
                 }
-                else if (algo === 'frac_lyapunov') {
+                        break;
+                    case 'frac_lyapunov':
+                        {
                     let a = 2.0 + Math.abs(Math.sin(cx) * 2.0);
                     let b = 2.0 + Math.abs(Math.cos(cy) * 2.0);
                     let x0 = 0.5;
@@ -1509,7 +1696,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = Math.max(-0.5, Math.min(0.5, sum / 16.0));
                 }
-                else if (algo === 'frac_popcorn') {
+                        break;
+                    case 'frac_popcorn':
+                        {
                     let zx = Math.sin(cx) * 3.0, zy = Math.cos(cy) * 3.0;
                     for (let i = 0; i < 6; i++) {
                         let nextX = zx - 0.05 * Math.sin(zy + Math.tan(3 * zy));
@@ -1518,7 +1707,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (Math.sin(zx * 5) * Math.cos(zy * 5)) * 0.5;
                 }
-                else if (algo === 'frac_fbm') {
+                        break;
+                    case 'frac_fbm':
+                        {
                     let value = 0;
                     let amplitude = 0.5;
                     let frequency = 1.0;
@@ -1530,7 +1721,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = value;
                 }
-                else if (algo === 'frac_cantordust') {
+                        break;
+                    case 'frac_cantordust':
+                        {
                     let valX = Math.abs(Math.sin(cx * 0.5)) % 1.0;
                     let valY = Math.abs(Math.cos(cy * 0.5)) % 1.0;
                     let inCantor = true;
@@ -1544,7 +1737,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = inCantor ? 0.25 : -0.25;
                 }
-                else if (algo === 'frac_sierpinskicarpet') {
+                        break;
+                    case 'frac_sierpinskicarpet':
+                        {
                     let valX = Math.abs(Math.sin(nx * 0.2)) % 1.0;
                     let valY = Math.abs(Math.cos(ny * 0.2)) % 1.0;
                     let inCarpet = true;
@@ -1560,12 +1755,16 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = inCarpet ? 0.25 : -0.25;
                 }
-                else if (algo === 'frac_sierpinskingasket') {
+                        break;
+                    case 'frac_sierpinskingasket':
+                        {
                     let xi = Math.floor(Math.abs(Math.sin(nx * 0.5) * 16));
                     let yi = Math.floor(Math.abs(Math.cos(ny * 0.5) * 16));
                     t = ((xi & yi) === 0) ? 0.25 : -0.25;
                 }
-                else if (algo === 'frac_mandelorbittrap') {
+                        break;
+                    case 'frac_mandelorbittrap':
+                        {
                     let zx = 0, zy = 0;
                     let cr = Math.sin(cx) * 1.3, ci = Math.cos(cy) * 1.3;
                     let minDist = 1e9;
@@ -1579,7 +1778,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = Math.min(1.0, minDist) - 0.5;
                 }
-                else if (algo === 'frac_juliaorbittrap') {
+                        break;
+                    case 'frac_juliaorbittrap':
+                        {
                     let zx = Math.sin(cx) * 1.4, zy = Math.cos(cy) * 1.4;
                     let cr = -0.8, ci = 0.156;
                     let minDist = 1e9;
@@ -1593,7 +1794,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = Math.min(1.0, minDist) - 0.5;
                 }
-                else if (algo === 'frac_cliffordorbittrap') {
+                        break;
+                    case 'frac_cliffordorbittrap':
+                        {
                     let xk = Math.sin(cx) * 2.0, yk = Math.cos(cy) * 2.0;
                     let minDist = 1e9;
                     for (let i = 0; i < 8; i++) {
@@ -1605,7 +1808,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = Math.min(1.0, minDist) - 0.5;
                 }
-                else if (algo === 'frac_henonorbittrap') {
+                        break;
+                    case 'frac_henonorbittrap':
+                        {
                     let xk = Math.sin(cx) * 1.2, yk = Math.cos(cy) * 1.2;
                     let minDist = 1e9;
                     for (let i = 0; i < 8; i++) {
@@ -1617,7 +1822,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = Math.min(1.0, minDist) - 0.5;
                 }
-                else if (algo === 'frac_logistic') {
+                        break;
+                    case 'frac_logistic':
+                        {
                     let r = 3.5 + Math.abs(Math.sin(cx) * 0.49);
                     let x0 = Math.abs(Math.cos(cy)) % 1.0;
                     for (let i = 0; i < 10; i++) {
@@ -1625,7 +1832,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = x0 - 0.5;
                 }
-                else if (algo === 'frac_sinemap') {
+                        break;
+                    case 'frac_sinemap':
+                        {
                     let r = 0.7 + Math.abs(Math.sin(cx) * 0.29);
                     let x0 = Math.abs(Math.cos(cy)) % 1.0;
                     for (let i = 0; i < 10; i++) {
@@ -1633,7 +1842,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = x0 - 0.5;
                 }
-                else if (algo === 'frac_mandelbox') {
+                        break;
+                    case 'frac_mandelbox':
+                        {
                     let zx = Math.sin(cx) * 2.0, zy = Math.cos(cy) * 2.0;
                     let cr = Math.sin(cx * 1.5) * 0.8, ci = Math.cos(cy * 1.5) * 0.8;
                     let i = 0;
@@ -1649,7 +1860,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 8) - 0.5;
                 }
-                else if (algo === 'frac_mandelbulb') {
+                        break;
+                    case 'frac_mandelbulb':
+                        {
                     let zx = Math.sin(cx) * 1.5, zy = Math.cos(cy) * 1.5;
                     let cr = Math.sin(cx) * 0.5, ci = Math.cos(cy) * 0.5;
                     let i = 0;
@@ -1664,7 +1877,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = (i / 8) - 0.5;
                 }
-                else if (algo === 'frac_tent') {
+                        break;
+                    case 'frac_tent':
+                        {
                     let mu = 1.9 + Math.abs(Math.sin(cx) * 0.09);
                     let x0 = Math.abs(Math.cos(cy)) % 1.0;
                     for (let i = 0; i < 10; i++) {
@@ -1672,7 +1887,9 @@ function ditherEngineCore(imageData, w, h, params) {
                     }
                     t = x0 - 0.5;
                 }
-                else if (algo === 'frac_arnoldcat') {
+                        break;
+                    case 'frac_arnoldcat':
+                        {
                     let xk = Math.abs(Math.sin(cx)) % 1.0;
                     let yk = Math.abs(Math.cos(cy)) % 1.0;
                     for (let i = 0; i < 6; i++) {
@@ -1681,6 +1898,8 @@ function ditherEngineCore(imageData, w, h, params) {
                         xk = nextX;
                     }
                     t = (xk * yk) - 0.5;
+                }
+                        break;
                 }
 
                 if (tr === null) { tr = t; tg = t; tb = t; }
@@ -1812,16 +2031,22 @@ const gpuState = {
     sourceTex: null, fboTex: null, fbo: null,
     palUniform: null, palSize: 0,
     paletteLUT: null, paletteHash: '',
+    lutMTex: null, lutRTex: null, lutGTex: null, lutBTex: null,
+    lastLutM: null, lastLutR: null, lastLutG: null, lastLutB: null,
     initialized: false,
     hasPBO: false, pboPending: null, pbo: null, pboSize: 0
 };
 
+function arraysEqual256(a, b) {
+    if (!a || !b) return false;
+    for (let i = 0; i < 256; i++) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+}
+
 // --- 3D LUT BUILDER ---
 function buildPaletteLUT(activePalette, renderPalette) {
-    const hash = activePalette.map(c => c.join(',')).join('|');
-    if (hash === gpuState.paletteHash && gpuState.paletteLUT) return gpuState.paletteLUT;
-    gpuState.paletteHash = hash;
-
     const LUT_SIZE = 64;
     const atlasW = LUT_SIZE * LUT_SIZE; // 4096
     const atlasH = LUT_SIZE;            // 64
@@ -2144,10 +2369,27 @@ function gpuDitherEngine(imageData, w, h, params) {
 
     if (!setupFramebuffer(gl, w, h)) return false;
 
-    const lutMTex = createLUTTexture(gl, lutM);
-    const lutRTex = createLUTTexture(gl, lutR);
-    const lutGTex = createLUTTexture(gl, lutG);
-    const lutBTex = createLUTTexture(gl, lutB);
+    // Channel LUT textures caching
+    if (!gpuState.lutMTex || !arraysEqual256(lutM, gpuState.lastLutM)) {
+        if (gpuState.lutMTex) gl.deleteTexture(gpuState.lutMTex);
+        gpuState.lutMTex = createLUTTexture(gl, lutM);
+        gpuState.lastLutM = new Uint8Array(lutM);
+    }
+    if (!gpuState.lutRTex || !arraysEqual256(lutR, gpuState.lastLutR)) {
+        if (gpuState.lutRTex) gl.deleteTexture(gpuState.lutRTex);
+        gpuState.lutRTex = createLUTTexture(gl, lutR);
+        gpuState.lastLutR = new Uint8Array(lutR);
+    }
+    if (!gpuState.lutGTex || !arraysEqual256(lutG, gpuState.lastLutG)) {
+        if (gpuState.lutGTex) gl.deleteTexture(gpuState.lutGTex);
+        gpuState.lutGTex = createLUTTexture(gl, lutG);
+        gpuState.lastLutG = new Uint8Array(lutG);
+    }
+    if (!gpuState.lutBTex || !arraysEqual256(lutB, gpuState.lastLutB)) {
+        if (gpuState.lutBTex) gl.deleteTexture(gpuState.lutBTex);
+        gpuState.lutBTex = createLUTTexture(gl, lutB);
+        gpuState.lastLutB = new Uint8Array(lutB);
+    }
 
     const cacheKey = algo;
     let program = gpuState.programCache[cacheKey];
@@ -2166,16 +2408,16 @@ function gpuDitherEngine(imageData, w, h, params) {
     gl.bindTexture(gl.TEXTURE_2D, gpuState.sourceTex);
     gl.uniform1i(gl.getUniformLocation(program, 'u_lutM'), 1);
     gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, lutMTex);
+    gl.bindTexture(gl.TEXTURE_2D, gpuState.lutMTex);
     gl.uniform1i(gl.getUniformLocation(program, 'u_lutR'), 2);
     gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, lutRTex);
+    gl.bindTexture(gl.TEXTURE_2D, gpuState.lutRTex);
     gl.uniform1i(gl.getUniformLocation(program, 'u_lutG'), 3);
     gl.activeTexture(gl.TEXTURE3);
-    gl.bindTexture(gl.TEXTURE_2D, lutGTex);
+    gl.bindTexture(gl.TEXTURE_2D, gpuState.lutGTex);
     gl.uniform1i(gl.getUniformLocation(program, 'u_lutB'), 4);
     gl.activeTexture(gl.TEXTURE4);
-    gl.bindTexture(gl.TEXTURE_2D, lutBTex);
+    gl.bindTexture(gl.TEXTURE_2D, gpuState.lutBTex);
 
     gl.uniform1f(gl.getUniformLocation(program, 'u_spread'), errStrength * 128.0);
     gl.uniform1f(gl.getUniformLocation(program, 'u_pScale'), patScale);
@@ -2193,10 +2435,14 @@ function gpuDitherEngine(imageData, w, h, params) {
     gl.uniform1i(gl.getUniformLocation(program, 'u_chG'), chG ? 1 : 0);
     gl.uniform1i(gl.getUniformLocation(program, 'u_chB'), chB ? 1 : 0);
 
-    // Build & upload 3D palette LUT texture
-    const lutData = buildPaletteLUT(activePalette, renderPalette);
-    if (gpuState.paletteLUT) gl.deleteTexture(gpuState.paletteLUT);
-    gpuState.paletteLUT = createTexture(gl, 4096, 64, lutData, gl.RGBA, gl.UNSIGNED_BYTE, gl.NEAREST);
+    // Build & upload 3D palette LUT texture (only if changed)
+    const palHash = activePalette.map(c => c.join(',')).join('|');
+    if (palHash !== gpuState.paletteHash || !gpuState.paletteLUT) {
+        gpuState.paletteHash = palHash;
+        if (gpuState.paletteLUT) gl.deleteTexture(gpuState.paletteLUT);
+        const lutData = buildPaletteLUT(activePalette, renderPalette);
+        gpuState.paletteLUT = createTexture(gl, 4096, 64, lutData, gl.RGBA, gl.UNSIGNED_BYTE, gl.NEAREST);
+    }
     gl.uniform1i(gl.getUniformLocation(program, 'u_paletteLUT'), 5);
     gl.activeTexture(gl.TEXTURE5);
     gl.bindTexture(gl.TEXTURE_2D, gpuState.paletteLUT);
@@ -2244,11 +2490,6 @@ function gpuDitherEngine(imageData, w, h, params) {
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    gl.deleteTexture(lutMTex);
-    gl.deleteTexture(lutRTex);
-    gl.deleteTexture(lutGTex);
-    gl.deleteTexture(lutBTex);
 
     return true;
 }
@@ -2497,20 +2738,13 @@ function initWorker() {
         cpuWorker = new Worker('dither-worker.js');
     } catch(e) { cpuWorker = null; }
 }
-
 function acceleratedDitherEngine(imageData, w, h, params) {
     const { algo } = params;
 
-    // Error diffusion: inherently serial, use proven CPU path
-    if (matricesDifusion[algo]) {
-        ditherEngineCore(imageData, w, h, params);
-        return;
-    }
-
     // Stochastic/ordered/fractal/experimental: GPU accelerated
-    if (isGPUSupported() && gpuDitherEngine(imageData, w, h, params)) return;
+    if (!matricesDifusion[algo] && isGPUSupported() && gpuDitherEngine(imageData, w, h, params)) return;
 
-    // GPU failed or unavailable: CPU fallback
+    // GPU failed or unavailable / Error diffusion: CPU path
     ditherEngineCore(imageData, w, h, params);
 }
 
@@ -2518,16 +2752,10 @@ function acceleratedDitherEngine(imageData, w, h, params) {
 async function acceleratedDitherEngineAsync(imageData, w, h, params) {
     const { algo } = params;
 
-    // Error diffusion: inherently serial, use proven CPU path
-    if (matricesDifusion[algo]) {
-        ditherEngineCore(imageData, w, h, params);
-        return;
-    }
-
     // Stochastic/ordered/fractal/experimental: GPU accelerated
-    if (isGPUSupported() && gpuDitherEngine(imageData, w, h, params)) return;
+    if (!matricesDifusion[algo] && isGPUSupported() && gpuDitherEngine(imageData, w, h, params)) return;
 
-    // GPU not available: dispatch to Web Worker
+    // GPU not available or Error diffusion: dispatch to Web Worker
     initWorker();
     if (cpuWorker) {
         try {
