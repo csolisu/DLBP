@@ -2980,7 +2980,8 @@ function updatePanelLocks() {
                     document.getElementById('algo-rot').value,
                     document.getElementById('algo-bias').value,
                     getFinalActivePalette().map(c => c.join(',')).join('|'),
-                    JSON.stringify(curves)
+                    JSON.stringify(curves),
+                    JSON.stringify(postModifications)
                 ].join(';');
 
                 let imageData;

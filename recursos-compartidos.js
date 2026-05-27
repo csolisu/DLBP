@@ -2436,7 +2436,7 @@ function gpuDitherEngine(imageData, w, h, params) {
     gl.uniform1i(gl.getUniformLocation(program, 'u_chB'), chB ? 1 : 0);
 
     // Build & upload 3D palette LUT texture (only if changed)
-    const palHash = activePalette.map(c => c.join(',')).join('|');
+    const palHash = activePalette.map(c => c.join(',')).join('|') + '||' + renderPalette.map(c => c.join(',')).join('|');
     if (palHash !== gpuState.paletteHash || !gpuState.paletteLUT) {
         gpuState.paletteHash = palHash;
         if (gpuState.paletteLUT) gl.deleteTexture(gpuState.paletteLUT);
